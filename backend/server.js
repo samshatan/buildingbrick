@@ -54,20 +54,15 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ message: `API Route not found: ${req.originalUrl}` });
 });
 
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  const __dirname = path.resolve();
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
-  });
-} else {
-  // Global 404 Route handler for development
-  app.use((req, res) => {
-    res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
-  });
-}
+// Root route for Render health checks
+app.get('/', (req, res) => {
+  res.status(200).send('BrickOurHouse API is running.');
+});
+
+// Global 404 Route handler
+app.use((req, res) => {
+  res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
+});
 
 // Global Error handling middleware
 app.use((err, req, res, next) => {
