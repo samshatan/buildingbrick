@@ -1,4 +1,4 @@
-import { MapPin, ShieldAlert, ArrowRight, Printer } from "lucide-react";
+import { ShieldAlert, ArrowRight, Printer } from "lucide-react";
 import { Link } from "react-router-dom";
 import { workerSubscriptionPlan } from "@/data/marketplaceData";
 
