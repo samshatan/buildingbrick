@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://<YOUR-RENDER-BACKEND-URL>/api/:match*"
+    }
+  ]
+}
