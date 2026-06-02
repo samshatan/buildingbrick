@@ -100,11 +100,20 @@ function Navbar() {
         />
       </div>
 
+      {/* Mobile Menu Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 sm:hidden transition-opacity duration-300"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Drawer */}
       <div
-        className={`absolute top-0 right-0 bottom-0 overflow-hidden bg-white transition-all z-20 ${mobileMenuOpen ? "w-64" : "w-0"
+        className={`fixed top-0 right-0 bottom-0 h-screen overflow-hidden bg-white transition-all duration-300 z-50 shadow-2xl ${mobileMenuOpen ? "w-[280px]" : "w-0"
           }`}
       >
-        <div className="flex flex-col text-gray-800">
+        <div className="flex flex-col text-gray-800 min-w-[280px]">
           <div
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-4 p-3 cursor-pointer"

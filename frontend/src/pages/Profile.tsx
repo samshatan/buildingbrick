@@ -507,7 +507,7 @@ function Profile() {
           {/* Become a Worker Modal */}
           {showWorkerModal && (
             <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Become a Worker</h2>
                 <p className="text-gray-500 mb-6">Select your professions to get started.</p>
                 
@@ -599,7 +599,7 @@ function Profile() {
           {/* Account Edit Modal */}
           {showAccountEditModal && (
             <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-8 max-w-lg w-full">
+              <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Account</h2>
                 <p className="text-gray-500 mb-6">Update your basic profile information.</p>
                 
@@ -653,7 +653,7 @@ function Profile() {
           {/* Worker Edit Modal */}
           {showWorkerEditModal && (
             <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Worker Details</h2>
                 <p className="text-gray-500 mb-6">Update your professional information and rate.</p>
                 

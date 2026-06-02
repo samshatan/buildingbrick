@@ -8,7 +8,7 @@ function HeroSection() {
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-100/30 rounded-full blur-[100px] -z-10 translate-x-1/3 -translate-y-1/3"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary-100/30 rounded-full blur-[100px] -z-10 -translate-x-1/3 translate-y-1/3"></div>
 
-      <div className="flex flex-col lg:flex-row items-center p-8 sm:p-12 lg:p-16 gap-12 lg:gap-8">
+      <div className="flex flex-col lg:flex-row items-center p-6 sm:p-12 lg:p-16 gap-12 lg:gap-8">
         
         {/* Left Content */}
         <div className="w-full lg:w-1/2 relative z-10">
@@ -29,14 +29,14 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 mb-10">
             <Link
               to="/workers"
-              className="group inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-4 rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary-600 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-0.5 duration-200"
+              className="group inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-4 rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary-600 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-0.5 duration-200 w-full sm:w-auto"
             >
               Find Workers
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-white text-gray-800 border-2 border-gray-200 px-8 py-4 rounded-xl text-sm font-bold shadow-sm hover:border-gray-300 hover:bg-gray-50 transition-all hover:-translate-y-0.5 duration-200"
+              className="inline-flex items-center justify-center gap-2 bg-white text-gray-800 border-2 border-gray-200 px-8 py-4 rounded-xl text-sm font-bold shadow-sm hover:border-gray-300 hover:bg-gray-50 transition-all hover:-translate-y-0.5 duration-200 w-full sm:w-auto"
             >
               Join as Worker
             </Link>
