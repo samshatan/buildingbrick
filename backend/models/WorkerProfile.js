@@ -14,7 +14,7 @@ const workerProfileSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   verifiedByCafeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   verifiedAt: { type: Date, default: null },
-  cafePaymentStatus: { type: String, enum: ['PENDING_ADMIN_COLLECTION', 'COLLECTED_BY_ADMIN', 'NONE'], default: 'NONE' },
+  cafePaymentStatus: { type: String, enum: ['PENDING_ADMIN_COLLECTION', 'COLLECTED_BY_ADMIN', 'COLLECTED_OFFLINE_BY_ADMIN', 'PAID_ONLINE_BY_CAFE', 'NONE'], default: 'NONE' },
   featured: { type: Boolean, default: false },
   rating: { type: Number, default: 0.0 },
   jobsCompleted: { type: Number, default: 0 },

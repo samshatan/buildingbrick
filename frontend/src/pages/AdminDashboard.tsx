@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { ShieldCheck, Store, Users, CheckCircle2, IndianRupee, User, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, Store, Users, CheckCircle2, IndianRupee, User, ArrowUpRight, FileText, Activity, Clock } from "lucide-react";
 
 interface CafeData {
   _id: string;
@@ -40,6 +40,12 @@ function AdminDashboard() {
   const [newCafeEmail, setNewCafeEmail] = useState("");
   const [promoting, setPromoting] = useState(false);
 
+  // Modal State
+  const [selectedCafeForModal, setSelectedCafeForModal] = useState<CafeData | null>(null);
+  const [cafeWorkers, setCafeWorkers] = useState<WorkerData[]>([]);
+  const [loadingCafeWorkers, setLoadingCafeWorkers] = useState(false);
+  const [selectedWorkersForOffline, setSelectedWorkersForOffline] = useState<string[]>([]);
+
   useEffect(() => {
     fetchData();
   }, [activeTab]);
@@ -72,26 +78,53 @@ function AdminDashboard() {
     }
   };
 
-  const collectPayment = async (cafeId: string) => {
-    if (!window.confirm("Mark all pending balances from this cafe as collected?")) return;
-
-    const toastId = toast.loading("Processing collection...");
+  const handleViewCafeDetails = async (cafe: CafeData) => {
+    setSelectedCafeForModal(cafe);
+    setSelectedWorkersForOffline([]);
+    setLoadingCafeWorkers(true);
     try {
-      const res = await fetch(`/api/v1/admin/cafes/${cafeId}/collect-payment`, {
-        method: "POST",
+      const res = await fetch(`/api/v1/admin/cafes/${cafe._id}/workers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (res.ok) {
-        toast.update(toastId, { render: "Payment collected!", type: "success", isLoading: false, autoClose: 3000 });
-        fetchData(); // Refresh data
+        setCafeWorkers(await res.json());
       } else {
-        toast.update(toastId, { render: "Failed to collect payment.", type: "error", isLoading: false, autoClose: 3000 });
+        toast.error("Failed to load workers for this cafe");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred loading workers.");
+    } finally {
+      setLoadingCafeWorkers(false);
+    }
+  };
+
+  const handleCollectOffline = async () => {
+    if (!selectedCafeForModal || selectedWorkersForOffline.length === 0) return;
+    const toastId = toast.loading("Processing offline collection...");
+    try {
+      const res = await fetch(`/api/v1/admin/cafes/${selectedCafeForModal._id}/collect-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ workerIds: selectedWorkersForOffline })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.update(toastId, { render: data.message || "Payment collected!", type: "success", isLoading: false, autoClose: 3000 });
+        setSelectedWorkersForOffline([]);
+        handleViewCafeDetails(selectedCafeForModal); // Refresh modal list
+        fetchData(); // Refresh main data
+      } else {
+        toast.update(toastId, { render: data.message || "Failed to process", type: "error", isLoading: false, autoClose: 3000 });
       }
     } catch (err) {
       console.error(err);
       toast.update(toastId, { render: "An error occurred.", type: "error", isLoading: false, autoClose: 3000 });
     }
+  };
+
+  const toggleWorkerSelection = (id: string) => {
+    setSelectedWorkersForOffline(prev => prev.includes(id) ? prev.filter(wId => wId !== id) : [...prev, id]);
   };
 
   const handleMakeCafeOwner = async (e: React.FormEvent) => {
@@ -125,6 +158,23 @@ function AdminDashboard() {
     }
   };
 
+  // Compute Recent Activity
+  const recentActivity = [...users.map(u => ({
+    id: u._id,
+    type: 'NEW_USER',
+    title: `New user joined`,
+    desc: u.name,
+    date: new Date(u.createdAt).getTime(),
+    icon: <User className="w-4 h-4 text-blue-500" />
+  })), ...workers.filter(w => w.verified).map(w => ({
+    id: w.id,
+    type: 'WORKER_VERIFIED',
+    title: `Worker verified`,
+    desc: w.userId.name,
+    date: new Date(w.verifiedAt || 0).getTime(),
+    icon: <CheckCircle2 className="w-4 h-4 text-green-500" />
+  }))].sort((a, b) => b.date - a.date).slice(0, 8);
+
   return (
     <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -139,9 +189,11 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-8">
-          <button 
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8">
+          <div className="space-y-6">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200">
+              <button 
             onClick={() => setActiveTab("cafes")}
             className={`px-6 py-4 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
               activeTab === "cafes" ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700"
@@ -225,12 +277,11 @@ function AdminDashboard() {
                        </td>
                        <td className="px-6 py-4 text-right">
                          <button 
-                           onClick={() => collectPayment(cafe._id)}
-                           disabled={cafe.pendingBalance === 0}
-                           className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:hover:bg-green-500 text-white font-bold text-xs rounded-lg transition-colors shadow-sm"
+                           onClick={() => handleViewCafeDetails(cafe)}
+                           className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-lg transition-colors shadow-sm"
                          >
-                           <IndianRupee className="w-3.5 h-3.5" />
-                           Mark Collected
+                           <FileText className="w-3.5 h-3.5" />
+                           View Details
                          </button>
                        </td>
                      </tr>
@@ -286,13 +337,13 @@ function AdminDashboard() {
                          )}
                        </td>
                        <td className="px-6 py-4 text-center">
-                         {worker.cafePaymentStatus === 'COLLECTED_BY_ADMIN' && (
-                           <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Settled</span>
-                         )}
-                         {worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' && (
+                         {worker.cafePaymentStatus === 'COLLECTED_BY_ADMIN' || worker.cafePaymentStatus === 'COLLECTED_OFFLINE_BY_ADMIN' ? (
+                           <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">Offline</span>
+                         ) : worker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' ? (
+                           <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Online</span>
+                         ) : worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' ? (
                            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Pending</span>
-                         )}
-                         {worker.cafePaymentStatus === 'NONE' && (
+                         ) : (
                            <span className="text-gray-400">-</span>
                          )}
                        </td>
@@ -338,6 +389,139 @@ function AdminDashboard() {
               {users.length === 0 && (
                 <div className="col-span-full py-12 text-center text-gray-500">
                   No standard users found.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        </div>
+
+        {/* Recent Activity Sidebar */}
+        <div className="space-y-6 hidden xl:block">
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 sticky top-8">
+            <h3 className="font-extrabold text-gray-900 mb-6 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-primary" /> Platform Activity
+            </h3>
+            
+            <div className="space-y-5">
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">No recent activity.</p>
+              ) : (
+                recentActivity.map((activity, idx) => (
+                  <div key={activity.id + idx} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                      {activity.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{activity.title}</p>
+                      <p className="text-sm text-gray-500">{activity.desc}</p>
+                      <div className="flex items-center gap-1 mt-1 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        <Clock className="w-3 h-3" />
+                        {new Date(activity.date).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+        {/* Cafe Workers Details Modal */}
+        {selectedCafeForModal && (
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+              <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{selectedCafeForModal.name} - Workers</h2>
+                  <p className="text-sm font-medium text-gray-500">Manage verifications and collect payments offline</p>
+                </div>
+                <button 
+                  onClick={() => setSelectedCafeForModal(null)}
+                  className="text-gray-400 hover:text-gray-600 p-2"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto flex-1">
+                {loadingCafeWorkers ? (
+                  <div className="flex justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary/20 border-t-primary"></div>
+                  </div>
+                ) : cafeWorkers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">This cafe has not verified any workers yet.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-gray-600">
+                      <thead className="bg-gray-50 text-gray-700 font-bold uppercase text-xs">
+                        <tr>
+                          <th className="px-4 py-3 border-b border-gray-100 w-12 text-center">Sel</th>
+                          <th className="px-4 py-3 border-b border-gray-100">Worker</th>
+                          <th className="px-4 py-3 border-b border-gray-100">Profession</th>
+                          <th className="px-4 py-3 border-b border-gray-100">Verified On</th>
+                          <th className="px-4 py-3 border-b border-gray-100 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {cafeWorkers.map(worker => (
+                          <tr key={worker.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-4 py-3 text-center">
+                              {worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' || worker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' ? (
+                                <input 
+                                  type="checkbox" 
+                                  checked={selectedWorkersForOffline.includes(worker.id)}
+                                  onChange={() => toggleWorkerSelection(worker.id)}
+                                  className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                                />
+                              ) : (
+                                <span className="text-green-500"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="font-bold text-gray-900">{worker.userId.name}</div>
+                              <div className="text-xs text-gray-500">{worker.userId.email}</div>
+                            </td>
+                            <td className="px-4 py-3 font-medium">{worker.workerType}</td>
+                            <td className="px-4 py-3 text-xs text-gray-500">
+                              {new Date(worker.verifiedAt || "").toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {worker.cafePaymentStatus === 'COLLECTED_BY_ADMIN' || worker.cafePaymentStatus === 'COLLECTED_OFFLINE_BY_ADMIN' ? (
+                                <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">Offline</span>
+                              ) : worker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' ? (
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">Paid Online</span>
+                              ) : worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' ? (
+                                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Pending</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {selectedWorkersForOffline.length > 0 && (
+                <div className="bg-white border-t border-gray-100 p-4 px-6 flex justify-between items-center shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                  <div>
+                    <span className="text-sm text-gray-500 font-bold uppercase tracking-wider block mb-1">Selected Total</span>
+                    <span className="font-black text-xl text-primary">Rs {selectedWorkersForOffline.length * 118}</span>
+                  </div>
+                  <button 
+                    onClick={handleCollectOffline}
+                    className="px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2 shadow-md shadow-green-500/20"
+                  >
+                    <IndianRupee className="w-4 h-4" />
+                    Mark Collected (Offline)
+                  </button>
                 </div>
               )}
             </div>

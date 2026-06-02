@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { Briefcase, Clock, CheckCircle2, AlertCircle, FileText, FileSignature, Check, X, Building2 } from "lucide-react";
+import { Briefcase, Clock, CheckCircle2, AlertCircle, FileText, FileSignature, Check, X, Building2, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
 interface WorkerApplication {
   id: string;
   requestId: string;
-  workerId: string;
+  workerId: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    avatarUrl?: string;
+  };
   proposalText: string;
   proposedRate: number;
   status: string;
@@ -215,12 +222,29 @@ function Orders() {
                           ) : (
                             <div className="grid gap-4 lg:grid-cols-2">
                               {req.applications.map(app => (
-                                <div key={app.id} className="flex flex-col p-5 bg-gray-50 rounded-2xl border border-gray-200 gap-4 group hover:border-primary/30 transition-colors">
+                                <div key={app.id} className="flex flex-col p-5 bg-gray-50 rounded-2xl border border-gray-200 gap-4 group hover:border-primary/30 transition-colors shadow-sm">
                                   
+                                  {/* Worker Details Header */}
                                   <div className="flex justify-between items-start">
-                                    <div>
-                                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Proposed Rate</p>
-                                      <p className="text-xl font-extrabold text-primary">Rs {app.proposedRate}</p>
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 bg-white border border-gray-200 rounded-full overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                                        {app.workerId?.avatarUrl ? (
+                                          <img src={app.workerId.avatarUrl} alt="worker" className="w-full h-full object-cover" />
+                                        ) : (
+                                          <span className="text-xl font-bold text-gray-400">
+                                            {app.workerId?.name ? app.workerId.name.charAt(0).toUpperCase() : '?'}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <h4 className="font-extrabold text-gray-900">{app.workerId?.name || 'Unknown Worker'}</h4>
+                                        <div className="flex items-center gap-3 mt-1">
+                                          <p className="text-xs font-bold text-gray-500">{app.workerId?.phone || 'No phone'}</p>
+                                          <Link to={`/worker/${app.workerId?._id}`} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                                            <User className="w-3 h-3" /> Profile
+                                          </Link>
+                                        </div>
+                                      </div>
                                     </div>
                                     <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                                       app.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
@@ -231,21 +255,27 @@ function Orders() {
                                     </span>
                                   </div>
                                   
-                                  <div className="bg-white p-3 rounded-xl border border-gray-100 text-sm text-gray-600 font-medium italic">
+                                  <div className="grid grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Proposed Rate</p>
+                                      <p className="text-xl font-extrabold text-primary">Rs {app.proposedRate}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="bg-white p-4 rounded-xl border border-gray-100 text-sm text-gray-700 leading-relaxed shadow-inner">
                                     "{app.proposalText}"
                                   </div>
 
-                                  {app.status === 'PENDING' && req.status === 'OPEN' && user.userType !== 'ADMIN' && (
-                                    <div className="flex gap-2 mt-auto pt-2">
+                                  {app.status === 'PENDING' && req.status === 'OPEN' && (
+                                    <div className="flex gap-3 mt-auto pt-4 border-t border-gray-200">
                                       <button 
                                         onClick={() => handleAcceptApplication(app.id)}
-                                        className="flex-1 bg-primary hover:bg-primary-600 text-white py-2.5 text-sm rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+                                        className="flex-1 bg-primary hover:bg-primary-600 text-white py-3 text-sm rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-md shadow-primary/20"
                                       >
                                         <Check className="w-4 h-4" /> Hire Worker
                                       </button>
-                                      {/* UI placeholder for reject */}
-                                      <button className="px-4 py-2.5 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors">
-                                        <X className="w-4 h-4" />
+                                      <button className="px-5 py-3 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+                                        Decline
                                       </button>
                                     </div>
                                   )}

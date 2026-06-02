@@ -60,7 +60,27 @@ export const getCafes = async (req, res) => {
   }
 };
 
-// @desc    Collect payment from a cafe
+// @desc    Get all workers verified by a specific cafe
+// @route   GET /api/v1/admin/cafes/:cafeId/workers
+// @access  Private (Admin only)
+export const getWorkersByCafe = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as an Admin.' });
+    }
+
+    const workers = await WorkerProfile.find({ verifiedByCafeId: req.params.cafeId })
+      .populate('userId', 'name email avatarUrl')
+      .sort({ verifiedAt: -1 });
+
+    res.status(200).json(workers);
+  } catch (error) {
+    console.error('Error fetching workers for cafe:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// @desc    Collect offline payment from a cafe for specific workers
 // @route   POST /api/v1/admin/cafes/:cafeId/collect-payment
 // @access  Private (Admin only)
 export const collectPayment = async (req, res) => {
@@ -69,13 +89,23 @@ export const collectPayment = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized as an Admin.' });
     }
 
-    // Update all pending workers for this cafe
+    const { workerIds } = req.body;
+    
+    if (!workerIds || !Array.isArray(workerIds) || workerIds.length === 0) {
+      return res.status(400).json({ message: 'No workers selected for payment collection.' });
+    }
+
+    // Update specific pending workers for this cafe
     const result = await WorkerProfile.updateMany(
-      { verifiedByCafeId: req.params.cafeId, cafePaymentStatus: 'PENDING_ADMIN_COLLECTION' },
-      { $set: { cafePaymentStatus: 'COLLECTED_BY_ADMIN' } }
+      { 
+        _id: { $in: workerIds },
+        verifiedByCafeId: req.params.cafeId, 
+        cafePaymentStatus: 'PENDING_ADMIN_COLLECTION' 
+      },
+      { $set: { cafePaymentStatus: 'COLLECTED_OFFLINE_BY_ADMIN' } }
     );
 
-    res.status(200).json({ message: `Successfully collected payment for ${result.modifiedCount} verifications.` });
+    res.status(200).json({ message: `Successfully collected payment for ${result.modifiedCount} verifications offline.` });
   } catch (error) {
     console.error('Error collecting payment:', error);
     res.status(500).json({ message: 'Server error.' });

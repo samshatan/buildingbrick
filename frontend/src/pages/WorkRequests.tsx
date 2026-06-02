@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ClipboardList, MapPin, CalendarDays, Search, Filter, Briefcase, CheckCircle2 } from "lucide-react";
+import { ClipboardList, MapPin, CalendarDays, Search, Filter, Briefcase, CheckCircle2, Activity, Clock, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -29,15 +30,25 @@ function WorkRequests() {
   const [selectedRequest, setSelectedRequest] = useState<WorkRequest | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
+  // Applications modal state
+  const [viewAppsModalOpen, setViewAppsModalOpen] = useState(false);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  
   // Proposal form state
   const [proposedRate, setProposedRate] = useState("");
   const [proposalText, setProposalText] = useState("");
 
   useEffect(() => {
-    fetch('/api/v1/requests')
+    const endpoint = user?.userType === 'HIRER' ? `/api/v1/requests/hirer/${user?.id}` : '/api/v1/requests';
+    fetch(endpoint)
       .then(res => res.json())
       .then(data => {
-        setRequests(data.filter((req: WorkRequest) => req.status === "OPEN"));
+        if (user?.userType === 'HIRER') {
+          setRequests(data);
+        } else {
+          setRequests(data.filter((req: WorkRequest) => req.status === "OPEN"));
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -128,11 +139,79 @@ function WorkRequests() {
     }
   };
 
+  const handleViewApplications = async (req: WorkRequest) => {
+    setSelectedRequest(req);
+    setViewAppsModalOpen(true);
+    setLoadingApps(true);
+    try {
+      const res = await fetch(`/api/v1/applications/request/${req.id}`);
+      const data = await res.json();
+      setApplications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch applications");
+    } finally {
+      setLoadingApps(false);
+    }
+  };
+
+  const handleAcceptApplication = async (appId: string) => {
+    try {
+      const res = await fetch(`/api/v1/applications/${appId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || 'Application accepted successfully!');
+        setViewAppsModalOpen(false);
+        // Refresh requests
+        const reqRes = await fetch(`/api/v1/requests/hirer/${user?.id}`);
+        const reqData = await reqRes.json();
+        setRequests(reqData);
+      } else {
+        toast.error(data.message || 'Failed to accept application.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An unexpected error occurred.");
+    }
+  };
+
   const filteredRequests = requests.filter(req => 
     req.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     req.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
     req.workerType.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Compute Recent Activity
+  const recentActivity = user?.userType === 'HIRER' ? 
+    requests.map(req => ({
+      id: req.id,
+      title: 'Job Posted',
+      desc: req.title,
+      date: new Date(req.createdAt).getTime(),
+      icon: <Briefcase className="w-4 h-4 text-blue-500" />
+    })).sort((a, b) => b.date - a.date).slice(0, 5)
+  : [
+      ...directRequests.map(req => ({
+        id: req.id,
+        title: 'Direct Request',
+        desc: `From ${req.hirerId?.name || 'Unknown'}`,
+        date: new Date(req.createdAt).getTime(),
+        icon: <ClipboardList className="w-4 h-4 text-orange-500" />
+      })),
+      ...requests.map(req => ({
+        id: req.id,
+        title: 'New Public Job',
+        desc: req.title,
+        date: new Date(req.createdAt).getTime(),
+        icon: <Briefcase className="w-4 h-4 text-blue-500" />
+      }))
+    ].sort((a, b) => b.date - a.date).slice(0, 5);
 
   return (
     <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
@@ -145,10 +224,14 @@ function WorkRequests() {
               <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
                 <ClipboardList className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Work Requests</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                {user?.userType === 'HIRER' ? 'My Work Requests' : 'Work Requests'}
+              </h1>
             </div>
             <p className="text-sm text-gray-500 font-medium">
-              Browse and apply to jobs posted by hirers in your area.
+              {user?.userType === 'HIRER' 
+                ? 'Manage your posted requests and view applications.' 
+                : 'Browse and apply to jobs posted by hirers in your area.'}
             </p>
           </div>
 
@@ -189,17 +272,33 @@ function WorkRequests() {
         {/* Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
           
-          {/* Sidebar / Filters Placeholder for future */}
+          {/* Sidebar / Activity Feed */}
           <div className="hidden lg:block space-y-6">
-            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm sticky top-24">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
-                <Filter className="w-5 h-5 text-primary" />
-                Job Filters
-              </h2>
-              <div className="space-y-4">
-                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-sm font-medium text-gray-600 text-center">
-                    Advanced filtering options coming soon.
-                 </div>
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm sticky top-8">
+              <h3 className="font-extrabold text-gray-900 mb-6 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary" /> Recent Activity
+              </h3>
+              
+              <div className="space-y-5">
+                {recentActivity.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No recent activity.</p>
+                ) : (
+                  recentActivity.map((activity, idx) => (
+                    <div key={activity.id + idx} className="flex gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                        {activity.icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{activity.title}</p>
+                        <p className="text-sm text-gray-500 line-clamp-1">{activity.desc}</p>
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                          <Clock className="w-3 h-3" />
+                          {new Date(activity.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -287,8 +386,8 @@ function WorkRequests() {
                       <div>
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-extrabold text-xl text-gray-900 tracking-tight">{req.title}</h3>
-                          <span className="text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 bg-green-50 text-green-700 rounded-full border border-green-200">
-                            Open
+                          <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border ${req.status === 'OPEN' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                            {req.status}
                           </span>
                         </div>
                         <span className="inline-block text-xs font-bold px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full">
@@ -319,12 +418,21 @@ function WorkRequests() {
                     </div>
                     
                     <div className="flex justify-end pt-2">
-                      <button 
-                        onClick={() => handleApplyClick(req)}
-                        className="bg-primary hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none"
-                      >
-                        Apply for Job
-                      </button>
+                      {user?.userType === 'HIRER' ? (
+                        <button 
+                          onClick={() => handleViewApplications(req)}
+                          className="bg-primary hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none"
+                        >
+                          View Applications
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleApplyClick(req)}
+                          className="bg-primary hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none"
+                        >
+                          Apply for Job
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -398,6 +506,97 @@ function WorkRequests() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Applications Modal for Hirers */}
+      {viewAppsModalOpen && selectedRequest && (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div className="bg-gray-50 p-6 border-b border-gray-100 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Job Applications</h2>
+                <p className="text-sm font-medium text-gray-500">For: <span className="text-primary font-bold">{selectedRequest.title}</span></p>
+              </div>
+              <button 
+                onClick={() => setViewAppsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-2"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {loadingApps ? (
+                <div className="flex justify-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary/20 border-t-primary"></div>
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="text-center py-10">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No applications yet</h3>
+                  <p className="text-sm text-gray-500 font-medium">Workers haven't applied to this job yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map((app) => (
+                    <div key={app.id} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                            {app.workerId?.avatarUrl ? (
+                              <img src={app.workerId.avatarUrl} alt="worker avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xl font-bold text-gray-400">
+                                {app.workerId?.name ? app.workerId.name.charAt(0).toUpperCase() : '?'}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900">{app.workerId?.name || 'Unknown Worker'}</h4>
+                            <div className="flex items-center gap-3 mt-1">
+                              <p className="text-xs text-gray-500">{app.workerId?.phone || 'No phone provided'}</p>
+                              <Link to={`/worker/${app.workerId?._id}`} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                                <User className="w-3 h-3" /> Profile
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                            app.status === 'PENDING' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                            app.status === 'ACCEPTED' ? 'bg-green-50 text-green-700 border border-green-200' :
+                            'bg-red-50 text-red-700 border border-red-200'
+                          }`}>
+                            {app.status}
+                          </span>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Proposed Rate</p>
+                          <p className="font-extrabold text-primary">Rs {app.proposedRate}</p>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-700 mb-4 border border-gray-100">
+                        <p className="font-semibold text-xs text-gray-500 uppercase mb-1">Proposal / Cover Letter</p>
+                        {app.proposalText}
+                      </div>
+                      
+                      {app.status === 'PENDING' && selectedRequest.status === 'OPEN' && (
+                        <div className="flex justify-end pt-2 border-t border-gray-100">
+                          <button 
+                            onClick={() => handleAcceptApplication(app.id)}
+                            className="bg-primary hover:bg-primary-600 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-all"
+                          >
+                            Accept Application
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

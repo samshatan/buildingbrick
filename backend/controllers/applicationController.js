@@ -73,7 +73,7 @@ export const getApplicationsByWorker = async (req, res) => {
 // @access  Public
 export const getApplicationsForRequest = async (req, res) => {
   try {
-    const applications = await WorkerApplication.find({ requestId: req.params.requestId });
+    const applications = await WorkerApplication.find({ requestId: req.params.requestId }).populate('workerId', 'name email phone avatarUrl');
     res.status(200).json(applications);
   } catch (error) {
     console.error('Error fetching applications for request:', error);
@@ -100,8 +100,8 @@ export const acceptApplication = async (req, res) => {
       return res.status(404).json({ message: 'Work request not found.' });
     }
 
-    // Verify requesting user is the hirer who posted the request
-    if (request.hirerUserId.toString() !== req.user._id.toString()) {
+    // Verify requesting user is the hirer who posted the request or an Admin
+    if (request.hirerUserId.toString() !== req.user._id.toString() && req.user.accountType !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to accept applications for this request.' });
     }
 
