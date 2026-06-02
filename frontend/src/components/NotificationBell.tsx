@@ -108,7 +108,11 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden transform opacity-100 scale-100 transition-all origin-top-right">
+        <>
+          {/* Mobile backdrop */}
+          <div className="fixed inset-0 z-40 sm:hidden bg-black/20" onClick={() => setIsOpen(false)}></div>
+          
+          <div className="fixed inset-x-4 top-[70px] sm:inset-x-auto sm:top-auto sm:absolute sm:right-0 sm:mt-2 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden transform transition-all origin-top sm:origin-top-right">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
             <h3 className="font-bold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
@@ -161,7 +165,8 @@ export default function NotificationBell() {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -31,10 +31,14 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     console.log('Nodemailer initialized in TEST (Ethereal) mode.');
   });
 }
-// Initialize Twilio client
-const twilioClient = (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)
-  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  : null;
+// Initialize Twilio client lazily
+let twilioClientInstance = null;
+const getTwilioClient = () => {
+  if (!twilioClientInstance && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    twilioClientInstance = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+  return twilioClientInstance;
+};
 
 // Helper to generate JWT Token
 export const generateToken = (id) => {
@@ -59,10 +63,10 @@ export const mapUserResponse = (user) => {
 // Map selected worker type to their correct categoryId
 export const getCategoryId = (type) => {
   if (!type) return 'construction';
-  
+
   // If multiple types are provided separated by comma, use the first one to determine category
   const firstType = type.split(',')[0].toLowerCase().trim();
-  
+
   const domesticTypes = ['house helps', 'cooks', 'maids', 'cleaners'];
   const agricultureTypes = ['small marginal farmers', 'agriculture workers', 'sharecroppers', 'daily livestock workers'];
   const utilitiesTypes = ['electrician', 'plumber', 'water proofing specialist'];
@@ -94,7 +98,7 @@ export const sendOtp = async (req, res) => {
     }
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     // Save/Update OTP
     await Otp.findOneAndUpdate(
       { identifier: identifier.toLowerCase().trim() },
@@ -109,23 +113,24 @@ export const sendOtp = async (req, res) => {
         subject: 'Your Verification Code',
         text: `Your OTP for BrickOurHouse is ${otpCode}. It is valid for 5 minutes.`,
       });
-      
+
       if (!process.env.SMTP_USER) {
         console.log('OTP Email Sent! Preview URL:', nodemailer.getTestMessageUrl(info));
       } else {
         console.log(`Real OTP Email sent to ${identifier}`);
       }
-      
+
       res.status(200).json({ message: 'OTP sent to email successfully.' });
     } else {
       // Send SMS via Twilio
+      const twilioClient = getTwilioClient();
       if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
         // Ensure the number is in E.164 format. Assuming India (+91) as default if not provided
         let formattedNumber = identifier;
         if (!formattedNumber.startsWith('+')) {
           formattedNumber = `+91${formattedNumber}`; // Modify default country code if necessary
         }
-        
+
         await twilioClient.messages.create({
           body: `Your OTP for BrickOurHouse is ${otpCode}. It is valid for 5 minutes.`,
           from: process.env.TWILIO_PHONE_NUMBER,
@@ -171,6 +176,13 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this contact.' });
     }
 
+    if (optionalEmail) {
+      const emailExists = await User.findOne({ email: optionalEmail.toLowerCase().trim() });
+      if (emailExists) {
+        return res.status(400).json({ message: 'The provided email address is already registered.' });
+      }
+    }
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -200,8 +212,8 @@ export const signup = async (req, res) => {
         displayName: name,
         categoryId: categoryId,
         workerType: category || 'Other',
-        dailyRate: 0, 
-        experienceYears: 0, 
+        dailyRate: 0,
+        experienceYears: 0,
         bio: '',
         skills: category || '',
       });
@@ -264,7 +276,7 @@ export const googleAuth = async (req, res) => {
     const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${token}` }
     });
-    
+
     if (!response.ok) {
       return res.status(400).json({ message: 'Invalid Google token.' });
     }
