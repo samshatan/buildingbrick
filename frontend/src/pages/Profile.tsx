@@ -30,6 +30,16 @@ function Profile() {
     phone: user?.phone || ''
   });
 
+  // Worker Editing State
+  const [showWorkerEditModal, setShowWorkerEditModal] = useState(false);
+  const [isUpdatingWorker, setIsUpdatingWorker] = useState(false);
+  const [workerForm, setWorkerForm] = useState({
+    dailyRate: 0,
+    experienceYears: 0,
+    bio: '',
+    skills: ''
+  });
+
   const { login: updateAuthContext } = useAuth();
 
   useEffect(() => {
@@ -156,6 +166,35 @@ function Profile() {
     }
   };
 
+  const handleWorkerUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!workerProfile || !token) return;
+    setIsUpdatingWorker(true);
+    try {
+      const res = await fetch(`/api/v1/workers/${workerProfile.id}/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(workerForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Worker profile updated successfully!");
+        setWorkerProfile(data);
+        setShowWorkerEditModal(false);
+      } else {
+        toast.error(data.message || 'Failed to update worker profile.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error connecting to server.');
+    } finally {
+      setIsUpdatingWorker(false);
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !workerProfile) return;
@@ -250,6 +289,23 @@ function Profile() {
               >
                 <Edit2 className="w-3.5 h-3.5" /> Edit Account
               </button>
+
+              {user.userType === "WORKER" && workerProfile && (
+                <button
+                  onClick={() => {
+                    setWorkerForm({
+                      dailyRate: workerProfile.dailyRate || 0,
+                      experienceYears: workerProfile.experienceYears || 0,
+                      bio: workerProfile.bio || '',
+                      skills: workerProfile.skills || ''
+                    });
+                    setShowWorkerEditModal(true);
+                  }}
+                  className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/50 hover:bg-primary/5 font-bold text-xs rounded-lg transition-all w-full"
+                >
+                  <Briefcase className="w-3.5 h-3.5" /> Edit Worker Details
+                </button>
+              )}
             </div>
 
             {/* Nav Links */}
@@ -585,6 +641,73 @@ function Profile() {
                     </button>
                     <button type="submit" disabled={isUpdatingAccount} className="px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-600 rounded-xl transition-colors flex items-center gap-2">
                       {isUpdatingAccount ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Worker Edit Modal */}
+          {showWorkerEditModal && (
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Worker Details</h2>
+                <p className="text-gray-500 mb-6">Update your professional information and rate.</p>
+                
+                <form onSubmit={handleWorkerUpdate} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Per Day Rate (Rs)</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={workerForm.dailyRate}
+                      onChange={(e) => setWorkerForm({ ...workerForm, dailyRate: Number(e.target.value) })}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Years of Experience</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={workerForm.experienceYears}
+                      onChange={(e) => setWorkerForm({ ...workerForm, experienceYears: Number(e.target.value) })}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Bio</label>
+                    <textarea
+                      rows={3}
+                      value={workerForm.bio}
+                      onChange={(e) => setWorkerForm({ ...workerForm, bio: e.target.value })}
+                      placeholder="Tell hirers about yourself..."
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Skills</label>
+                    <input
+                      type="text"
+                      value={workerForm.skills}
+                      onChange={(e) => setWorkerForm({ ...workerForm, skills: e.target.value })}
+                      placeholder="e.g. Plumbing, Wiring, Painting"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 justify-end pt-4">
+                    <button type="button" onClick={() => setShowWorkerEditModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={isUpdatingWorker} className="px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-600 rounded-xl transition-colors flex items-center gap-2">
+                      {isUpdatingWorker ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
