@@ -10,6 +10,7 @@ interface WorkerProfile {
     _id: string;
     name: string;
     email: string;
+    phone?: string;
     avatarUrl?: string;
   };
   displayName: string;
@@ -185,89 +186,213 @@ function CafeDashboard() {
   }))].sort((a, b) => b.date - a.date).slice(0, 8);
 
   if (printWorker) {
+
     return (
-      <div className="min-h-screen bg-white p-8 sm:p-12 font-serif flex flex-col items-center justify-center">
-        {/* Printable Area - styled as an A4 certificate */}
-        <div className="relative w-full max-w-3xl mx-auto border-[12px] border-double border-gray-900 bg-white p-12 min-h-[850px] shadow-2xl print:shadow-none print:w-[210mm] print:h-[297mm] print:min-h-0 print:m-0 print:border-[8px]">
+      <div className="min-h-screen bg-gray-100 p-8 sm:p-12 font-sans flex flex-col items-center justify-center gap-8">
+        {/* Page 1: Registration Form */}
+        <div className="relative w-full max-w-[210mm] mx-auto bg-white p-12 min-h-[297mm] shadow-2xl print:shadow-none print:w-[210mm] print:h-[297mm] print:min-h-0 print:m-0 print:p-8">
           
-          {/* Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none overflow-hidden">
-            <Store className="w-96 h-96" />
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-red-700 tracking-wide uppercase">Brick Our House</h1>
+            <p className="text-lg font-bold text-gray-600 uppercase tracking-widest mt-1">Building Your Home</p>
+            <h2 className="text-xl font-bold text-gray-900 underline underline-offset-4 mt-4">Worker Onboarding & Registration Form</h2>
           </div>
 
-          {/* Certificate Header */}
-          <div className="relative z-10 text-center border-b-4 border-gray-900 pb-10 mb-12">
-            <div className="flex justify-center mb-6">
-              <CheckCircle2 className="w-16 h-16 text-gray-900" />
-            </div>
-            <h1 className="text-5xl font-black text-gray-900 tracking-tighter uppercase mb-4 font-sans">BrickOurHouse</h1>
-            <p className="text-2xl font-bold text-gray-700 tracking-[0.2em] uppercase">Official Worker Certificate</p>
-            <p className="text-sm text-gray-500 mt-2 font-sans">Verification ID: {printWorker.id.slice(-8).toUpperCase()}</p>
-          </div>
+          <div className="space-y-6">
+            {/* Section 1 */}
+            <div>
+              <div className="bg-red-700 text-white font-bold p-2 mb-4 border border-black">
+                1. WORKER PERSONAL PROFILE & FAMILY DETAILS
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="flex-1 space-y-5">
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">पूरा नाम (Full Name):</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId.name}</span>
+                  </div>
+                  
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">मोबाइल नं. (Mobile No):</span>
+                    <span className="w-40 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId.phone || printWorker.userId.email}</span>
+                    <span className="font-bold text-sm whitespace-nowrap ml-4">व्हाट्सएप नं. (WhatsApp No):</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                  </div>
 
-          {/* Certificate Body */}
-          <div className="relative z-10 space-y-10">
-            <div className="text-center px-8">
-              <p className="text-xl text-gray-600 italic mb-4">This is to certify that</p>
-              <h2 className="text-4xl font-bold text-gray-900 border-b-2 border-gray-300 inline-block px-12 pb-2 mb-4">
-                {printWorker.userId.name}
-              </h2>
-              <p className="text-lg text-gray-700 mt-4">
-                has successfully completed the identity verification process and is officially registered as a <strong>{printWorker.workerType}</strong> on the BrickOurHouse platform.
-              </p>
-            </div>
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">आधार/पहचान पत्र नं. (Aadhaar/ID No):</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                  </div>
 
-            <div className="grid grid-cols-2 gap-8 bg-gray-50/80 p-8 rounded-lg border border-gray-200 mt-12 font-sans">
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Contact Email</h3>
-                <p className="text-lg font-bold text-gray-900">{printWorker.userId.email}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Account Status</h3>
-                <p className="text-lg font-bold text-green-700 tracking-widest uppercase">Verified Active</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Verification</h3>
-                <p className="text-lg font-bold text-gray-900">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Authorizing Partner</h3>
-                <p className="text-lg font-bold text-gray-900">{user?.fullName} (Cafe ID: {user?.id.slice(-6).toUpperCase()})</p>
-              </div>
-            </div>
-          </div>
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">ब्लड ग्रुप (Blood Group):</span>
+                    <span className="w-24 border-b border-dashed border-gray-500 mx-2"></span>
+                    <span className="font-bold text-sm whitespace-nowrap ml-2">आपातकालीन संपर्क:</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                    <span className="font-bold text-sm whitespace-nowrap ml-2">संबंध:</span>
+                    <span className="w-32 border-b border-dashed border-gray-500 mx-2"></span>
+                  </div>
 
-          {/* Signatures */}
-          <div className="relative z-10 grid grid-cols-2 gap-8 mt-24 px-8 font-sans">
-            <div className="text-center">
-              <div className="border-b border-gray-400 w-48 mx-auto mb-2"></div>
-              <p className="text-sm font-bold text-gray-600">Worker Signature</p>
-            </div>
-            <div className="text-center">
-              <div className="border-b border-gray-400 w-48 mx-auto mb-2 relative">
-                {/* Simulated stamp/seal */}
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-16 h-16 border-4 border-red-700/40 rounded-full flex items-center justify-center rotate-12 opacity-80 pointer-events-none">
-                  <span className="text-[10px] font-black text-red-700/60 uppercase tracking-tighter">Verified</span>
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">वर्तमान पता (Current Address):</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                  </div>
+                  <div className="flex items-end">
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 mt-4"></span>
+                  </div>
+
+                  <div className="flex items-end">
+                    <span className="font-bold text-sm whitespace-nowrap">स्थायी पता (Permanent Address):</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                  </div>
+                  <div className="flex items-end">
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 mt-4"></span>
+                  </div>
+                </div>
+
+                <div className="w-[35mm] h-[45mm] border-2 border-gray-800 flex flex-col items-center justify-center p-2 text-center relative mt-2 shrink-0">
+                  <span className="text-[10px] font-bold absolute top-2 w-full">APPLICATION ID/SL NO:<br/>{printWorker.id.slice(-6).toUpperCase()}</span>
+                  <span className="text-xs text-gray-400 mt-8">PASTE<br/>PASSPORT SIZE<br/>PHOTO HERE</span>
                 </div>
               </div>
-              <p className="text-sm font-bold text-gray-600">Authorized Cafe Signatory</p>
+
+              <div className="mt-6 space-y-4">
+                <p className="font-bold text-sm">परिवार का विवरण (आश्रितों के नाम और संबंध) / Family Details:</p>
+                {[1, 2, 3, 4].map(num => (
+                  <div key={num} className="flex items-end">
+                    <span className="text-sm mr-2">{num}.</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500"></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 2 */}
+            <div className="pt-2">
+              <div className="bg-red-700 text-white font-bold p-2 mb-4 border border-black">
+                2. WORK PROFILE & EXPECTED DAILY WAGES
+              </div>
+              <div className="space-y-5">
+                <div className="flex items-end">
+                  <span className="font-bold text-sm whitespace-nowrap">प्राथमिक कौशल / पेशा (Primary Skill / Profession):</span>
+                  <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.workerType}</span>
+                </div>
+                <div className="flex items-end">
+                  <span className="font-bold text-sm whitespace-nowrap">माँगी गई कार्य दर (Expected Daily Wage / Job Rate):</span>
+                  <span className="font-bold mx-2">₹</span>
+                  <span className="flex-1 border-b border-dashed border-gray-500"></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3 */}
+            <div className="pt-2">
+              <div className="bg-red-700 text-white font-bold p-2 mb-4 border border-black">
+                3. REGISTRATION INTERNET CAFE DETAILS
+              </div>
+              <div className="space-y-5">
+                <div className="flex items-end">
+                  <span className="font-bold text-sm whitespace-nowrap">इंटरनेट कैफे का नाम (Internet Cafe Name):</span>
+                  <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{user?.fullName || ''}</span>
+                </div>
+                <div className="flex items-end">
+                  <span className="font-bold text-sm whitespace-nowrap">कैफे ऑपरेटर का नाम (Cafe Operator Name):</span>
+                  <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                </div>
+                <div className="flex items-end">
+                  <span className="font-bold text-sm whitespace-nowrap">कैफे का पूरा पता (Cafe Full Address):</span>
+                  <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="absolute bottom-12 left-0 w-full text-center px-12 z-10">
-            <p className="text-xs text-gray-400 font-sans">
-              This document is issued by an authorized partner of BrickOurHouse. Verify authenticity at www.brickourhouse.com/verify.
-              Subscription fee of Rs {workerSubscriptionPlan.fee} has been collected.
-            </p>
+        {/* Page 2: Undertaking Form */}
+        <div className="relative w-full max-w-[210mm] mx-auto bg-white p-12 min-h-[297mm] shadow-2xl print:shadow-none print:w-[210mm] print:h-[297mm] print:min-h-0 print:m-0 print:p-8 print:break-before-page">
+          
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-red-700 tracking-wide uppercase">Brick Our House</h1>
+            <p className="text-lg font-bold text-gray-600 uppercase tracking-widest mt-1">Building Your Home</p>
+            <h2 className="text-xl font-bold text-gray-900 underline underline-offset-4 mt-4">Official Letter of Undertaking & Binding Policy</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-red-700 text-white font-bold p-2 border border-black">
+              4. TERMS OF UNDERTAKING & BINDING DECLARATION
+            </div>
+
+            <div className="text-xs text-justify space-y-3 leading-relaxed">
+              <p><strong>1. Accuracy & Personal Responsibility:</strong> मैं एतद्द्वारा प्रमाणित करता हूँ कि इस ऑनबोर्डिंग आवेदन में मेरे द्वारा प्रस्तुत की गई सभी जानकारी- जिसमें व्यक्तिगत विवरण, पहचान रिकॉर्ड, वर्तमान पता, स्थायी पता, पारिवारिक आश्रितों का विवरण और ब्लड ग्रुप डेटा शामिल है- पूरी तरह से सटीक, पूर्ण और तथ्यात्मक है। मैं इस पूरे डेटासेट की वैधता के लिए पूर्ण, एकमात्र और कानूनी जिम्मेदारी लेता हूँ।</p>
+              
+              <p><strong>2. Onboarding Processing Fee & Non-Refundability:</strong> मैं पूरी तरह से अपनी स्वतंत्र इच्छा और मर्जी से ठीक 118/- (केवल एक सौ अठारह रुपये) का ऑनबोर्डिंग प्रोसेसिंग शुल्क अदा कर रहा हूँ। मैं स्पष्ट रूप से समझता हूँ, स्वीकार करता हूँ और सहमत हूँ कि एक बार भुगतान संसाधित या रिकॉर्ड हो जाने के बाद, यह भुगतान किसी भी परिस्थिति में वापस नहीं किया जाएगा।</p>
+              
+              <p><strong>3. Scope of Provided Portal Services:</strong> सफलतापूर्वक संसाधित पंजीकरण शुल्क के सीधे बदले में, BRICK OUR HOUSE मेरे कुशल वर्कर प्रोफ़ाइल को डिजिटल करेगा और उसे अपने सार्वजनिक ऑनलाइन पोर्टल पर प्रकाशित करेगा। यह प्रकाशन विशेष रूप से कई परिचालन स्थानों पर सीधे ग्राहकों तक पहुँच और रोजगार खोजने की सुविधा के लिए डिज़ाइन किया गया है। इसके अलावा, कंपनी मुझे एक टिकाऊ मुद्रित (प्रिंटेड) प्लास्टिक पहचान पत्र (ID कार्ड) प्रदान करेगी।</p>
+
+              <p><strong>4. Localized ID Card Delivery & Collection:</strong> अलग से शिपिंग, डाक या कूरियर के खर्च से बचने के लिए, मेरे मुद्रित प्लास्टिक पहचान पत्र को एक साथ पैक करके सीधे इस दस्तावेज़ के खंड 3 में निर्दिष्ट पंजीकृत इंटरनेट कैफे में पहुँचाया जाएगा। मैं अलग से लॉजिस्टिक या आवासीय डिलीवरी की मांग किए बिना सीधे उस कैफे ऑपरेटर से अपना भौतिक (फिजिकल) कार्ड प्राप्त करूँगा।</p>
+
+              <p><strong>5. Complete Wage and Rate Discretion:</strong> खंड 2 के अंतर्गत निर्दिष्ट माँगी गई कार्य दर, दैनिक मजदूरी की अपेक्षा, या प्रोजेक्ट शुल्क पूरी तरह से और स्वतंत्र रूप से मेरे द्वारा निर्धारित किया गया है। मैं यह स्वीकार करता हूँ कि BRICK OUR HOUSE सख्ती से एक इलेक्ट्रॉनिक कनेक्टिविटी चैनल के रूप में कार्य करता है और निश्चित रोजगार, निरंतर क्लाइंट अनुबंध मिलान, या क्लाइंट-पक्ष से वेतन अनुपालन की गारंटी नहीं देता है।</p>
+
+              <p><strong>6. Safety, Work Site Hazard & Incident Liability Waiver:</strong> मैं स्पष्ट रूप से स्वीकार करता हूँ और घोषणा करता हूँ कि BRICK OUR HOUSE केवल स्वतंत्र पेशेवरों और बाहरी काम पर रखने वाले ग्राहकों के बीच एक कनेक्टिंग मैचमेकिंग प्लेटफ़ॉर्म के रूप में कार्य करता है। संगठन एक नियोक्ता (employer) नहीं है और यह सुनिश्चित किए गए कार्य कार्यों के निष्पादन के दौरान होने वाले निर्माण स्थल के खतरों, शारीरिक चोटों, चिकित्सा आपात स्थितियों, आकस्मिक क्षतियों, या व्यवहार संबंधी विवादों के लिए बिल्कुल कोई दायित्व नहीं लेता है। मैं सभी कार्य स्थलों पर स्वतंत्र रूप से मानक संरचनात्मक सुरक्षा सावधानियों का पालन करने की पूरी जिम्मेदारी लेता हूँ।</p>
+            </div>
+
+            <div className="border border-black p-4 mt-6">
+              <p className="text-xs text-justify"><strong>सत्यनिष्ठा से पुष्टि (Solemn Affirmation):</strong> मैंने इस पूरे दस्तावेज़ को ध्यान से सुना है, पढ़ा है, या अपनी स्थानीय भाषा में इसका पूरी तरह से अनुवाद करवाकर समझा है। मैं प्लेटफ़ॉर्म के नियमों, कानूनी देनदारियों, परिचालन छूट और गैर-वापसी योग्य शुल्क नीतियों को पूरी तरह से समझता हूँ, और मैं बिना किसी बाहरी दबाव या गलत बयानी के स्वेच्छा से इस बाध्यकारी वचन पत्र को निष्पादित करता हूँ।</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 mt-12 mb-8">
+              <div>
+                <div className="border-b border-dashed border-black w-full mb-2 h-8"></div>
+                <p className="text-sm font-bold">Worker's Signature / Thumb Impression</p>
+                <p className="text-xs text-gray-600">(कार्यकर्ता के हस्ताक्षर / अंगूठे का निशान)</p>
+              </div>
+              <div className="space-y-6">
+                <div className="flex items-end">
+                  <span className="font-bold text-sm w-24">Date (दिनांक):</span>
+                  <span className="flex-1 border-b border-dashed border-black mx-2 h-5"></span>
+                  <span className="font-bold text-sm">/ 2026</span>
+                </div>
+                <div className="flex items-end">
+                  <span className="font-bold text-sm w-24">Place (स्थान):</span>
+                  <span className="flex-1 border-b border-dashed border-black mx-2 h-5"></span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-red-700 text-white font-bold p-2 border border-black text-center mt-8">
+              FOR CAFE OPERATOR / OFFICE VERIFICATION ONLY
+            </div>
+            
+            <div className="border-x border-b border-black p-6">
+              <p className="font-bold text-sm mb-4">Payment Collection Verification:</p>
+              <div className="flex justify-between items-end">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-black flex items-center justify-center"></div>
+                    <span className="text-sm">Cash Collected (118)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-black flex items-center justify-center">
+                      {printWorker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' && '✓'}
+                    </div>
+                    <span className="text-sm">Online Paid</span>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="border-b border-dashed border-black w-64 mb-2 h-8"></div>
+                  <p className="text-sm font-bold">Authorized Cafe Stamp & Signature</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
         {/* Action Buttons (Hidden on print) */}
-        <div className="mt-12 flex justify-center gap-4 print:hidden font-sans">
+        <div className="flex justify-center gap-4 print:hidden font-sans w-full max-w-3xl">
            <button 
              onClick={() => setPrintWorker(null)}
-             className="px-8 py-4 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+             className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
            >
              Close Certificate
            </button>
@@ -276,7 +401,7 @@ function CafeDashboard() {
              className="px-8 py-4 bg-primary text-white font-bold rounded-xl flex items-center gap-3 hover:bg-primary-600 shadow-xl shadow-primary/20 transition-colors text-lg"
            >
              <Printer className="w-6 h-6" />
-             Print Official Certificate
+             Print Official Forms
            </button>
         </div>
       </div>

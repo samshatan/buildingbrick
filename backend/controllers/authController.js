@@ -108,7 +108,7 @@ export const sendOtp = async (req, res) => {
 
     if (isEmail(identifier)) {
       const info = await transporter.sendMail({
-        from: process.env.SMTP_USER ? `"BrickOurHouse" <${process.env.SMTP_USER}>` : '"BrickOurHouse Test" <no-reply@brickourhouse.com>',
+        from: `"BrickOurHouse" <admin@brickourhouse.com>`,
         to: identifier,
         subject: 'Your Verification Code',
         text: `Your OTP for BrickOurHouse is ${otpCode}. It is valid for 5 minutes.`,
@@ -225,7 +225,7 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ message: 'Server error. Failed to create account.' });
+    res.status(500).json({ message: 'Server error. Failed to create account.', error: error.message, stack: error.stack });
   }
 };
 

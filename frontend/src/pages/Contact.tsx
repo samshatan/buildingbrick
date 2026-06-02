@@ -38,7 +38,7 @@ function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-primary-200 font-semibold mb-1">Phone</p>
-                    <p className="font-medium">+1 (555) 123-4567</p>
+                    <p className="font-medium">+91 9990639348</p>
                   </div>
                 </div>
                 

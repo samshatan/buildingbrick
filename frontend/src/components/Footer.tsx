@@ -44,10 +44,10 @@ function Footer() {
           <p className="text-gray-900 font-bold text-base mb-4 tracking-wide">Get In Touch</p>
           <ul className="flex flex-col gap-2.5 text-gray-600 font-semibold">
             <li className="hover:text-primary transition-colors cursor-pointer">
-              📞 +91 98765 43210
+              📞 +91 9990639348
             </li>
             <li className="hover:text-primary transition-colors cursor-pointer">
-              ✉️ support@workerplace.in
+              ✉️ support@brickourhouse.com
             </li>
             <li className="text-xs text-gray-400 font-medium pt-2">
               Available Monday - Saturday, 9am - 6pm IST
