@@ -151,7 +151,7 @@ export const sendOtp = async (req, res) => {
 // @access  Public
 export const signup = async (req, res) => {
   try {
-    const { name, identifier, otp, password, accountType, category } = req.body;
+    const { name, identifier, otp, password, accountType, category, optionalEmail } = req.body;
     const avatarUrl = req.file ? req.file.path : req.body.avatarUrl;
 
     if (!name || !identifier || !otp || !password || !accountType) {
@@ -175,10 +175,15 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Map verified identifier to either email or phone. Also save optionalEmail if provided.
+    let userEmail = isIdentEmail ? identifier : (optionalEmail || undefined);
+    let userPhone = !isIdentEmail ? identifier : undefined;
+
     // Create User
     const user = await User.create({
       name,
-      ...(isIdentEmail ? { email: identifier } : { phone: identifier }),
+      ...(userEmail && { email: userEmail }),
+      ...(userPhone && { phone: userPhone }),
       password: hashedPassword,
       accountType: accountType.toLowerCase(), // 'worker' or 'hirer'
       avatarUrl: avatarUrl || "",

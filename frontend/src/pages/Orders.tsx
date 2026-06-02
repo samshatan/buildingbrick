@@ -109,6 +109,25 @@ function Orders() {
     }
   };
 
+  const handleDeclineApplication = async (applicationId: string) => {
+    const loadingToast = toast.loading("Processing decline...");
+    try {
+      const res = await fetch(`/api/v1/applications/${applicationId}/decline`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast.update(loadingToast, { render: "Application declined.", type: "success", isLoading: false, autoClose: 3000 });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.update(loadingToast, { render: "Failed to decline application.", type: "error", isLoading: false, autoClose: 3000 });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.update(loadingToast, { render: "Error processing request.", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/50">
@@ -274,7 +293,10 @@ function Orders() {
                                       >
                                         <Check className="w-4 h-4" /> Hire Worker
                                       </button>
-                                      <button className="px-5 py-3 bg-white border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+                                      <button 
+                                        onClick={() => handleDeclineApplication(app.id)}
+                                        className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-3 text-sm rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                                      >
                                         Decline
                                       </button>
                                     </div>

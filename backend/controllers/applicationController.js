@@ -137,3 +137,38 @@ export const acceptApplication = async (req, res) => {
     res.status(500).json({ message: 'Server error accepting proposal.' });
   }
 };
+
+// @desc    Decline worker's application
+// @route   POST /api/v1/applications/:applicationId/decline
+// @access  Private
+export const declineApplication = async (req, res) => {
+  try {
+    const application = await WorkerApplication.findById(req.params.applicationId);
+    if (!application) {
+      return res.status(404).json({ message: 'Application proposal not found.' });
+    }
+
+    if (application.status !== 'PENDING') {
+      return res.status(400).json({ message: 'This application is no longer pending.' });
+    }
+
+    const request = await WorkRequest.findById(application.requestId);
+    if (!request) {
+      return res.status(404).json({ message: 'Work request not found.' });
+    }
+
+    // Verify requesting user is the hirer who posted the request or an Admin
+    if (request.hirerUserId.toString() !== req.user._id.toString() && req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to decline applications for this request.' });
+    }
+
+    // Update the application status to REJECTED
+    application.status = 'REJECTED';
+    await application.save();
+
+    res.status(200).json({ message: 'Application declined successfully.' });
+  } catch (error) {
+    console.error('Error declining application:', error);
+    res.status(500).json({ message: 'Server error declining proposal.' });
+  }
+};

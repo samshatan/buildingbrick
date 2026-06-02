@@ -14,7 +14,13 @@ function Product() {
     if (!workerId) return;
     fetch(`/api/v1/workers/${workerId}`)
       .then(res => {
-        if (!res.ok) throw new Error("Not found");
+        if (!res.ok) {
+          // If fetching by WorkerProfile ID fails, fallback to fetching by User ID
+          return fetch(`/api/v1/workers/user/${workerId}`).then(userRes => {
+            if (!userRes.ok) throw new Error("Not found");
+            return userRes.json();
+          });
+        }
         return res.json();
       })
       .then(data => {

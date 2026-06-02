@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { workerCategories } from "@/data/marketplaceData";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { Mail, Lock, User, UserPlus, ArrowRight, Briefcase, UserCircle, X, Search, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, UserPlus, ArrowRight, Briefcase, UserCircle, X, Search, CheckCircle2, Phone } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 
 function SignUp() {
@@ -40,6 +40,7 @@ function SignUp() {
     fullName: '',
     username: '',
     email: '', // used for email or mobile
+    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -86,23 +87,31 @@ function SignUp() {
         return;
       }
       
-      const identifier = data.email.trim();
+      const identifier = accountType === 'worker' ? data.phone.trim() : data.email.trim();
       const isPhone = /^[0-9]+$/.test(identifier);
-      if (isPhone && identifier.length !== 10) {
-        toast.error('Mobile number must be exactly 10 digits.');
-        setIsLoading(false);
-        return;
-      } else if (!isPhone && !identifier.includes('@')) {
-        toast.error('Please enter a valid email or 10-digit mobile number.');
-        setIsLoading(false);
-        return;
+      if (accountType === 'worker') {
+        if (identifier.length !== 10) {
+          toast.error('Mobile number must be exactly 10 digits.');
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        if (isPhone && identifier.length !== 10) {
+          toast.error('Mobile number must be exactly 10 digits.');
+          setIsLoading(false);
+          return;
+        } else if (!isPhone && !identifier.includes('@')) {
+          toast.error('Please enter a valid email or 10-digit mobile number.');
+          setIsLoading(false);
+          return;
+        }
       }
       
       // Send OTP first
       const res = await fetch('/api/v1/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: data.email.trim() })
+        body: JSON.stringify({ identifier: identifier })
       });
       const resData = await res.json().catch(() => null);
       
@@ -132,9 +141,13 @@ function SignUp() {
     setIsLoading(true);
     try {
       const formData = new FormData();
+      const identifier = accountType === 'worker' ? data.phone.trim() : data.email.trim();
       formData.append('name', data.fullName.trim());
       formData.append('username', data.username.trim());
-      formData.append('identifier', data.email.trim());
+      formData.append('identifier', identifier);
+      if (accountType === 'worker' && data.email.trim()) {
+        formData.append('optionalEmail', data.email.trim());
+      }
       formData.append('otp', otp.trim());
       formData.append('password', data.password);
       formData.append('accountType', accountType);
@@ -370,27 +383,70 @@ function SignUp() {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-              Email or Mobile Number
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                <Mail className="h-5 w-5" />
+          {accountType === 'worker' ? (
+            <>
+              <div className="space-y-1.5">
+                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">
+                  Mobile Number (Required)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={data.phone}
+                    onChange={handleChange}
+                    className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
+                    placeholder="9876543210"
+                  />
+                </div>
               </div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={data.email}
-                onChange={handleChange}
-                className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
-                placeholder="name@example.com or 9876543210"
-              />
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                  Email Address (Optional)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={data.email}
+                    onChange={handleChange}
+                    className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
+                    placeholder="name@example.com"
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                Email or Mobile Number
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="text"
+                  required
+                  value={data.email}
+                  onChange={handleChange}
+                  className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
+                  placeholder="name@example.com or 9876543210"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
@@ -461,7 +517,7 @@ function SignUp() {
             <div className="text-center mb-6">
               <h3 className="text-xl font-bold text-gray-900">Verify your Contact</h3>
               <p className="text-sm text-gray-500 mt-2">
-                We've sent a 6-digit OTP to <span className="font-bold text-gray-700">{data.email}</span>.
+                We've sent a 6-digit OTP to <span className="font-bold text-gray-700">{accountType === 'worker' ? data.phone : data.email}</span>.
               </p>
             </div>
             

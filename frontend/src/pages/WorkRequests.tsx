@@ -24,6 +24,7 @@ function WorkRequests() {
   const { user, token } = useAuth();
   const [requests, setRequests] = useState<WorkRequest[]>([]);
   const [directRequests, setDirectRequests] = useState<any[]>([]);
+  const [myApplications, setMyApplications] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'public' | 'direct'>('public');
   const [loading, setLoading] = useState(true);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
@@ -63,6 +64,13 @@ function WorkRequests() {
       .then(res => res.json())
       .then(data => setDirectRequests(Array.isArray(data) ? data : []))
       .catch(err => console.error("Failed to fetch direct requests:", err));
+
+      fetch(`/api/v1/applications/worker/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => setMyApplications(Array.isArray(data) ? data : []))
+      .catch(err => console.error("Failed to fetch my applications:", err));
     }
   }, [user, token]);
 
@@ -108,8 +116,19 @@ function WorkRequests() {
         return;
       }
 
-      toast.success("Application submitted successfully!");
+      toast.success("Proposal submitted successfully!");
       setApplyModalOpen(false);
+      // Refresh feed and applications list
+      fetch(`/api/v1/applications/worker/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => setMyApplications(Array.isArray(data) ? data : []));
+      
+      fetch('/api/v1/requests')
+        .then(res => res.json())
+        .then(data => setRequests(data.filter((req: WorkRequest) => req.status === "OPEN")));
+      
       setSelectedRequest(null);
     } catch (err) {
       console.error(err);
@@ -426,12 +445,21 @@ function WorkRequests() {
                           View Applications
                         </button>
                       ) : (
-                        <button 
-                          onClick={() => handleApplyClick(req)}
-                          className="bg-primary hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none"
-                        >
-                          Apply for Job
-                        </button>
+                        myApplications.some(app => app.requestId === req.id) ? (
+                          <button 
+                            disabled
+                            className="bg-gray-200 text-gray-500 px-8 py-3 rounded-xl text-sm font-bold cursor-not-allowed border-none shadow-inner"
+                          >
+                            <CheckCircle2 className="w-4 h-4 inline-block mr-1.5" /> Already Applied
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleApplyClick(req)}
+                            className="bg-primary hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none"
+                          >
+                            Apply Now
+                          </button>
+                        )
                       )}
                     </div>
                   </div>
