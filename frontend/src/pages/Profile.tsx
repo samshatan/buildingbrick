@@ -37,7 +37,8 @@ function Profile() {
     dailyRate: 0,
     experienceYears: 0,
     bio: '',
-    skills: ''
+    skills: '',
+    location: ''
   });
 
   const { login: updateAuthContext } = useAuth();
@@ -297,7 +298,8 @@ function Profile() {
                       dailyRate: workerProfile.dailyRate || 0,
                       experienceYears: workerProfile.experienceYears || 0,
                       bio: workerProfile.bio || '',
-                      skills: workerProfile.skills || ''
+                      skills: workerProfile.skills || '',
+                      location: workerProfile.location || ''
                     });
                     setShowWorkerEditModal(true);
                   }}
@@ -698,6 +700,17 @@ function Profile() {
                       value={workerForm.skills}
                       onChange={(e) => setWorkerForm({ ...workerForm, skills: e.target.value })}
                       placeholder="e.g. Plumbing, Wiring, Painting"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Location</label>
+                    <input
+                      type="text"
+                      value={workerForm.location}
+                      onChange={(e) => setWorkerForm({ ...workerForm, location: e.target.value })}
+                      placeholder="e.g. Downtown Area, City"
                       className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                     />
                   </div>

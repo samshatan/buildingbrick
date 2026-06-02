@@ -112,7 +112,7 @@ export const updatePhoto = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { displayName, bio, skills, dailyRate, experienceYears } = req.body;
+    const { displayName, bio, skills, dailyRate, experienceYears, location } = req.body;
 
     const worker = await WorkerProfile.findById(req.params.id);
     if (!worker) {
@@ -129,6 +129,7 @@ export const updateProfile = async (req, res) => {
     if (skills !== undefined) worker.skills = skills;
     if (dailyRate !== undefined) worker.dailyRate = Number(dailyRate);
     if (experienceYears !== undefined) worker.experienceYears = Number(experienceYears);
+    if (location !== undefined) worker.location = location;
 
     await worker.save();
 
