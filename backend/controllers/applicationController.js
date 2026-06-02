@@ -3,6 +3,7 @@ import WorkRequest from '../models/WorkRequest.js';
 import Job from '../models/Job.js';
 
 import WorkerProfile from '../models/WorkerProfile.js';
+import Notification from '../models/Notification.js';
 
 // @desc    Submit an application/proposal
 // @route   POST /api/v1/applications
@@ -41,6 +42,14 @@ export const submitApplication = async (req, res) => {
       proposalText,
       proposedRate,
       status: 'PENDING'
+    });
+
+    // Notify Hirer
+    await Notification.create({
+      userId: request.hirerUserId,
+      message: `${req.user.name} applied to your job: "${request.title}"`,
+      type: 'INFO',
+      link: '/orders'
     });
 
     res.status(201).json(application);
@@ -131,6 +140,14 @@ export const acceptApplication = async (req, res) => {
       status: 'ONGOING'
     });
 
+    // Notify Worker
+    await Notification.create({
+      userId: application.workerId,
+      message: `Congratulations! Your application for "${request.title}" was accepted.`,
+      type: 'SUCCESS',
+      link: '/orders'
+    });
+
     res.status(200).json({ message: 'Application accepted and job created successfully.', job });
   } catch (error) {
     console.error('Error accepting application:', error);
@@ -165,6 +182,14 @@ export const declineApplication = async (req, res) => {
     // Update the application status to REJECTED
     application.status = 'REJECTED';
     await application.save();
+
+    // Notify Worker
+    await Notification.create({
+      userId: application.workerId,
+      message: `Your application for "${request.title}" was declined.`,
+      type: 'INFO',
+      link: '/requests'
+    });
 
     res.status(200).json({ message: 'Application declined successfully.' });
   } catch (error) {

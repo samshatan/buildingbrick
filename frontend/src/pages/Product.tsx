@@ -1,14 +1,70 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MapPin, Star, BadgeCheck, Clock, Calendar, CheckCircle2, ChevronRight, Briefcase } from "lucide-react";
+import { MapPin, Star, BadgeCheck, Clock, Calendar, CheckCircle2, ChevronRight, Briefcase, Edit2, X } from "lucide-react";
 import { workerCategories, workerSubscriptionPlan } from "@/data/marketplaceData";
 import type { WorkerProfileResponse } from "@/components/WorkerCard";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 function Product() {
   const { workerId } = useParams();
+  const { user, token } = useAuth();
   const [worker, setWorker] = useState<WorkerProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    displayName: '',
+    bio: '',
+    skills: '',
+    dailyRate: 0,
+    experienceYears: 0
+  });
+
+  const openEditModal = () => {
+    if (worker) {
+      setEditForm({
+        displayName: worker.displayName || '',
+        bio: worker.bio || '',
+        skills: worker.skills || '',
+        dailyRate: worker.dailyRate || 0,
+        experienceYears: worker.experienceYears || 0
+      });
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const loadingToast = toast.loading("Updating profile...");
+    try {
+      const res = await fetch(`/api/v1/workers/${worker?.id}/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        const updatedWorker = await res.json();
+        setWorker(updatedWorker);
+        setIsEditModalOpen(false);
+        toast.update(loadingToast, { render: "Profile updated successfully!", type: "success", isLoading: false, autoClose: 3000 });
+      } else {
+        toast.update(loadingToast, { render: "Failed to update profile.", type: "error", isLoading: false, autoClose: 3000 });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.update(loadingToast, { render: "Error updating profile.", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
 
   useEffect(() => {
     if (!workerId) return;
@@ -139,6 +195,15 @@ function Product() {
               <span className={`text-xs font-bold px-3 py-1 rounded-full w-full text-center mt-2 ${worker.availabilityStatus === "AVAILABLE" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
                 {worker.availabilityStatus === "AVAILABLE" ? "Available for Hire" : "Currently Busy"}
               </span>
+              
+              {user && (user.id === (worker.userId as any)?._id || user.id === worker.userId) && (
+                <button
+                  onClick={openEditModal}
+                  className="mt-4 flex items-center justify-center gap-2 w-full px-4 py-2 bg-white border border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700 hover:text-primary font-bold rounded-xl transition-all"
+                >
+                  <Edit2 className="w-4 h-4" /> Edit Profile
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -250,8 +315,103 @@ function Product() {
 
           </div>
         </div>
-
       </div>
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-xl font-bold text-gray-900">Edit Profile</h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-gray-700">Display Name</label>
+                <input
+                  type="text"
+                  name="displayName"
+                  value={editForm.displayName}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-bold text-gray-700">Daily Rate (Rs)</label>
+                  <input
+                    type="number"
+                    name="dailyRate"
+                    value={editForm.dailyRate}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-bold text-gray-700">Years of Experience</label>
+                  <input
+                    type="number"
+                    name="experienceYears"
+                    value={editForm.experienceYears}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-gray-700">Biography</label>
+                <textarea
+                  name="bio"
+                  value={editForm.bio}
+                  onChange={handleEditChange}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                  placeholder="Tell clients about yourself..."
+                ></textarea>
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-gray-700">Skills (comma separated)</label>
+                <input
+                  type="text"
+                  name="skills"
+                  value={editForm.skills}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                  placeholder="e.g. Plumbing, Electrician, General Labor"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-6 py-3 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primary-600 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

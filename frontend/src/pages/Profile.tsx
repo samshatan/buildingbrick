@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BadgeCheck, Briefcase, Camera, Clock, CreditCard, LayoutDashboard, LogOut, Star, ToggleLeft, ToggleRight, UserCircle, X, Search } from "lucide-react";
+import { BadgeCheck, Briefcase, Camera, Clock, CreditCard, LayoutDashboard, LogOut, Star, ToggleLeft, ToggleRight, UserCircle, X, Search, Edit2 } from "lucide-react";
 import { workerSubscriptionPlan, workerCategories } from "@/data/marketplaceData";
 import { useAuth } from "../context/AuthContext";
 import type { WorkerProfileResponse } from "@/components/WorkerCard";
@@ -20,6 +20,16 @@ function Profile() {
   const [workerPhone, setWorkerPhone] = useState(user?.phone || '');
   const [workerAddress, setWorkerAddress] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  
+  // Account Editing State
+  const [showAccountEditModal, setShowAccountEditModal] = useState(false);
+  const [isUpdatingAccount, setIsUpdatingAccount] = useState(false);
+  const [accountForm, setAccountForm] = useState({
+    name: user?.fullName || '',
+    email: user?.email || '',
+    phone: user?.phone || ''
+  });
+
   const { login: updateAuthContext } = useAuth();
 
   useEffect(() => {
@@ -114,6 +124,38 @@ function Profile() {
     }
   };
 
+  const handleAccountUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!accountForm.email && !accountForm.phone) {
+      toast.error('Either email or phone must be provided.');
+      return;
+    }
+    setIsUpdatingAccount(true);
+    try {
+      const res = await fetch('/api/v1/users/account', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(accountForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
+        updateAuthContext(data.token, data.user);
+        setShowAccountEditModal(false);
+      } else {
+        toast.error(data.message || 'Failed to update account.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error connecting to server.');
+    } finally {
+      setIsUpdatingAccount(false);
+    }
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !workerProfile) return;
@@ -194,6 +236,20 @@ function Profile() {
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-600 mt-2 uppercase tracking-wider">
                 {user.userType === "WORKER" ? "Worker Account" : "Hiring Account"}
               </span>
+              
+              <button
+                onClick={() => {
+                  setAccountForm({
+                    name: user.fullName || '',
+                    email: user.email || '',
+                    phone: user.phone || ''
+                  });
+                  setShowAccountEditModal(true);
+                }}
+                className="mt-4 flex items-center justify-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/50 hover:bg-primary/5 font-bold text-xs rounded-lg transition-all"
+              >
+                <Edit2 className="w-3.5 h-3.5" /> Edit Account
+              </button>
             </div>
 
             {/* Nav Links */}
@@ -475,6 +531,60 @@ function Profile() {
                     </button>
                     <button type="submit" disabled={isConverting} className="px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-600 rounded-xl transition-colors flex items-center gap-2">
                       {isConverting ? 'Converting...' : 'Become Worker'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Account Edit Modal */}
+          {showAccountEditModal && (
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-8 max-w-lg w-full">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Account</h2>
+                <p className="text-gray-500 mb-6">Update your basic profile information.</p>
+                
+                <form onSubmit={handleAccountUpdate} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={accountForm.name}
+                      onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Email Address (Optional)</label>
+                    <input
+                      type="email"
+                      value={accountForm.email}
+                      onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      value={accountForm.phone}
+                      onChange={(e) => setAccountForm({ ...accountForm, phone: e.target.value })}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 font-medium">Note: Either an email address or a phone number must be provided.</p>
+
+                  <div className="flex gap-3 justify-end pt-4">
+                    <button type="button" onClick={() => setShowAccountEditModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={isUpdatingAccount} className="px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-600 rounded-xl transition-colors flex items-center gap-2">
+                      {isUpdatingAccount ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>

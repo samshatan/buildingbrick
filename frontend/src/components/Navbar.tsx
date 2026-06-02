@@ -2,6 +2,7 @@ import { NavLink, Link } from "react-router-dom";
 import { HiBars3BottomRight } from "react-icons/hi2";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -73,6 +74,7 @@ function Navbar() {
           </>
         ) : (
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Link to="/profile" className="relative transition-all hover:scale-105 duration-200">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary bg-primary-50 flex items-center justify-center shadow-sm">
                 {photo ? (

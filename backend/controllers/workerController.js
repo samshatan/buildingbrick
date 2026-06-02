@@ -106,3 +106,35 @@ export const updatePhoto = async (req, res) => {
     res.status(500).json({ message: 'Server error updating profile photo.' });
   }
 };
+
+// @desc    Update worker profile details
+// @route   PATCH /api/v1/workers/:id/profile
+// @access  Private
+export const updateProfile = async (req, res) => {
+  try {
+    const { displayName, bio, skills, dailyRate, experienceYears } = req.body;
+
+    const worker = await WorkerProfile.findById(req.params.id);
+    if (!worker) {
+      return res.status(404).json({ message: 'Worker profile not found.' });
+    }
+
+    // Verify authorized user owns this profile
+    if (worker.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to modify this profile.' });
+    }
+
+    if (displayName !== undefined) worker.displayName = displayName;
+    if (bio !== undefined) worker.bio = bio;
+    if (skills !== undefined) worker.skills = skills;
+    if (dailyRate !== undefined) worker.dailyRate = Number(dailyRate);
+    if (experienceYears !== undefined) worker.experienceYears = Number(experienceYears);
+
+    await worker.save();
+
+    res.status(200).json(worker);
+  } catch (error) {
+    console.error('Error updating worker profile:', error);
+    res.status(500).json({ message: 'Server error updating profile.' });
+  }
+};

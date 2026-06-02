@@ -1,5 +1,6 @@
 import DirectRequest from '../models/DirectRequest.js';
 import WorkerProfile from '../models/WorkerProfile.js';
+import Notification from '../models/Notification.js';
 
 // @desc    Create a direct hire request
 // @route   POST /api/v1/direct-requests
@@ -23,6 +24,14 @@ export const createDirectRequest = async (req, res) => {
       hirerPhone,
       hirerAddress,
       message
+    });
+
+    // Notify Worker
+    await Notification.create({
+      userId: worker.userId,
+      message: `${req.user.name} sent you a Direct Work Request!`,
+      type: 'INFO',
+      link: '/requests'
     });
 
     res.status(201).json(newRequest);
@@ -77,6 +86,14 @@ export const updateRequestStatus = async (req, res) => {
 
     request.status = status;
     await request.save();
+
+    // Notify Hirer
+    await Notification.create({
+      userId: request.hirerId,
+      message: `${workerProfile.displayName || req.user.name} has ${status.toLowerCase()} your direct request.`,
+      type: status === 'ACCEPTED' ? 'SUCCESS' : 'INFO',
+      link: '/orders'
+    });
 
     res.status(200).json(request);
   } catch (error) {
