@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { workerSubscriptionPlan } from "@/data/marketplaceData";
 
 interface WorkerProfile {
   id: string;
