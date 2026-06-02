@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Bell, CheckCircle2, Info, AlertCircle, X, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Bell, CheckCircle2, Info, AlertCircle, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface Notification {
   id: string;

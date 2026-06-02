@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Briefcase, Clock, CheckCircle2, AlertCircle, FileText, FileSignature, Check, X, Building2, User } from "lucide-react";
+import { Briefcase, Clock, CheckCircle2, AlertCircle, FileText, FileSignature, Check, Building2, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ClipboardList, MapPin, CalendarDays, Search, Filter, Briefcase, CheckCircle2, Activity, Clock, User } from "lucide-react";
+import { ClipboardList, MapPin, CalendarDays, Search, Briefcase, CheckCircle2, Activity, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
