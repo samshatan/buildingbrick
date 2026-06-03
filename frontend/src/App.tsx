@@ -23,12 +23,14 @@ import ScrollToTop from './components/ScrollToTop'
 import BottomNav from './components/BottomNav'
 import OfflineIndicator from './components/OfflineIndicator'
 import ReloadPrompt from './components/ReloadPrompt'
+import InstallPrompt from './components/InstallPrompt'
 
 function App() {
   return (
     <div>
       <OfflineIndicator />
       <ReloadPrompt />
+      <InstallPrompt />
       <ToastContainer
         position="top-right"
         autoClose={3500}
