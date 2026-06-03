@@ -217,6 +217,38 @@ function Collection() {
 
             <div className={`space-y-8 ${showFilter ? "block" : "hidden"} lg:block`}>
               
+              {/* Location/Distance Filter */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Location & Distance</h3>
+                {!userLocation ? (
+                  <button 
+                    onClick={requestLocation}
+                    disabled={locationLoading}
+                    className="w-full py-2.5 px-4 bg-primary/10 text-primary hover:bg-primary/20 text-sm font-bold rounded-xl transition-colors border border-primary/20 flex items-center justify-center gap-2"
+                  >
+                    {locationLoading ? 'Finding you...' : 'Find Nearest Workers'}
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                      <span>Max Distance:</span>
+                      <span className="text-primary">{maxDistance} km</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="5" 
+                      max="100" 
+                      step="5"
+                      value={maxDistance}
+                      onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-gray-100 w-full"></div>
+
               {/* Categories Filter */}
               <div>
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Categories</h3>
@@ -265,38 +297,6 @@ function Collection() {
                     </label>
                   ))}
                 </div>
-              </div>
-
-              <div className="h-px bg-gray-100 w-full"></div>
-
-              {/* Location/Distance Filter */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Location & Distance</h3>
-                {!userLocation ? (
-                  <button 
-                    onClick={requestLocation}
-                    disabled={locationLoading}
-                    className="w-full py-2.5 px-4 bg-primary/10 text-primary hover:bg-primary/20 text-sm font-bold rounded-xl transition-colors border border-primary/20 flex items-center justify-center gap-2"
-                  >
-                    {locationLoading ? 'Finding you...' : 'Find Nearest Workers'}
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
-                      <span>Max Distance:</span>
-                      <span className="text-primary">{maxDistance} km</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="5" 
-                      max="100" 
-                      step="5"
-                      value={maxDistance}
-                      onChange={(e) => setMaxDistance(parseInt(e.target.value))}
-                      className="w-full accent-primary"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="h-px bg-gray-100 w-full"></div>
