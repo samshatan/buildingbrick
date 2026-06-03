@@ -23,11 +23,22 @@ function Collection() {
   const [search, setSearch] = useState("");
   const [sortType, setSortType] = useState("recommended");
 
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [maxDistance, setMaxDistance] = useState<number>(50); // km
+  const [minRating, setMinRating] = useState<number>(0);
+  const [locationLoading, setLocationLoading] = useState(false);
+
   const [workers, setWorkers] = useState<WorkerProfileResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/v1/workers')
+    setLoading(true);
+    let url = '/api/v1/workers';
+    if (userLocation) {
+      url += `?lat=${userLocation.lat}&lng=${userLocation.lng}&maxDistance=${maxDistance}`;
+    }
+    
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setWorkers(data);
@@ -37,7 +48,29 @@ function Collection() {
         console.error("Failed to fetch workers:", err);
         setLoading(false);
       });
-  }, []);
+  }, [userLocation, maxDistance]);
+
+  const requestLocation = () => {
+    setLocationLoading(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          setSortType("nearest");
+          setLocationLoading(false);
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          setLocationLoading(false);
+        }
+      );
+    } else {
+      setLocationLoading(false);
+    }
+  };
 
   const allWorkerTypes = useMemo(
     () => workerCategories.flatMap((category) => category.types),
@@ -69,21 +102,27 @@ function Collection() {
       });
     }
 
+    if (minRating > 0) {
+      results = results.filter(worker => (worker.rating || 0) >= minRating);
+    }
+
     switch (sortType) {
       case "rate-low-high":
         return results.sort((a, b) => a.dailyRate - b.dailyRate);
       case "rate-high-low":
         return results.sort((a, b) => b.dailyRate - a.dailyRate);
       case "rating-high-low":
-        return results.sort((a, b) => b.rating - a.rating);
+        return results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      case "nearest":
+        return results.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       default:
         return results.sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
         });
     }
-  }, [search, selectedCategories, selectedTypes, sortType, workers]);
+  }, [search, selectedCategories, selectedTypes, sortType, workers, minRating]);
 
   const toggleSelection = (
     value: string,
@@ -101,9 +140,13 @@ function Collection() {
     setSelectedCategories([]);
     setSelectedTypes([]);
     setSearch("");
+    setMinRating(0);
+    setMaxDistance(50);
+    setUserLocation(null);
+    setSortType("recommended");
   };
 
-  const activeFilterCount = selectedCategories.length + selectedTypes.length;
+  const activeFilterCount = selectedCategories.length + selectedTypes.length + (minRating > 0 ? 1 : 0) + (userLocation ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
@@ -137,6 +180,7 @@ function Collection() {
               className="block w-full appearance-none px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none font-semibold text-gray-700 cursor-pointer"
             >
               <option value="recommended">Recommended First</option>
+              <option value="nearest">Nearest to Me</option>
               <option value="rating-high-low">Highest Rated</option>
               <option value="rate-low-high">Daily Rate: Low to High</option>
               <option value="rate-high-low">Daily Rate: High to Low</option>
@@ -220,6 +264,81 @@ function Collection() {
                       </span>
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-gray-100 w-full"></div>
+
+              {/* Location/Distance Filter */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Location & Distance</h3>
+                {!userLocation ? (
+                  <button 
+                    onClick={requestLocation}
+                    disabled={locationLoading}
+                    className="w-full py-2.5 px-4 bg-primary/10 text-primary hover:bg-primary/20 text-sm font-bold rounded-xl transition-colors border border-primary/20 flex items-center justify-center gap-2"
+                  >
+                    {locationLoading ? 'Finding you...' : 'Find Nearest Workers'}
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                      <span>Max Distance:</span>
+                      <span className="text-primary">{maxDistance} km</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="5" 
+                      max="100" 
+                      step="5"
+                      value={maxDistance}
+                      onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-gray-100 w-full"></div>
+
+              {/* Rating Filter */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Minimum Rating</h3>
+                <div className="space-y-3">
+                  {[4, 3, 2, 1].map((rating) => (
+                    <label key={rating} className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="radio"
+                          name="ratingFilter"
+                          className="peer sr-only"
+                          checked={minRating === rating}
+                          onChange={() => setMinRating(rating)}
+                        />
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:bg-yellow-500 peer-checked:border-yellow-500 peer-hover:border-yellow-500/50 transition-all"></div>
+                        <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors flex items-center gap-1">
+                        {rating} Stars & Up
+                      </span>
+                    </label>
+                  ))}
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="radio"
+                        name="ratingFilter"
+                        className="peer sr-only"
+                        checked={minRating === 0}
+                        onChange={() => setMinRating(0)}
+                      />
+                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:bg-gray-500 peer-checked:border-gray-500 peer-hover:border-gray-500/50 transition-all"></div>
+                      <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+                      Any Rating
+                    </span>
+                  </label>
                 </div>
               </div>
 

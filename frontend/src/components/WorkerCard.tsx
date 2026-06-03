@@ -18,6 +18,7 @@ export interface WorkerProfileResponse {
   rating: number;
   jobsCompleted: number;
   photo?: string;
+  distance?: number;
 }
 
 function WorkerCard({ worker }: { worker: WorkerProfileResponse }) {
@@ -42,8 +43,13 @@ function WorkerCard({ worker }: { worker: WorkerProfileResponse }) {
         </span>
       </div>
       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-        <MapPin className="w-4 h-4 text-secondary-500" />
-        <span>{worker.location}</span>
+        <MapPin className="w-4 h-4 text-secondary-500 shrink-0" />
+        <span className="truncate">{worker.location}</span>
+        {worker.distance !== undefined && (
+          <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ml-auto">
+            {(worker.distance / 1000).toFixed(1)} km
+          </span>
+        )}
       </div>
       <div className="flex items-center justify-between text-sm text-gray-600 font-medium">
         <div className="flex items-center gap-1">

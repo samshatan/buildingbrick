@@ -31,6 +31,7 @@ function WorkRequests() {
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<WorkRequest | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
   
   // Applications modal state
   const [viewAppsModalOpen, setViewAppsModalOpen] = useState(false);
@@ -201,11 +202,12 @@ function WorkRequests() {
     }
   };
 
-  const filteredRequests = requests.filter(req => 
-    req.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    req.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    req.workerType.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRequests = requests.filter(req => {
+    const matchesSearch = req.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          req.workerType.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLocation = req.location?.toLowerCase().includes(locationQuery.toLowerCase()) ?? true;
+    return matchesSearch && matchesLocation;
+  });
 
   // Compute Recent Activity
   const recentActivity = user?.userType === 'HIRER' ? 
@@ -255,17 +257,31 @@ function WorkRequests() {
             </p>
           </div>
 
-          <div className="relative w-full md:w-80">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-              <Search className="h-5 w-5" />
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div className="relative w-full sm:w-56 md:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <Search className="h-5 w-5" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search jobs..."
+                className="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none font-medium"
+              />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search jobs, locations..."
-              className="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none font-medium"
-            />
+            <div className="relative w-full sm:w-56 md:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <input
+                type="text"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                placeholder="Location..."
+                className="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none font-medium"
+              />
+            </div>
           </div>
         </div>
 

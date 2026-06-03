@@ -1,11 +1,57 @@
 import WorkerProfile from '../models/WorkerProfile.js';
+import { geocodeAddress } from '../utils/geocode.js';
 
 // @desc    Get all workers
 // @route   GET /api/v1/workers
 // @access  Public
 export const getWorkers = async (req, res) => {
   try {
-    const workers = await WorkerProfile.find({ verified: true });
+    const { lat, lng, maxDistance } = req.query;
+
+    let workers;
+
+    if (lat && lng) {
+      const distance = maxDistance ? parseInt(maxDistance) * 1000 : 50000; // default 50km
+      
+      workers = await WorkerProfile.aggregate([
+        {
+          $geoNear: {
+            near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
+            distanceField: "distance",
+            maxDistance: distance,
+            spherical: true,
+            query: { verified: true }
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "userId"
+          }
+        },
+        { $unwind: "$userId" },
+        {
+          $project: {
+            "userId.password": 0,
+            "userId.__v": 0
+          }
+        }
+      ]);
+      
+      workers = workers.map(w => {
+        w.id = w._id.toString();
+        if (w.userId && w.userId._id) {
+          w.userId.id = w.userId._id.toString();
+        }
+        return w;
+      });
+
+    } else {
+      workers = await WorkerProfile.find({ verified: true }).populate('userId', 'phone email name');
+    }
+    
     res.status(200).json(workers);
   } catch (error) {
     console.error('Error fetching workers:', error);
@@ -129,7 +175,16 @@ export const updateProfile = async (req, res) => {
     if (skills !== undefined) worker.skills = skills;
     if (dailyRate !== undefined) worker.dailyRate = Number(dailyRate);
     if (experienceYears !== undefined) worker.experienceYears = Number(experienceYears);
-    if (location !== undefined) worker.location = location;
+    if (location !== undefined) {
+      worker.location = location;
+      const coords = await geocodeAddress(location);
+      if (coords) {
+        worker.locationCoordinates = {
+          type: 'Point',
+          coordinates: [coords.lng, coords.lat]
+        };
+      }
+    }
 
     await worker.save();
 

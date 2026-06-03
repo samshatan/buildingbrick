@@ -6,6 +6,10 @@ const workerProfileSchema = new mongoose.Schema({
   categoryId: { type: String, required: true },
   workerType: { type: String, required: true },
   location: { type: String, default: "Not specified" },
+  locationCoordinates: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0] } // [longitude, latitude]
+  },
   dailyRate: { type: Number, default: 0 },
   experienceYears: { type: Number, default: 0 },
   bio: { type: String, default: "" },
@@ -39,5 +43,7 @@ const workerProfileSchema = new mongoose.Schema({
     }
   }
 });
+
+workerProfileSchema.index({ locationCoordinates: '2dsphere' });
 
 export default mongoose.model('WorkerProfile', workerProfileSchema);

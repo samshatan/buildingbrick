@@ -37,7 +37,8 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true,
-        type: 'module'
+        type: 'module',
+        suppressWarnings: true
       }
     })
   ],

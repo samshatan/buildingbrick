@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import WorkerProfile from '../models/WorkerProfile.js';
 import { generateToken, mapUserResponse, getCategoryId } from './authController.js';
+import { geocodeAddress } from '../utils/geocode.js';
 
 // @desc    Convert a Hirer account into a Worker account
 // @route   POST /api/v1/users/become-worker
@@ -34,12 +35,22 @@ export const becomeWorker = async (req, res) => {
 
     // Create corresponding WorkerProfile
     const categoryId = getCategoryId(category);
+    
+    let locationCoordinates = { type: 'Point', coordinates: [0, 0] };
+    if (location) {
+      const coords = await geocodeAddress(location);
+      if (coords) {
+        locationCoordinates.coordinates = [coords.lng, coords.lat];
+      }
+    }
+
     await WorkerProfile.create({
       userId,
       displayName: user.name,
       categoryId: categoryId,
       workerType: category,
       location: location || "Not specified",
+      locationCoordinates,
       dailyRate: 0, 
       experienceYears: 0, 
       bio: '',
