@@ -78,6 +78,22 @@ button, a, [role="button"] {
   user-select: none;
 }
 
+/* Hide bottom nav by default on all screens */
+.pwa-bottom-nav {
+  display: none;
+}
+
+/* Show bottom nav ONLY when installed as a PWA AND on mobile screens */
+@media (display-mode: standalone) and (max-width: 640px) {
+  body {
+    /* Add padding so content isn't hidden behind the bottom nav */
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+  .pwa-bottom-nav {
+    display: block;
+  }
+}
+
 @media(max-width: 640px){
   a.active{
     background-color: #8b5cf6;

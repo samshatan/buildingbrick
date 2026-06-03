@@ -10,7 +10,7 @@ export default defineConfig({
     react(), 
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['vite.svg', 'logo.jpg'],
       manifest: {
         name: 'Brick Our House',

@@ -20,10 +20,15 @@ import CafeDashboard from './pages/CafeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import VerificationRequired from './pages/VerificationRequired'
 import ScrollToTop from './components/ScrollToTop'
+import BottomNav from './components/BottomNav'
+import OfflineIndicator from './components/OfflineIndicator'
+import ReloadPrompt from './components/ReloadPrompt'
 
 function App() {
   return (
     <div>
+      <OfflineIndicator />
+      <ReloadPrompt />
       <ToastContainer
         position="top-right"
         autoClose={3500}
@@ -58,6 +63,7 @@ function App() {
       </Routes>
       <div className="print:hidden">
         <Footer />
+        <BottomNav />
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MapPin, Star, BadgeCheck, Clock, Calendar, CheckCircle2, ChevronRight, Briefcase, Edit2, X } from "lucide-react";
+import { MapPin, Star, BadgeCheck, Clock, Calendar, CheckCircle2, ChevronRight, Briefcase, Edit2, X, Share2 } from "lucide-react";
 import { workerCategories, workerSubscriptionPlan } from "@/data/marketplaceData";
 import type { WorkerProfileResponse } from "@/components/WorkerCard";
 import { useAuth } from "../context/AuthContext";
@@ -38,6 +38,23 @@ function Product() {
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && worker) {
+      try {
+        if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback
+        await navigator.share({
+          title: `Hire ${worker.displayName} on BrickOurHouse`,
+          text: `Check out ${worker.displayName}'s profile! They have ${worker.experienceYears} years of experience.`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      toast.info("Sharing is not supported on this device/browser.");
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -196,14 +213,23 @@ function Product() {
                 {worker.availabilityStatus === "AVAILABLE" ? "Available for Hire" : "Currently Busy"}
               </span>
               
-              {user && (user.id === (worker.userId as any)?._id || user.id === worker.userId) && (
+              <div className="flex flex-col w-full gap-2 mt-4">
                 <button
-                  onClick={openEditModal}
-                  className="mt-4 flex items-center justify-center gap-2 w-full px-4 py-2 bg-white border border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700 hover:text-primary font-bold rounded-xl transition-all"
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-white border border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700 hover:text-primary font-bold rounded-xl transition-all"
                 >
-                  <Edit2 className="w-4 h-4" /> Edit Profile
+                  <Share2 className="w-4 h-4" /> Share Profile
                 </button>
-              )}
+                
+                {user && (user.id === (worker.userId as any)?._id || user.id === worker.userId) && (
+                  <button
+                    onClick={openEditModal}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-white border border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700 hover:text-primary font-bold rounded-xl transition-all"
+                  >
+                    <Edit2 className="w-4 h-4" /> Edit Profile
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
