@@ -179,7 +179,7 @@ function CafeDashboard() {
   const recentActivity = [...verifiedHistory.map(w => ({
     id: w.id,
     title: `Worker Verified`,
-    desc: w.userId.name,
+    desc: w.userId?.name || 'Unknown User',
     date: new Date(w.verifiedAt || Date.now()).getTime(),
     icon: <CheckCircle2 className="w-4 h-4 text-green-500" />
   }))].sort((a, b) => b.date - a.date).slice(0, 8);
@@ -208,12 +208,12 @@ function CafeDashboard() {
                 <div className="flex-1 space-y-5">
                   <div className="flex items-end">
                     <span className="font-bold text-sm whitespace-nowrap">पूरा नाम (Full Name):</span>
-                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId.name}</span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId?.name || ''}</span>
                   </div>
                   
                   <div className="flex items-end">
                     <span className="font-bold text-sm whitespace-nowrap">मोबाइल नं. (Mobile No):</span>
-                    <span className="w-40 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId.phone || printWorker.userId.email}</span>
+                    <span className="w-40 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.userId?.phone || printWorker.userId?.email || ''}</span>
                     <span className="font-bold text-sm whitespace-nowrap ml-4">व्हाट्सएप नं. (WhatsApp No):</span>
                     <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
                   </div>
@@ -486,14 +486,14 @@ function CafeDashboard() {
                <div key={worker.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
                  <div className="flex items-center gap-4">
                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-xl font-extrabold text-primary">
-                     {worker.userId.name.charAt(0)}
+                     {worker.userId?.name?.charAt(0) || '?'}
                    </div>
                    <div>
                      <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                       {worker.userId.name}
+                       {worker.userId?.name || 'Unknown User'}
                        {worker.verified && <CheckCircle2 className="w-5 h-5 text-green-500" />}
                      </h3>
-                     <p className="text-gray-500 text-sm font-medium">{worker.userId.email} • {worker.workerType}</p>
+                     <p className="text-gray-500 text-sm font-medium">{worker.userId?.email || 'No Email'} • {worker.workerType}</p>
                    </div>
                  </div>
 
@@ -539,13 +539,13 @@ function CafeDashboard() {
                   <div key={worker.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-xl font-extrabold text-amber-600">
-                        {worker.userId.name.charAt(0)}
+                        {worker.userId?.name?.charAt(0) || '?'}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          {worker.userId.name}
+                          {worker.userId?.name || 'Unknown User'}
                         </h3>
-                        <p className="text-gray-500 text-sm font-medium">{worker.userId.email} • {worker.workerType}</p>
+                        <p className="text-gray-500 text-sm font-medium">{worker.userId?.email || 'No Email'} • {worker.workerType}</p>
                       </div>
                     </div>
                     <div>
@@ -599,14 +599,14 @@ function CafeDashboard() {
                     )}
                     <div className={`flex items-center gap-4 ${worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' ? 'ml-8 sm:ml-0' : ''}`}>
                       <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center text-xl font-extrabold text-green-600">
-                        {worker.userId.name.charAt(0)}
+                        {worker.userId?.name?.charAt(0) || '?'}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          {worker.userId.name}
+                          {worker.userId?.name || 'Unknown User'}
                           <CheckCircle2 className="w-5 h-5 text-green-500" />
                         </h3>
-                        <p className="text-gray-500 text-sm font-medium">{worker.userId.email} • {worker.workerType}</p>
+                        <p className="text-gray-500 text-sm font-medium">{worker.userId?.email || 'No Email'} • {worker.workerType}</p>
                         <p className="text-xs text-gray-400 mt-1">Verified on: {new Date(worker.verifiedAt || Date.now()).toLocaleDateString()}</p>
                       </div>
                     </div>

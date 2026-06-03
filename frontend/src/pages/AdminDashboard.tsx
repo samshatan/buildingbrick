@@ -170,7 +170,7 @@ function AdminDashboard() {
     id: w.id,
     type: 'WORKER_VERIFIED',
     title: `Worker verified`,
-    desc: w.userId.name,
+    desc: w.userId?.name || 'Unknown User',
     date: new Date(w.verifiedAt || 0).getTime(),
     icon: <CheckCircle2 className="w-4 h-4 text-green-500" />
   }))].sort((a, b) => b.date - a.date).slice(0, 8);
@@ -311,8 +311,8 @@ function AdminDashboard() {
                    {workers.map(worker => (
                      <tr key={worker.id} className="hover:bg-gray-50/50 transition-colors">
                        <td className="px-6 py-4">
-                         <div className="font-bold text-gray-900">{worker.userId.name}</div>
-                         <div className="text-xs text-gray-500">{worker.userId.email}</div>
+                         <div className="font-bold text-gray-900">{worker.userId?.name || 'Unknown User'}</div>
+                         <div className="text-xs text-gray-500">{worker.userId?.email || 'No Email'}</div>
                        </td>
                        <td className="px-6 py-4 font-medium">{worker.workerType}</td>
                        <td className="px-6 py-4 text-center">
@@ -483,8 +483,8 @@ function AdminDashboard() {
                               )}
                             </td>
                             <td className="px-4 py-3">
-                              <div className="font-bold text-gray-900">{worker.userId.name}</div>
-                              <div className="text-xs text-gray-500">{worker.userId.email}</div>
+                              <div className="font-bold text-gray-900">{worker.userId?.name || 'Unknown User'}</div>
+                              <div className="text-xs text-gray-500">{worker.userId?.email || 'No Email'}</div>
                             </td>
                             <td className="px-4 py-3 font-medium">{worker.workerType}</td>
                             <td className="px-4 py-3 text-xs text-gray-500">
