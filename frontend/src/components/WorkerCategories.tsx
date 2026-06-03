@@ -1,8 +1,11 @@
 import Title from "./Title";
 import { workerCategories } from "@/data/marketplaceData";
 import { CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function WorkerCategories() {
+  const navigate = useNavigate();
+
   return (
     <div className="my-20">
       <div className="text-center mb-12">
@@ -42,7 +45,9 @@ function WorkerCategories() {
             </div>
             
             <div className="relative z-10 mt-8 pt-6 border-t border-gray-100">
-               <button className="w-full text-center text-sm font-bold text-gray-900 bg-gray-50 hover:bg-primary hover:text-white py-3 rounded-xl transition-colors duration-200">
+               <button 
+                  onClick={() => navigate(`/collection?category=${category.id}`)}
+                  className="w-full text-center text-sm font-bold text-gray-900 bg-gray-50 hover:bg-primary hover:text-white py-3 rounded-xl transition-colors duration-200">
                   Explore {category.name}
                </button>
             </div>

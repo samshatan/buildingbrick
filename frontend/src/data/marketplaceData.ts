@@ -31,15 +31,14 @@ export const workerCategories: WorkerCategory[] = [
     id: "construction",
     name: "Construction Workers",
     types: [
-      "Contractors",
-      "Bricklayers",
-      "Painters",
+      "Contractor",
+      "Bricklayer",
+      "Painter",
       "Helper",
-      "Carpenters",
-      "Masons",
-      "Stone Cutters",
-      "Road Construction Laborers",
-      "Demolition Workers",
+      "Carpenter/Woodworker",
+      "Mason/Rajmistri",
+      "Road Construction Laborer",
+      "Demolition Worker",
     ],
   },
   {
@@ -55,7 +54,7 @@ export const workerCategories: WorkerCategory[] = [
   {
     id: "domestic",
     name: "Domestic Workers",
-    types: ["House Helps", "Cooks", "Maids", "Cleaners"],
+    types: ["House Helps", "Cooks", "Maids"],
   },
   {
     id: "utilities",

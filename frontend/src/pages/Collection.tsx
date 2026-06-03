@@ -4,10 +4,21 @@ import Title from "@/components/Title";
 import WorkerCard, { type WorkerProfileResponse } from "@/components/WorkerCard";
 import { workerCategories } from "@/data/marketplaceData";
 import { Filter, Search, ChevronDown, Check, X } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 function Collection() {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category');
+
   const [showFilter, setShowFilter] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
+  
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategories([initialCategory]);
+    }
+  }, [initialCategory]);
+
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [sortType, setSortType] = useState("recommended");

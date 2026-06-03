@@ -58,7 +58,7 @@ function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-primary-200 font-semibold mb-1">Office</p>
-                    <p className="font-medium leading-relaxed">123 Builder Avenue<br/>Innovation District, NY 10001</p>
+                    <p className="font-medium leading-relaxed">Ground Floor Ansal Sumangalam<br/>RDC, Ghaziabad - 201001</p>
                   </div>
                 </div>
               </div>
