@@ -87,14 +87,19 @@ const isEmail = (identifier) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
 // @access  Public
 export const sendOtp = async (req, res) => {
   try {
-    const { identifier } = req.body;
+    const { identifier, type = 'signup' } = req.body;
     if (!identifier) return res.status(400).json({ message: 'Email or Mobile Number is required.' });
 
     // Check if user already exists
     const query = isEmail(identifier) ? { email: identifier } : { phone: identifier };
     const userExists = await User.findOne(query);
-    if (userExists) {
+    
+    if (type === 'signup' && userExists) {
       return res.status(400).json({ message: 'User already exists with this contact.' });
+    }
+    
+    if (type === 'forgot-password' && !userExists) {
+      return res.status(404).json({ message: 'No account found with this contact.' });
     }
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();

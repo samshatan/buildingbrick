@@ -111,7 +111,7 @@ function SignUp() {
       const res = await fetch('/api/v1/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: identifier })
+        body: JSON.stringify({ identifier: identifier, type: 'signup' })
       });
       const resData = await res.json().catch(() => null);
       

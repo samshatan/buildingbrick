@@ -30,7 +30,7 @@ function ForgotPassword() {
       const res = await fetch('/api/v1/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: identifier.trim() })
+        body: JSON.stringify({ identifier: identifier.trim(), type: 'forgot-password' })
       });
       const resData = await res.json().catch(() => null);
 
