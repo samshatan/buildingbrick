@@ -72,7 +72,7 @@ export const workerCategories: WorkerCategory[] = [
       "Carpenter",
       "Flooring Mason (Tile Setter)",
       "Marble Polisher / Kharai Wale",
-      "Pottiyand POP artisan",
+      "pop and putty artisan",
       "Painter",
       "Welder (Fabrication)",
     ],
