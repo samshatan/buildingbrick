@@ -333,3 +333,44 @@ export const getMe = async (req, res) => {
   }
 };
 
+// @desc    Reset password using OTP
+// @route   POST /api/v1/auth/reset-password
+// @access  Public
+export const resetPassword = async (req, res) => {
+  try {
+    const { identifier, otp, newPassword } = req.body;
+
+    if (!identifier || !otp || !newPassword) {
+      return res.status(400).json({ message: 'Please provide identifier, OTP, and new password.' });
+    }
+
+    // Verify OTP
+    const validOtp = await Otp.findOne({ identifier: identifier.toLowerCase().trim(), otp });
+    if (!validOtp) {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+
+    // Find User
+    const query = isEmail(identifier) ? { email: identifier.toLowerCase().trim() } : { phone: identifier.trim() };
+    const user = await User.findOne(query);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user password
+    user.password = hashedPassword;
+    await user.save();
+
+    // Delete used OTP
+    await Otp.deleteOne({ _id: validOtp._id });
+
+    res.status(200).json({ message: 'Password reset successfully. You can now login with your new password.' });
+  } catch (error) {
+    console.error('Reset Password error:', error);
+    res.status(500).json({ message: 'Server error during password reset.' });
+  }
+};

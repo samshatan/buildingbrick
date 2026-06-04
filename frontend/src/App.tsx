@@ -19,6 +19,8 @@ import DirectHire from './pages/DirectHire'
 import CafeDashboard from './pages/CafeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import VerificationRequired from './pages/VerificationRequired'
+import ForgotPassword from './pages/ForgotPassword'
+
 import ScrollToTop from './components/ScrollToTop'
 import BottomNav from './components/BottomNav'
 import OfflineIndicator from './components/OfflineIndicator'
@@ -59,6 +61,7 @@ function App() {
         <Route path='/jobs' element={<Orders />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/verification-required' element={<VerificationRequired />} />
         <Route path='/cafe-dashboard' element={<CafeDashboard />} />
         <Route path='/admin-dashboard' element={<AdminDashboard />} />
