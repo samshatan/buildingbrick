@@ -58,7 +58,7 @@ function Footer() {
 
       {/* Copyright Bar */}
       <div className="border-t border-gray-200/50 py-6 text-center text-sm font-semibold text-gray-500 bg-gray-100/50">
-        <p>Copyright © {new Date().getFullYear()} BrickOurHouse. All rights reserved.</p>
+        <p>Copyright © {new Date().getFullYear()} fusionservice. All rights reserved.</p>
       </div>
     </footer>
   );

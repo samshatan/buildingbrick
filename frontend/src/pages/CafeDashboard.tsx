@@ -733,8 +733,10 @@ function CafeDashboard() {
 
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
                   <p className="font-bold mb-1 flex items-center gap-2"><CheckCircle2 className="w-4 h-4"/> Admin Bank Details</p>
-                  <p>UPI ID: admin@brickourhouse</p>
-                  <p>Name: BrickOurHouse Official</p>
+                  <p>Bank Name: Punjab National Bank</p>
+                  <p>Account No: 4021002100025313</p>
+                  <p>IFSC Code: PUNB0402100</p>
+                  <p>Account Holder Name: fusion services</p>
                 </div>
                 
                 <p className="text-xs text-gray-500 text-center font-medium">
