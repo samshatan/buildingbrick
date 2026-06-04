@@ -108,7 +108,7 @@ function Login() {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   value={email}
