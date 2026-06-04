@@ -46,7 +46,7 @@ function WorkerCategories() {
             
             <div className="relative z-10 mt-8 pt-6 border-t border-gray-100">
                <button 
-                  onClick={() => navigate(`/collection?category=${category.id}`)}
+                  onClick={() => navigate(`/workers?category=${category.id}`)}
                   className="w-full text-center text-sm font-bold text-gray-900 bg-gray-50 hover:bg-primary hover:text-white py-3 rounded-xl transition-colors duration-200">
                   Explore {category.name}
                </button>
