@@ -121,12 +121,20 @@ export const makeCafeOwner = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized as an Admin.' });
     }
 
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Please provide a user email.' });
+    const { email, identifier } = req.body;
+    const searchIdentifier = identifier || email;
+
+    if (!searchIdentifier) {
+      return res.status(400).json({ message: 'Please provide a user email or phone number.' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ 
+      $or: [
+        { email: searchIdentifier }, 
+        { phone: searchIdentifier }
+      ] 
+    });
+
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }

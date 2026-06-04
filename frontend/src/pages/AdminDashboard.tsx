@@ -37,7 +37,7 @@ function AdminDashboard() {
   const [workers, setWorkers] = useState<WorkerData[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newCafeEmail, setNewCafeEmail] = useState("");
+  const [newCafeIdentifier, setNewCafeIdentifier] = useState("");
   const [promoting, setPromoting] = useState(false);
 
   // Modal State
@@ -129,7 +129,7 @@ function AdminDashboard() {
 
   const handleMakeCafeOwner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCafeEmail) return;
+    if (!newCafeIdentifier) return;
 
     setPromoting(true);
     const toastId = toast.loading("Promoting user to Cafe Owner...");
@@ -140,12 +140,12 @@ function AdminDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ email: newCafeEmail })
+        body: JSON.stringify({ identifier: newCafeIdentifier })
       });
       const data = await res.json();
       if (res.ok) {
         toast.update(toastId, { render: data.message, type: "success", isLoading: false, autoClose: 3000 });
-        setNewCafeEmail("");
+        setNewCafeIdentifier("");
         fetchData(); // Refresh cafes list
       } else {
         toast.update(toastId, { render: data.message || "Failed to promote user.", type: "error", isLoading: false, autoClose: 3000 });
@@ -229,16 +229,16 @@ function AdminDashboard() {
               <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Promote User to Cafe Manager</label>
                 <input 
-                  type="email" 
-                  placeholder="Enter user's email address..." 
-                  value={newCafeEmail}
-                  onChange={(e) => setNewCafeEmail(e.target.value)}
+                  type="text" 
+                  placeholder="Enter user's email or phone number..." 
+                  value={newCafeIdentifier}
+                  onChange={(e) => setNewCafeIdentifier(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 />
               </div>
               <button 
                 onClick={handleMakeCafeOwner}
-                disabled={promoting || !newCafeEmail}
+                disabled={promoting || !newCafeIdentifier}
                 className="px-6 py-3 bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-sm"
               >
                 {promoting ? "Promoting..." : "Make Cafe Owner"}
@@ -364,11 +364,11 @@ function AdminDashboard() {
                 <div key={u._id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-xl">
-                      {u.name.charAt(0)}
+                      {(u.name || "?").charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900">{u.name}</h3>
-                      <p className="text-sm text-gray-500">{u.email}</p>
+                      <h3 className="font-bold text-gray-900">{u.name || "Unknown"}</h3>
+                      <p className="text-sm text-gray-500">{u.email || u.phone}</p>
                       <span className="inline-block mt-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md">
                         {u.accountType}
                       </span>
@@ -376,7 +376,7 @@ function AdminDashboard() {
                   </div>
                   <button 
                     onClick={() => {
-                      setNewCafeEmail(u.email);
+                      setNewCafeIdentifier(u.email || u.phone);
                       setActiveTab("cafes");
                       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                     }}
