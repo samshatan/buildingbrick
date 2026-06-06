@@ -41,16 +41,16 @@ export const workerCategories: WorkerCategory[] = [
       "Demolition Worker",
     ],
   },
-  {
-    id: "agriculture",
-    name: "Agriculture Workers",
-    types: [
-      "Small Marginal Farmers",
-      "Agriculture Workers",
-      "Sharecroppers",
-      "Daily Livestock Workers",
-    ],
-  },
+  // {
+  //   id: "agriculture",
+  //   name: "Agriculture Workers",
+  //   types: [
+  //     "Small Marginal Farmers",
+  //     "Agriculture Workers",
+  //     "Sharecroppers",
+  //     "Daily Livestock Workers",
+  //   ],
+  // },
   {
     id: "domestic",
     name: "Domestic Workers",
@@ -62,7 +62,8 @@ export const workerCategories: WorkerCategory[] = [
     types: [
       "Electrician",
       "Plumber",
-      "Water proofing specialist",
+      "Water Proofing Specialist",
+      "Lift Installation and Service Engineer"
     ],
   },
   {
@@ -72,7 +73,7 @@ export const workerCategories: WorkerCategory[] = [
       "Carpenter",
       "Flooring Mason (Tile Setter)",
       "Marble Polisher / Kharai Wale",
-      "pop and putty artisan",
+      "POP and Putty Artisan",
       "Painter",
       "Welder (Fabrication)",
     ],
