@@ -1,5 +1,15 @@
 import { NavLink, Link } from "react-router-dom";
-import { HiBars3BottomRight, HiXMark } from "react-icons/hi2";
+import { 
+  HiBars3BottomRight, 
+  HiXMark,
+  HiOutlineHome,
+  HiOutlineUsers,
+  HiOutlineBriefcase,
+  HiOutlinePlusCircle,
+  HiOutlineInformationCircle,
+  HiOutlineEnvelope,
+  HiOutlineUser
+} from "react-icons/hi2";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
@@ -33,12 +43,12 @@ function Navbar() {
   }, [user, token]);
 
   const navItems = [
-    { label: "Home", to: "/" },
-    { label: "Find Workers", to: "/workers" },
-    { label: "Find Jobs", to: "/requests" },
-    { label: "Post Work", to: "/hire-request" },
-    { label: "About", to: "/about" },
-    { label: "Contact", to: "/contact" },
+    { label: "Home", to: "/", icon: HiOutlineHome },
+    { label: "Find Workers", to: "/workers", icon: HiOutlineUsers },
+    { label: "Find Jobs", to: "/requests", icon: HiOutlineBriefcase },
+    { label: "Post Work", to: "/hire-request", icon: HiOutlinePlusCircle },
+    { label: "About", to: "/about", icon: HiOutlineInformationCircle },
+    { label: "Contact", to: "/contact", icon: HiOutlineEnvelope },
   ];
 
   return (
@@ -162,7 +172,7 @@ function Navbar() {
                 key={item.to}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) => 
-                  `flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                     isActive 
                       ? 'bg-primary/10 text-primary' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -170,6 +180,7 @@ function Navbar() {
                 }
                 to={item.to}
               >
+                <item.icon className="w-5 h-5 opacity-80" />
                 {item.label}
               </NavLink>
             ))}
@@ -178,7 +189,7 @@ function Navbar() {
               <NavLink
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) => 
-                  `flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all mt-2 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all mt-2 ${
                     isActive 
                       ? 'bg-primary/10 text-primary' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -186,6 +197,7 @@ function Navbar() {
                 }
                 to="/profile"
               >
+                <HiOutlineUser className="w-5 h-5 opacity-80" />
                 Profile Dashboard
               </NavLink>
             )}
