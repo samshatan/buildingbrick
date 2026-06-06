@@ -25,6 +25,7 @@ function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      (document.activeElement as HTMLElement)?.blur();
       navigate(`/workers?search=${encodeURIComponent(searchQuery.trim())}`);
       setMobileMenuOpen(false);
       setSearchQuery("");
@@ -108,12 +109,6 @@ function Navbar() {
                 )}
               </div>
             </Link>
-            <button
-              onClick={logout}
-              className="text-xs text-gray-500 hover:text-red-600 font-bold border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:border-red-100 hover:bg-red-50/30 transition-all"
-            >
-              Logout
-            </button>
           </div>
         )}
         <HiBars3BottomRight
@@ -230,8 +225,8 @@ function Navbar() {
           </div>
 
           {/* Footer Actions */}
-          <div className="p-5 border-t border-gray-100 bg-white">
-            {!user ? (
+          {!user && (
+            <div className="p-5 border-t border-gray-100 bg-white">
               <div className="flex flex-col gap-3">
                 <Link
                   onClick={() => setMobileMenuOpen(false)}
@@ -248,18 +243,8 @@ function Navbar() {
                   Join as Worker
                 </Link>
               </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  logout();
-                }}
-                className="w-full flex justify-center items-center py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
-              >
-                Logout
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
