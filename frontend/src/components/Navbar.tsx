@@ -17,7 +17,7 @@ import NotificationBell from "./NotificationBell";
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth();
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
