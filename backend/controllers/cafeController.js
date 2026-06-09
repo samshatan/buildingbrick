@@ -22,7 +22,7 @@ export const searchWorker = async (req, res) => {
         { email: { $regex: query, $options: 'i' } },
         { name: { $regex: query, $options: 'i' } }
       ]
-    }).select('-password');
+    }).limit(100).select('-password');
 
     if (users.length === 0) {
       return res.status(404).json({ message: 'No workers found.' });
@@ -30,7 +30,7 @@ export const searchWorker = async (req, res) => {
 
     // Get their worker profiles
     const userIds = users.map(u => u._id);
-    const profiles = await WorkerProfile.find({ userId: { $in: userIds } }).populate('userId', 'name email avatarUrl');
+    const profiles = await WorkerProfile.find({ userId: { $in: userIds } }).limit(100).populate('userId', 'name email avatarUrl');
 
     res.status(200).json(profiles);
   } catch (error) {
@@ -102,6 +102,7 @@ export const getVerifiedHistory = async (req, res) => {
     }
 
     const profiles = await WorkerProfile.find({ verifiedByCafeId: req.user._id })
+      .limit(100)
       .populate('userId', 'name email avatarUrl')
       .sort({ verifiedAt: -1 });
 

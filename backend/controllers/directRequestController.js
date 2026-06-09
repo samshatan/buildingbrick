@@ -53,6 +53,7 @@ export const getWorkerDirectRequests = async (req, res) => {
     }
 
     const requests = await DirectRequest.find({ workerProfileId: workerProfile._id })
+      .limit(100)
       .populate('hirerId', 'name email')
       .sort({ createdAt: -1 });
 

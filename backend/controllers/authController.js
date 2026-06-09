@@ -42,7 +42,10 @@ const getTwilioClient = () => {
 
 // Helper to generate JWT Token
 export const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretkeyforbrickourhouse_2026', {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };

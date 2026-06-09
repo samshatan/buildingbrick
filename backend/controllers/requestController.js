@@ -37,7 +37,7 @@ export const createRequest = async (req, res) => {
 // @access  Public
 export const getRequests = async (req, res) => {
   try {
-    const requests = await WorkRequest.find({});
+    const requests = await WorkRequest.find({}).limit(100);
     res.status(200).json(requests);
   } catch (error) {
     console.error('Error fetching requests:', error);
@@ -50,7 +50,7 @@ export const getRequests = async (req, res) => {
 // @access  Public
 export const getRequestsByHirer = async (req, res) => {
   try {
-    const requests = await WorkRequest.find({ hirerUserId: req.params.userId });
+    const requests = await WorkRequest.find({ hirerUserId: req.params.userId }).limit(100);
     res.status(200).json(requests);
   } catch (error) {
     console.error('Error fetching requests by hirer ID:', error);

@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
+import rateLimit from 'express-rate-limit';
 import { connectDB } from './config/db.js';
 
 // Route Imports
@@ -25,8 +29,26 @@ connectDB();
 const app = express();
 
 // Middlewares
+// Set security HTTP headers
+app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use('/api', limiter);
+
 app.use(cors({ origin: '*' })); // Allow all origins for seamless development
 app.use(express.json());
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Prevent parameter pollution
+app.use(hpp());
 
 // Logger middleware for easy request tracking
 app.use((req, res, next) => {
