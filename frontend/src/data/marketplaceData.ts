@@ -21,7 +21,7 @@ export type WorkerProfile = {
 };
 
 export const workerSubscriptionPlan = {
-  fee: 118,
+  fee: 19,
   durationMonths: 3,
   renewalNote: "Renew every 3 months or your account becomes a normal user.",
 };

@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import type { WorkerProfileResponse } from "@/components/WorkerCard";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
+import IdCardModal from "../components/IdCardModal";
 
 function Profile() {
   const { user, token, logout } = useAuth();
@@ -33,6 +34,7 @@ function Profile() {
   // Worker Editing State
   const [showWorkerEditModal, setShowWorkerEditModal] = useState(false);
   const [isUpdatingWorker, setIsUpdatingWorker] = useState(false);
+  const [showIdCardModal, setShowIdCardModal] = useState(false);
   const [workerForm, setWorkerForm] = useState({
     dailyRate: 0,
     experienceYears: 0,
@@ -292,21 +294,29 @@ function Profile() {
               </button>
 
               {user.userType === "WORKER" && workerProfile && (
-                <button
-                  onClick={() => {
-                    setWorkerForm({
-                      dailyRate: workerProfile.dailyRate || 0,
-                      experienceYears: workerProfile.experienceYears || 0,
-                      bio: workerProfile.bio || '',
-                      skills: workerProfile.skills || '',
-                      location: workerProfile.location || ''
-                    });
-                    setShowWorkerEditModal(true);
-                  }}
-                  className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/50 hover:bg-primary/5 font-bold text-xs rounded-lg transition-all w-full"
-                >
-                  <Briefcase className="w-3.5 h-3.5" /> Edit Worker Details
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setWorkerForm({
+                        dailyRate: workerProfile.dailyRate || 0,
+                        experienceYears: workerProfile.experienceYears || 0,
+                        bio: workerProfile.bio || '',
+                        skills: workerProfile.skills || '',
+                        location: workerProfile.location || ''
+                      });
+                      setShowWorkerEditModal(true);
+                    }}
+                    className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-primary hover:border-primary/50 hover:bg-primary/5 font-bold text-xs rounded-lg transition-all w-full"
+                  >
+                    <Briefcase className="w-3.5 h-3.5" /> Edit Worker Details
+                  </button>
+                  <button
+                    onClick={() => setShowIdCardModal(true)}
+                    className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 font-bold text-xs rounded-lg transition-all w-full shadow-sm"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" /> View ID Card
+                  </button>
+                </>
               )}
             </div>
 
@@ -726,6 +736,15 @@ function Profile() {
                 </form>
               </div>
             </div>
+          )}
+
+          {/* ID Card Modal */}
+          {showIdCardModal && user && workerProfile && (
+            <IdCardModal
+              user={user}
+              workerProfile={workerProfile}
+              onClose={() => setShowIdCardModal(false)}
+            />
           )}
 
         </div>
