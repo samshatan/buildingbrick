@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { 
   HiBars3BottomRight, 
@@ -11,7 +12,6 @@ import {
   HiOutlineUser,
   HiMagnifyingGlass
 } from "react-icons/hi2";
-import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 
@@ -251,4 +251,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default React.memo(Navbar);

@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink } from "react-router-dom";
 import { Home, Search, Briefcase, User } from "lucide-react";
 
@@ -34,4 +35,4 @@ function BottomNav() {
   );
 }
 
-export default BottomNav;
+export default React.memo(BottomNav);

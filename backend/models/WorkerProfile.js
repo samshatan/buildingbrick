@@ -44,6 +44,10 @@ const workerProfileSchema = new mongoose.Schema({
   }
 });
 
+// Performance Indexes
 workerProfileSchema.index({ locationCoordinates: '2dsphere' });
+workerProfileSchema.index({ categoryId: 1 });
+workerProfileSchema.index({ availabilityStatus: 1 });
+workerProfileSchema.index({ rating: -1 });
 
 export default mongoose.model('WorkerProfile', workerProfileSchema);

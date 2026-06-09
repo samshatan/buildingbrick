@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { connectDB } from './config/db.js';
+import compression from 'compression';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
@@ -25,8 +28,22 @@ connectDB();
 const app = express();
 
 // Middlewares
-app.use(cors({ origin: '*' })); // Allow all origins for seamless development
+app.use(helmet()); // Security headers
+app.use(compression()); // Gzip/Brotli compression for responses
+app.use(cors({ origin: '*' })); // Consider restricting this in production later
 app.use(express.json());
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+});
+
+// Apply rate limiter to all API routes
+app.use('/api/', apiLimiter);
 
 // Logger middleware for easy request tracking
 app.use((req, res, next) => {

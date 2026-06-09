@@ -28,4 +28,10 @@ const jobSchema = new mongoose.Schema({
   }
 });
 
+// Performance Indexes
+jobSchema.index({ workerId: 1 });
+jobSchema.index({ hirerUserId: 1 });
+jobSchema.index({ requestId: 1 });
+jobSchema.index({ status: 1 });
+
 export default mongoose.model('Job', jobSchema);
