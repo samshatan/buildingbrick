@@ -6,6 +6,8 @@ import { connectDB } from './config/db.js';
 import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
@@ -32,6 +34,12 @@ app.use(helmet()); // Security headers
 app.use(compression()); // Gzip/Brotli compression for responses
 app.use(cors({ origin: '*' })); // Consider restricting this in production later
 app.use(express.json());
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Prevent parameter pollution
+app.use(hpp());
 
 // Rate limiting
 const apiLimiter = rateLimit({
