@@ -11,6 +11,7 @@ export const getWorkers = async (req, res) => {
     }
 
     const workers = await WorkerProfile.find()
+      .limit(100)
       .populate('userId', 'name email createdAt')
       .populate('verifiedByCafeId', 'name email');
       
@@ -30,7 +31,7 @@ export const getCafes = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized as an Admin.' });
     }
 
-    const cafes = await User.find({ accountType: 'cafe' }).select('-password');
+    const cafes = await User.find({ accountType: 'cafe' }).limit(100).select('-password');
     
     // For each cafe, calculate how many pending verifications they have
     const cafeData = await Promise.all(cafes.map(async (cafe) => {
@@ -70,6 +71,7 @@ export const getWorkersByCafe = async (req, res) => {
     }
 
     const workers = await WorkerProfile.find({ verifiedByCafeId: req.params.cafeId })
+      .limit(100)
       .populate('userId', 'name email avatarUrl')
       .sort({ verifiedAt: -1 });
 
@@ -162,7 +164,7 @@ export const getAllUsers = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized as admin.' });
     }
 
-    const users = await User.find({ accountType: { $in: ['worker', 'hirer'] } }).select('-password').sort({ createdAt: -1 });
+    const users = await User.find({ accountType: { $in: ['worker', 'hirer'] } }).limit(100).select('-password').sort({ createdAt: -1 });
     res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching users:', error);

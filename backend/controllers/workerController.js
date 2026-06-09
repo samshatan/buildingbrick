@@ -49,7 +49,7 @@ export const getWorkers = async (req, res) => {
       });
 
     } else {
-      workers = await WorkerProfile.find({ verified: true }).populate('userId', 'phone email name');
+      workers = await WorkerProfile.find({ verified: true }).limit(100).populate('userId', 'phone email name');
     }
     
     res.status(200).json(workers);

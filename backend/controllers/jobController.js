@@ -5,7 +5,7 @@ import Job from '../models/Job.js';
 // @access  Public (filtered on frontend)
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({});
+    const jobs = await Job.find({}).limit(100);
     res.status(200).json(jobs);
   } catch (error) {
     console.error('Error fetching jobs:', error);
