@@ -69,7 +69,7 @@ export const getApplicationsByWorker = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to view these applications.' });
     }
 
-    const applications = await WorkerApplication.find({ workerId: req.params.workerId });
+    const applications = await WorkerApplication.find({ workerId: req.params.workerId }).limit(100);
     res.status(200).json(applications);
   } catch (error) {
     console.error('Error fetching proposals by worker:', error);
@@ -82,7 +82,7 @@ export const getApplicationsByWorker = async (req, res) => {
 // @access  Public
 export const getApplicationsForRequest = async (req, res) => {
   try {
-    const applications = await WorkerApplication.find({ requestId: req.params.requestId }).populate('workerId', 'name email phone avatarUrl');
+    const applications = await WorkerApplication.find({ requestId: req.params.requestId }).limit(100).populate('workerId', 'name email phone avatarUrl');
     res.status(200).json(applications);
   } catch (error) {
     console.error('Error fetching applications for request:', error);
