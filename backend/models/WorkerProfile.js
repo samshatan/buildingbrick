@@ -25,6 +25,9 @@ const workerProfileSchema = new mongoose.Schema({
   photo: { type: String, default: "" },
   // New Onboarding Fields
   address: { type: String, default: "" },
+  postalCode: { type: String, default: "" },
+  state: { type: String, default: "" },
+  district: { type: String, default: "" },
   fatherName: { type: String, default: "" },
   motherName: { type: String, default: "" },
   spouseName: { type: String, default: "" },

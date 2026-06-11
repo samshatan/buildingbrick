@@ -513,7 +513,7 @@ function AdminDashboard() {
                 <div className="bg-white border-t border-gray-100 p-4 px-6 flex justify-between items-center shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
                   <div>
                     <span className="text-sm text-gray-500 font-bold uppercase tracking-wider block mb-1">Selected Total</span>
-                    <span className="font-black text-xl text-primary">Rs {selectedWorkersForOffline.length * 118}</span>
+                    <span className="font-black text-xl text-primary">Rs {selectedWorkersForOffline.length * 19}</span>
                   </div>
                   <button 
                     onClick={handleCollectOffline}

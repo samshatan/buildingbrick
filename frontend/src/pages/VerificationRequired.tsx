@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { ShieldAlert, ArrowRight, CheckCircle2, CreditCard, UploadCloud, User, MapPin, Users, Briefcase, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { indiaStatesAndDistricts, indianStates } from "../data/locationData";
 
 export default function VerificationRequired() {
   const { user, token } = useAuth();
@@ -13,6 +14,9 @@ export default function VerificationRequired() {
 
   const [formData, setFormData] = useState({
     address: "",
+    postalCode: "",
+    state: "",
+    district: "",
     fatherName: "",
     motherName: "",
     spouseName: "",
@@ -41,6 +45,9 @@ export default function VerificationRequired() {
             setFormData(prev => ({
               ...prev,
               address: data.address || "",
+              postalCode: data.postalCode || "",
+              state: data.state || "",
+              district: data.district || "",
               fatherName: data.fatherName || "",
               motherName: data.motherName || "",
               spouseName: data.spouseName || "",
@@ -66,25 +73,46 @@ export default function VerificationRequired() {
     }
   }, [user, token]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      // Auto-reset district if state changes
+      if (name === "state") {
+        setFormData(prev => ({ ...prev, state: value, district: "" }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, [fieldName]: reader.result as string }));
-        toast.success(`Document loaded successfully.`);
-      };
-      reader.readAsDataURL(file);
+      const toastId = toast.loading(`Uploading document...`);
+      const data = new FormData();
+      data.append('image', file);
+
+      try {
+        const res = await fetch('/api/v1/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: data
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          setFormData(prev => ({ ...prev, [fieldName]: result.url }));
+          toast.update(toastId, { render: "Document uploaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        } else {
+          toast.update(toastId, { render: "Failed to upload document.", type: "error", isLoading: false, autoClose: 3000 });
+        }
+      } catch (err) {
+        console.error(err);
+        toast.update(toastId, { render: "An error occurred during upload.", type: "error", isLoading: false, autoClose: 3000 });
+      }
     }
   };
 
@@ -121,12 +149,15 @@ export default function VerificationRequired() {
   };
 
   const handleNextStep1 = async () => {
-    if (!formData.address || !formData.dailyRate) {
-      toast.error("Please fill all required fields (Address, Daily Rate)");
+    if (!formData.address || !formData.postalCode || !formData.state || !formData.district || !formData.dailyRate) {
+      toast.error("Please fill all required fields in Location and Professional details.");
       return;
     }
     const success = await saveProfile({
       address: formData.address,
+      postalCode: formData.postalCode,
+      state: formData.state,
+      district: formData.district,
       fatherName: formData.fatherName,
       motherName: formData.motherName,
       spouseName: formData.spouseName,
@@ -257,9 +288,34 @@ export default function VerificationRequired() {
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
                   <MapPin className="w-5 h-5 text-primary" /> Location Details
                 </h3>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Home Address *</label>
-                  <textarea required name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your full residential address" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Street / Local Address *</label>
+                    <textarea required name="address" value={formData.address} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your street address, building, or landmark" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">State *</label>
+                    <select required name="state" value={formData.state} onChange={handleChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
+                      <option value="">Select State</option>
+                      {indianStates.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">District *</label>
+                    <select required name="district" value={formData.district} onChange={handleChange} disabled={!formData.state} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:opacity-60">
+                      <option value="">Select District</option>
+                      {formData.state && indiaStatesAndDistricts[formData.state]?.map(district => (
+                        <option key={district} value={district}>{district}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Postal / PIN Code *</label>
+                    <input type="text" required name="postalCode" value={formData.postalCode} onChange={handleChange} maxLength={6} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="6 Digits" />
+                  </div>
                 </div>
               </div>
 

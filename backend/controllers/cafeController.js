@@ -57,6 +57,7 @@ export const verifyWorker = async (req, res) => {
       return res.status(400).json({ message: 'Worker is already verified.' });
     }
 
+    workerProfile.verificationStatus = 'VERIFIED';
     workerProfile.verified = true;
     workerProfile.verifiedByCafeId = req.user._id;
     workerProfile.verifiedAt = new Date();
@@ -80,7 +81,7 @@ export const getUnverifiedWorkers = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized as a Cafe owner.' });
     }
 
-    const profiles = await WorkerProfile.find({ verified: false })
+    const profiles = await WorkerProfile.find({ verificationStatus: 'PENDING' })
       .populate('userId', 'name email avatarUrl')
       .sort({ createdAt: -1 })
       .limit(20);
@@ -142,6 +143,36 @@ export const payOnline = async (req, res) => {
   } catch (error) {
     console.error('Error in online payment:', error);
     res.status(500).json({ message: 'Server error processing online payment.' });
+  }
+};
+
+// @desc    Reject a worker
+// @route   POST /api/v1/cafes/workers/reject/:workerId
+// @access  Private (Cafe only)
+export const rejectWorker = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'cafe' && req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as a Cafe owner.' });
+    }
+
+    const workerProfile = await WorkerProfile.findById(req.params.workerId);
+    if (!workerProfile) {
+      return res.status(404).json({ message: 'Worker profile not found.' });
+    }
+
+    if (workerProfile.verificationStatus !== 'PENDING') {
+      return res.status(400).json({ message: 'Worker is not pending verification.' });
+    }
+
+    workerProfile.verificationStatus = 'REJECTED';
+    workerProfile.verified = false;
+    
+    await workerProfile.save();
+
+    res.status(200).json({ message: 'Worker rejected successfully.' });
+  } catch (error) {
+    console.error('Error rejecting worker:', error);
+    res.status(500).json({ message: 'Server error rejecting worker.' });
   }
 };
 

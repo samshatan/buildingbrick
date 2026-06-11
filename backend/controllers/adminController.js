@@ -50,7 +50,7 @@ export const getCafes = async (req, res) => {
         email: cafe.email,
         pendingVerifications,
         totalVerifications,
-        pendingBalance: pendingVerifications * 118 // assuming Rs 118 fee
+        pendingBalance: pendingVerifications * 19 // assuming Rs 19 fee
       };
     }));
 

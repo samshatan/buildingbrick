@@ -21,6 +21,7 @@ import userRoutes from './routes/userRoutes.js';
 import directRequestRoutes from './routes/directRequestRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -34,7 +35,8 @@ const app = express();
 app.use(helmet()); // Security headers
 app.use(compression()); // Gzip/Brotli compression for responses
 app.use(cors({ origin: '*' })); // Consider restricting this in production later
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
@@ -77,6 +79,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/direct-requests', directRequestRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/upload', uploadRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {
