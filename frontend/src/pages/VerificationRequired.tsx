@@ -89,7 +89,10 @@ export default function VerificationRequired() {
   };
 
   const saveProfile = async (dataToSave: any) => {
-    if (!workerProfileId) return false;
+    if (!workerProfileId) {
+      toast.error("Profile ID not found. Please refresh the page.");
+      return false;
+    }
     setIsLoading(true);
     try {
       const res = await fetch(`/api/v1/workers/${workerProfileId}/profile`, {
@@ -300,8 +303,8 @@ export default function VerificationRequired() {
                 </div>
               </div>
 
-              <button onClick={handleNextStep1} disabled={isLoading} className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-all">
-                {isLoading ? "Saving..." : "Continue to Documents"} <ArrowRight className="w-5 h-5" />
+              <button onClick={handleNextStep1} disabled={isLoading || !workerProfileId} className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                {isLoading ? "Saving..." : !workerProfileId ? "Loading profile..." : "Continue to Documents"} <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           )}
