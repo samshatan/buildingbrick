@@ -87,6 +87,12 @@ function SignUp() {
         return;
       }
       
+      if (accountType === 'worker' && !profileFile) {
+        toast.error('Profile photo is mandatory for workers.');
+        setIsLoading(false);
+        return;
+      }
+      
       const identifier = accountType === 'worker' ? data.phone.trim() : data.email.trim();
       const isPhone = /^[0-9]+$/.test(identifier);
       if (accountType === 'worker') {
@@ -313,7 +319,7 @@ function SignUp() {
               {/* Photo Upload for Worker */}
               <div className="space-y-3 pt-4">
                 <label className="block text-sm font-semibold text-gray-700">
-                  Profile Photo (Optional)
+                  Profile Photo (Required)
                 </label>
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center shrink-0">
