@@ -35,8 +35,8 @@ export default function VerificationRequired() {
       fetch(`/api/v1/workers/user/${user.id}`)
         .then(res => res.json())
         .then(data => {
-          if (data && data._id) {
-            setWorkerProfileId(data._id);
+          if (data && (data._id || data.id)) {
+            setWorkerProfileId(data._id || data.id);
             setVerificationStatus(data.verificationStatus || "INCOMPLETE");
             setFormData(prev => ({
               ...prev,
