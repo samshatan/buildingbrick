@@ -38,7 +38,6 @@ function SignUp() {
   });
   const [data, setData] = useState({
     fullName: '',
-    username: '',
     email: '', // used for email or mobile
     phone: '',
     password: '',
@@ -149,7 +148,6 @@ function SignUp() {
       const formData = new FormData();
       const identifier = accountType === 'worker' ? data.phone.trim() : data.email.trim();
       formData.append('name', data.fullName.trim());
-      formData.append('username', data.username.trim());
       formData.append('identifier', identifier);
       if (accountType === 'worker' && data.email.trim()) {
         formData.append('optionalEmail', data.email.trim());
@@ -345,7 +343,7 @@ function SignUp() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5">
             <div className="space-y-1.5">
               <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
                 Full Name
@@ -363,27 +361,6 @@ function SignUp() {
                   onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
                   placeholder="John Doe"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="username" className="block text-sm font-semibold text-gray-700">
-                Username
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <span className="text-gray-400 font-bold">@</span>
-                </div>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={data.username}
-                  onChange={handleChange}
-                  className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
-                  placeholder="johndoe123"
                 />
               </div>
             </div>
