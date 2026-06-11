@@ -158,7 +158,11 @@ export const updatePhoto = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { displayName, bio, skills, dailyRate, experienceYears, location } = req.body;
+    const { 
+      displayName, bio, skills, dailyRate, experienceYears, location,
+      address, fatherName, motherName, spouseName, alternateMobile, 
+      termsAccepted, aadharCard, panCard, bankPassbook, onboardingFeePaid, paymentPreference
+    } = req.body;
 
     const worker = await WorkerProfile.findById(req.params.id);
     if (!worker) {
@@ -175,6 +179,20 @@ export const updateProfile = async (req, res) => {
     if (skills !== undefined) worker.skills = skills;
     if (dailyRate !== undefined) worker.dailyRate = Number(dailyRate);
     if (experienceYears !== undefined) worker.experienceYears = Number(experienceYears);
+    
+    // New Onboarding Fields
+    if (address !== undefined) worker.address = address;
+    if (fatherName !== undefined) worker.fatherName = fatherName;
+    if (motherName !== undefined) worker.motherName = motherName;
+    if (spouseName !== undefined) worker.spouseName = spouseName;
+    if (alternateMobile !== undefined) worker.alternateMobile = alternateMobile;
+    if (termsAccepted !== undefined) worker.termsAccepted = termsAccepted;
+    if (aadharCard !== undefined) worker.aadharCard = aadharCard;
+    if (panCard !== undefined) worker.panCard = panCard;
+    if (bankPassbook !== undefined) worker.bankPassbook = bankPassbook;
+    if (onboardingFeePaid !== undefined) worker.onboardingFeePaid = onboardingFeePaid;
+    if (paymentPreference !== undefined) worker.paymentPreference = paymentPreference;
+
     if (location !== undefined) {
       worker.location = location;
       const coords = await geocodeAddress(location);
@@ -184,6 +202,19 @@ export const updateProfile = async (req, res) => {
           coordinates: [coords.lng, coords.lat]
         };
       }
+    }
+
+    // Move to PENDING state if all required documents and fee are provided (or if offline payment chosen)
+    if (
+      worker.verificationStatus === 'INCOMPLETE' &&
+      worker.address &&
+      worker.termsAccepted &&
+      worker.aadharCard &&
+      worker.panCard &&
+      worker.bankPassbook &&
+      (worker.onboardingFeePaid || worker.paymentPreference === 'OFFLINE')
+    ) {
+      worker.verificationStatus = 'PENDING';
     }
 
     await worker.save();

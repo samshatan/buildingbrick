@@ -20,6 +20,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import directRequestRoutes from './routes/directRequestRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -75,6 +76,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/direct-requests', directRequestRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/payment', paymentRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {

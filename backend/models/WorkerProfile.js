@@ -22,7 +22,20 @@ const workerProfileSchema = new mongoose.Schema({
   featured: { type: Boolean, default: false },
   rating: { type: Number, default: 0.0 },
   jobsCompleted: { type: Number, default: 0 },
-  photo: { type: String, default: "" }
+  photo: { type: String, default: "" },
+  // New Onboarding Fields
+  address: { type: String, default: "" },
+  fatherName: { type: String, default: "" },
+  motherName: { type: String, default: "" },
+  spouseName: { type: String, default: "" },
+  alternateMobile: { type: String, default: "" },
+  termsAccepted: { type: Boolean, default: false },
+  aadharCard: { type: String, default: "" },
+  panCard: { type: String, default: "" },
+  bankPassbook: { type: String, default: "" },
+  onboardingFeePaid: { type: Boolean, default: false },
+  paymentPreference: { type: String, enum: ['ONLINE', 'OFFLINE'], default: 'ONLINE' },
+  verificationStatus: { type: String, enum: ['INCOMPLETE', 'PENDING', 'VERIFIED', 'REJECTED'], default: 'INCOMPLETE' }
 }, {
   toJSON: {
     virtuals: true,
