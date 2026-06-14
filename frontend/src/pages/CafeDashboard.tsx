@@ -19,6 +19,7 @@ interface WorkerProfile {
   cafePaymentStatus?: string;
   verificationStatus?: string;
   address?: string;
+  homeAddress?: string;
   postalCode?: string;
   state?: string;
   district?: string;
@@ -280,7 +281,7 @@ function CafeDashboard() {
 
                   <div className="flex items-end">
                     <span className="font-bold text-sm whitespace-nowrap">वर्तमान पता (Current Address):</span>
-                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.address || ''}</span>
                   </div>
                   <div className="flex items-end">
                     <span className="flex-1 border-b border-dashed border-gray-500 mx-2 mt-4"></span>
@@ -288,7 +289,7 @@ function CafeDashboard() {
 
                   <div className="flex items-end">
                     <span className="font-bold text-sm whitespace-nowrap">स्थायी पता (Permanent Address):</span>
-                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2"></span>
+                    <span className="flex-1 border-b border-dashed border-gray-500 mx-2 text-lg font-semibold px-2">{printWorker.homeAddress || ''}</span>
                   </div>
                   <div className="flex items-end">
                     <span className="flex-1 border-b border-dashed border-gray-500 mx-2 mt-4"></span>
@@ -830,7 +831,8 @@ function CafeDashboard() {
                     <div><span className="text-gray-500">Full Name:</span> <span className="font-bold">{reviewingWorker.userId?.name}</span></div>
                     <div><span className="text-gray-500">Mobile / Email:</span> <span className="font-bold">{reviewingWorker.userId?.phone || reviewingWorker.userId?.email}</span></div>
                     <div><span className="text-gray-500">Alternate Mobile:</span> <span className="font-bold">{reviewingWorker.alternateMobile || 'N/A'}</span></div>
-                    <div className="md:col-span-2"><span className="text-gray-500">Address:</span> <span className="font-bold">{reviewingWorker.address}, {reviewingWorker.district}, {reviewingWorker.state} - {reviewingWorker.postalCode}</span></div>
+                    <div className="md:col-span-2"><span className="text-gray-500">Present Address:</span> <span className="font-bold">{reviewingWorker.address}, {reviewingWorker.district}, {reviewingWorker.state} - {reviewingWorker.postalCode}</span></div>
+                    <div className="md:col-span-2"><span className="text-gray-500">Permanent Address:</span> <span className="font-bold">{reviewingWorker.homeAddress || 'Same as Present'}</span></div>
                     <div><span className="text-gray-500">Father's Name:</span> <span className="font-bold">{reviewingWorker.fatherName || 'N/A'}</span></div>
                     <div><span className="text-gray-500">Mother's Name:</span> <span className="font-bold">{reviewingWorker.motherName || 'N/A'}</span></div>
                     <div><span className="text-gray-500">Spouse's Name:</span> <span className="font-bold">{reviewingWorker.spouseName || 'N/A'}</span></div>

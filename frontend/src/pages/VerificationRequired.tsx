@@ -14,6 +14,7 @@ export default function VerificationRequired() {
 
   const [formData, setFormData] = useState({
     address: "",
+    homeAddress: "",
     postalCode: "",
     state: "",
     district: "",
@@ -45,6 +46,7 @@ export default function VerificationRequired() {
             setFormData(prev => ({
               ...prev,
               address: data.address || "",
+              homeAddress: data.homeAddress || "",
               postalCode: data.postalCode || "",
               state: data.state || "",
               district: data.district || "",
@@ -149,12 +151,13 @@ export default function VerificationRequired() {
   };
 
   const handleNextStep1 = async () => {
-    if (!formData.address || !formData.postalCode || !formData.state || !formData.district || !formData.dailyRate) {
+    if (!formData.address || !formData.homeAddress || !formData.postalCode || !formData.state || !formData.district || !formData.dailyRate) {
       toast.error("Please fill all required fields in Location and Professional details.");
       return;
     }
     const success = await saveProfile({
       address: formData.address,
+      homeAddress: formData.homeAddress,
       postalCode: formData.postalCode,
       state: formData.state,
       district: formData.district,
@@ -291,8 +294,21 @@ export default function VerificationRequired() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Street / Local Address *</label>
-                    <textarea required name="address" value={formData.address} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your street address, building, or landmark" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Present Address *</label>
+                    <textarea required name="address" value={formData.address} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your current street address, building, or landmark" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-sm font-semibold text-gray-700">Permanent / Home Address *</label>
+                      <button 
+                        type="button" 
+                        onClick={() => setFormData(prev => ({ ...prev, homeAddress: prev.address }))}
+                        className="text-xs font-bold text-primary hover:text-primary-600 transition-colors bg-primary/10 px-2 py-1 rounded-md"
+                      >
+                        Same as Present
+                      </button>
+                    </div>
+                    <textarea required name="homeAddress" value={formData.homeAddress} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your permanent home address" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">State *</label>

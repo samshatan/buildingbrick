@@ -43,7 +43,7 @@ export default function IdCardModal({ user, workerProfile, onClose }: IdCardModa
       {/* ID Card Wrapper */}
       <div id="id-card-printable" className="w-[340px] bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 relative print:shadow-none print:border print:border-gray-200">
         {/* Header Gradient */}
-        <div className="h-32 bg-gradient-to-br from-gray-900 to-black relative">
+        <div className="h-32 bg-gradient-to-br from-red-600 to-red-800 relative">
           <div className="absolute top-5 left-5">
             <span className="text-white font-black text-xl tracking-tighter">BrickOurHouse</span>
             <span className="block text-primary-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">Verified Partner</span>

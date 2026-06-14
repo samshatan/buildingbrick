@@ -24,7 +24,8 @@ const workerProfileSchema = new mongoose.Schema({
   jobsCompleted: { type: Number, default: 0 },
   photo: { type: String, default: "" },
   // New Onboarding Fields
-  address: { type: String, default: "" },
+  address: { type: String, default: "" }, // Present Address
+  homeAddress: { type: String, default: "" }, // Permanent/Home Address
   postalCode: { type: String, default: "" },
   state: { type: String, default: "" },
   district: { type: String, default: "" },

@@ -160,7 +160,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { 
       displayName, bio, skills, dailyRate, experienceYears, location,
-      address, postalCode, state, district, fatherName, motherName, spouseName, alternateMobile, 
+      address, homeAddress, postalCode, state, district, fatherName, motherName, spouseName, alternateMobile, 
       termsAccepted, aadharCard, panCard, bankPassbook, onboardingFeePaid, paymentPreference
     } = req.body;
 
@@ -182,6 +182,7 @@ export const updateProfile = async (req, res) => {
     
     // New Onboarding Fields
     if (address !== undefined) worker.address = address;
+    if (homeAddress !== undefined) worker.homeAddress = homeAddress;
     if (postalCode !== undefined) worker.postalCode = postalCode;
     if (state !== undefined) worker.state = state;
     if (district !== undefined) worker.district = district;
@@ -211,6 +212,7 @@ export const updateProfile = async (req, res) => {
     if (
       worker.verificationStatus === 'INCOMPLETE' &&
       worker.address &&
+      worker.homeAddress &&
       worker.postalCode &&
       worker.state &&
       worker.district &&
