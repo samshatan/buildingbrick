@@ -6,19 +6,18 @@ import type { ProductType } from "./ProductInterface";
 
 function Related({category, subCategory}: { category: string, subCategory: string}){
   const shop = useContext(ShopContext);
-    if(!shop) return null;
-    const { products } = shop;
-
-    const [related, setRelated] = useState<ProductType[]>([]); 
+  const [related, setRelated] = useState<ProductType[]>([]); 
   
-    useEffect(() => {
-      if (products.length > 0) {
-        let productCopy = products.slice();
-        productCopy = productCopy.filter((item) => category === item.category);
-        productCopy = productCopy.filter((item) => subCategory === item.subCategory);
-        setRelated(productCopy);
-      }
-    }, [products]);
+  useEffect(() => {
+    if (shop && shop.products.length > 0) {
+      let productCopy = shop.products.slice();
+      productCopy = productCopy.filter((item) => category === item.category);
+      productCopy = productCopy.filter((item) => subCategory === item.subCategory);
+      setRelated(productCopy);
+    }
+  }, [shop, category, subCategory]);
+
+  if(!shop) return null;
     return(
       <div className="my-24">
         <div className="text-center text-3xl py-2">

@@ -9,10 +9,10 @@ interface ProductCardProps{
 function ProductCard({product}: ProductCardProps){
 
   const shop = useContext(ShopContext);
+  const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "One Size");
+  
   if (!shop) return null;
   const { currency } = shop;
-
-  const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "One Size");
 
   return (
     <div className="product-card">

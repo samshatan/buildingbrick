@@ -29,6 +29,9 @@ const CafeDashboard = lazy(() => import('./pages/CafeDashboard'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const VerificationRequired = lazy(() => import('./pages/VerificationRequired'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const Terms = lazy(() => import('./pages/Terms'))
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 
 
 const Loader = () => (
@@ -76,6 +79,9 @@ function App() {
           <Route path='/verification-required' element={<VerificationRequired />} />
           <Route path='/cafe-dashboard' element={<CafeDashboard />} />
           <Route path='/admin-dashboard' element={<AdminDashboard />} />
+          <Route path='/terms' element={<Terms />} />
+          <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+          <Route path='/refund-policy' element={<RefundPolicy />} />
         </Routes>
       </Suspense>
       <div className="print:hidden">
