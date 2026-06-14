@@ -560,7 +560,7 @@ export default function VerificationRequired() {
               <div className="flex items-start gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <input type="checkbox" id="terms" name="termsAccepted" checked={formData.termsAccepted} onChange={handleChange} className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary" />
                 <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                  I accept the <a href="#" className="font-bold text-primary hover:underline">Terms & Requirements</a>. I confirm that all the information provided above is true and accurate to the best of my knowledge.
+                  I accept the <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">Terms & Requirements</Link>. I confirm that all the information provided above is true and accurate to the best of my knowledge.
                 </label>
               </div>
 
