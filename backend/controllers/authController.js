@@ -20,16 +20,18 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   });
   console.log('Nodemailer initialized in REAL mode.');
 } else {
-  // Use Ethereal test account if no real credentials are set
-  nodemailer.createTestAccount().then(account => {
-    transporter = nodemailer.createTransport({
-      host: account.smtp.host,
-      port: account.smtp.port,
-      secure: account.smtp.secure,
-      auth: { user: account.user, pass: account.pass }
-    });
-    console.log('Nodemailer initialized in TEST (Ethereal) mode.');
-  });
+  // Use a mock transporter if no real credentials are set to avoid Ethereal API 502 errors on production
+  transporter = {
+    sendMail: async (mailOptions) => {
+      console.log('\n=== MOCK EMAIL ===');
+      console.log(`To: ${mailOptions.to}`);
+      console.log(`Subject: ${mailOptions.subject}`);
+      console.log(`Text: ${mailOptions.text}`);
+      console.log('==================\n');
+      return { messageId: 'mock-id-123' };
+    }
+  };
+  console.log('Nodemailer initialized in MOCK mode (No SMTP credentials found).');
 }
 // Initialize Twilio client lazily
 let twilioClientInstance = null;
@@ -123,7 +125,7 @@ export const sendOtp = async (req, res) => {
       });
 
       if (!process.env.SMTP_USER) {
-        console.log('OTP Email Sent! Preview URL:', nodemailer.getTestMessageUrl(info));
+        console.log('OTP Email Sent! (Mock Mode - Check server console for OTP)');
       } else {
         console.log(`Real OTP Email sent to ${identifier}`);
       }
