@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema({
   accountType: { type: String, enum: ['worker', 'hirer', 'cafe', 'admin'], required: true },
   avatarUrl: { type: String, default: "" },
   coverImageUrl: { type: String, default: "" },
+  // Cafe Location Fields (Used when accountType === 'cafe')
+  address: { type: String, default: "" },
+  state: { type: String, default: "" },
+  district: { type: String, default: "" },
+  postalCode: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now }
 });
 

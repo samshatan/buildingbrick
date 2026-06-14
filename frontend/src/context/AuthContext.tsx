@@ -7,6 +7,10 @@ export interface User {
   userType: "WORKER" | "HIRER" | "CAFE" | "ADMIN";
   avatarUrl?: string;
   phone?: string;
+  address?: string;
+  state?: string;
+  district?: string;
+  postalCode?: string;
 }
 
 export interface AuthContextType {

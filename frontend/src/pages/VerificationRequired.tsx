@@ -31,8 +31,12 @@ export default function VerificationRequired() {
     aadharCard: "",
     panCard: "",
     bankPassbook: "",
-    onboardingFeePaid: false
+    onboardingFeePaid: false,
+    paymentPreference: ""
   });
+
+  const [nearbyCafes, setNearbyCafes] = useState<any[]>([]);
+  const [fetchingCafes, setFetchingCafes] = useState(false);
 
   useEffect(() => {
     // Check for success param from PhonePe redirect
@@ -66,7 +70,8 @@ export default function VerificationRequired() {
               aadharCard: data.aadharCard || "",
               panCard: data.panCard || "",
               bankPassbook: data.bankPassbook || "",
-              onboardingFeePaid: data.onboardingFeePaid || false
+              onboardingFeePaid: data.onboardingFeePaid || false,
+              paymentPreference: data.paymentPreference || ""
             }));
             
             // Auto-advance if already paid or pending
@@ -259,6 +264,7 @@ export default function VerificationRequired() {
     setIsLoading(true);
     const success = await saveProfile({ paymentPreference: 'OFFLINE' });
     if (success) {
+      setFormData(prev => ({ ...prev, paymentPreference: 'OFFLINE' }));
       toast.success("Offline payment selected.");
       setStep(4);
     } else {
@@ -266,23 +272,78 @@ export default function VerificationRequired() {
     }
   };
 
+  useEffect(() => {
+    if (step === 4 && formData.paymentPreference === 'OFFLINE' && formData.state && formData.district) {
+      setFetchingCafes(true);
+      fetch(`/api/v1/cafes/nearby?state=${encodeURIComponent(formData.state)}&district=${encodeURIComponent(formData.district)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setNearbyCafes(data);
+          }
+        })
+        .catch(err => console.error("Failed to fetch nearby cafes:", err))
+        .finally(() => setFetchingCafes(false));
+    }
+  }, [step, formData.paymentPreference, formData.state, formData.district]);
+
   if (step === 4 || verificationStatus === 'PENDING' || verificationStatus === 'VERIFIED') {
+    const isOffline = formData.paymentPreference === 'OFFLINE' && !formData.onboardingFeePaid;
+    
     return (
-      <div className="min-h-screen bg-gray-50/50 py-12 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50/50 py-12 px-4 flex flex-col items-center justify-center gap-8">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 text-center animate-in fade-in zoom-in duration-500">
           <div className="mx-auto w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
             <CheckCircle className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
           <p className="text-gray-600 mb-8 leading-relaxed">
-            Your profile and documents have been successfully submitted and the onboarding fee has been paid. 
+            Your profile and documents have been successfully submitted.
             <br/><br/>
-            <strong>Your profile will be verified by our website admins or an authorized cyber cafe owner soon.</strong>
+            {isOffline ? (
+              <strong>To complete verification, please visit a nearby authorized cyber cafe to pay your onboarding fee.</strong>
+            ) : (
+              <strong>Your profile will be verified by our website admins or an authorized cyber cafe owner soon.</strong>
+            )}
           </p>
           <Link to="/" className="w-full inline-flex items-center justify-center py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-colors">
             Go to Home
           </Link>
         </div>
+
+        {isOffline && (
+          <div className="max-w-3xl w-full bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 animate-in slide-in-from-bottom-8 duration-500">
+            <div className="flex items-center gap-3 mb-6">
+              <MapPin className="w-6 h-6 text-primary" />
+              <h3 className="text-xl font-bold text-gray-900">Nearest Cyber Cafes ({formData.district})</h3>
+            </div>
+            
+            {fetchingCafes ? (
+              <div className="py-12 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary/20 border-t-primary"></div>
+              </div>
+            ) : nearbyCafes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {nearbyCafes.map(cafe => (
+                  <div key={cafe._id} className="p-4 border border-gray-200 rounded-2xl hover:border-primary/50 hover:shadow-md transition-all">
+                    <h4 className="font-bold text-gray-900 text-lg mb-1">{cafe.name}</h4>
+                    <p className="text-sm text-gray-600 mb-3">{cafe.address}</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span className="font-semibold text-primary">{cafe.phone}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span>{cafe.email}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-amber-50 border border-amber-100 rounded-2xl">
+                <p className="text-amber-800 font-medium">No authorized cyber cafes found in your district yet.</p>
+                <p className="text-sm text-amber-600 mt-1">Please try searching in a nearby district or wait for cafes to register.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }

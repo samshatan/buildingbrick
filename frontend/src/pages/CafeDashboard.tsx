@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity } from "lucide-react";
+import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity, MapPin } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -41,9 +41,17 @@ interface WorkerProfile {
 
 function CafeDashboard() {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<"pending" | "verified">("pending");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"pending" | "verified" | "settings">("pending");
+  const [printWorker, setPrintWorker] = useState<WorkerProfile | null>(null);
   const [searchResults, setSearchResults] = useState<WorkerProfile[]>([]);
+  const [profileForm, setProfileForm] = useState({
+    address: user?.address || "",
+    state: user?.state || "",
+    district: user?.district || "",
+    postalCode: user?.postalCode || ""
+  });
+  const [profileSaving, setProfileSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [unverifiedQueue, setUnverifiedQueue] = useState<WorkerProfile[]>([]);
   const [verifiedHistory, setVerifiedHistory] = useState<WorkerProfile[]>([]);
@@ -57,9 +65,6 @@ function CafeDashboard() {
   // Review Application state
   const [reviewingWorker, setReviewingWorker] = useState<WorkerProfile | null>(null);
 
-  // For printing the certificate
-  const [printWorker, setPrintWorker] = useState<WorkerProfile | null>(null);
-
   useEffect(() => {
     setSelectedWorkers([]);
     if (activeTab === "pending") {
@@ -68,6 +73,17 @@ function CafeDashboard() {
       fetchVerifiedHistory();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        address: user.address || "",
+        state: user.state || "",
+        district: user.district || "",
+        postalCode: user.postalCode || ""
+      });
+    }
+  }, [user]);
 
   const fetchUnverifiedQueue = async () => {
     try {
@@ -180,6 +196,28 @@ function CafeDashboard() {
     } catch (err) {
       console.error(err);
       toast.update(loadingToast, { render: "An error occurred.", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    try {
+      const res = await fetch(`/api/v1/cafes/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(profileForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+      toast.success("Profile updated successfully!");
+    } catch (err: any) {
+      toast.error(err.message || 'Network error updating profile');
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -501,6 +539,19 @@ function CafeDashboard() {
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-t-full"></div>
                 )}
               </button>
+              <button
+                onClick={() => setActiveTab("settings")}
+                className={`pb-4 px-2 font-bold text-sm transition-colors relative ${activeTab === "settings" ? "text-primary" : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4" />
+                  Location Profile
+                </div>
+                {activeTab === "settings" && (
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-t-full"></div>
+                )}
+              </button>
             </div>
 
             {activeTab === "pending" ? (
@@ -691,6 +742,80 @@ function CafeDashboard() {
               </div>
             )}
           </div>
+
+          {activeTab === "settings" && (
+            <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <MapPin className="w-6 h-6 text-primary" /> Location Settings
+                </h2>
+                <p className="text-gray-500 mt-2 font-medium">
+                  Update your cafe's location. Workers in your area will see this address when looking for a nearby cafe to verify their profile.
+                </p>
+              </div>
+
+              <form onSubmit={handleProfileSave} className="space-y-6 max-w-2xl">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Full Address *</label>
+                  <textarea 
+                    required 
+                    value={profileForm.address} 
+                    onChange={e => setProfileForm({...profileForm, address: e.target.value})} 
+                    rows={3} 
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                    placeholder="Enter your complete cafe address" 
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">State *</label>
+                    <input 
+                      type="text"
+                      required 
+                      value={profileForm.state} 
+                      onChange={e => setProfileForm({...profileForm, state: e.target.value})} 
+                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="E.g. Maharashtra" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">District *</label>
+                    <input 
+                      type="text"
+                      required 
+                      value={profileForm.district} 
+                      onChange={e => setProfileForm({...profileForm, district: e.target.value})} 
+                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="E.g. Pune" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Postal / PIN Code *</label>
+                    <input 
+                      type="text"
+                      required 
+                      maxLength={6}
+                      value={profileForm.postalCode} 
+                      onChange={e => setProfileForm({...profileForm, postalCode: e.target.value})} 
+                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="6 Digits" 
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <button 
+                    type="submit" 
+                    disabled={profileSaving}
+                    className="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-all shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
+                  >
+                    {profileSaving ? "Saving..." : "Save Location Details"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* Recent Activity Sidebar */}
           <div className="space-y-6 hidden xl:block">

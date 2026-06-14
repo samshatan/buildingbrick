@@ -175,4 +175,68 @@ export const rejectWorker = async (req, res) => {
     res.status(500).json({ message: 'Server error rejecting worker.' });
   }
 };
+// @desc    Get nearby cafes based on state and district
+// @route   GET /api/v1/cafes/nearby
+// @access  Public
+export const getNearbyCafes = async (req, res) => {
+  try {
+    const { state, district } = req.query;
+    if (!state || !district) {
+      return res.status(400).json({ message: 'State and district are required.' });
+    }
 
+    const cafes = await User.find({
+      accountType: 'cafe',
+      state: state,
+      district: district
+    }).select('name email phone address state district postalCode avatarUrl').limit(50);
+
+    res.status(200).json(cafes);
+  } catch (error) {
+    console.error('Error fetching nearby cafes:', error);
+    res.status(500).json({ message: 'Server error fetching cafes.' });
+  }
+};
+
+// @desc    Update cafe profile (location settings)
+// @route   PUT /api/v1/cafes/profile
+// @access  Private (Cafe only)
+export const updateCafeProfile = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'cafe' && req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as a Cafe owner.' });
+    }
+
+    const { address, state, district, postalCode } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (address !== undefined) user.address = address;
+    if (state !== undefined) user.state = state;
+    if (district !== undefined) user.district = district;
+    if (postalCode !== undefined) user.postalCode = postalCode;
+
+    await user.save();
+
+    res.status(200).json({ 
+      message: 'Profile updated successfully.', 
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        accountType: user.accountType,
+        address: user.address,
+        state: user.state,
+        district: user.district,
+        postalCode: user.postalCode
+      }
+    });
+  } catch (error) {
+    console.error('Error updating cafe profile:', error);
+    res.status(500).json({ message: 'Server error updating profile.' });
+  }
+};

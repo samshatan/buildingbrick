@@ -310,12 +310,14 @@ function Profile() {
                   >
                     <Briefcase className="w-3.5 h-3.5" /> Edit Worker Details
                   </button>
-                  <button
-                    onClick={() => setShowIdCardModal(true)}
-                    className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 font-bold text-xs rounded-lg transition-all w-full shadow-sm"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" /> View ID Card
-                  </button>
+                  {workerProfile.verified && (
+                    <button
+                      onClick={() => setShowIdCardModal(true)}
+                      className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 font-bold text-xs rounded-lg transition-all w-full shadow-sm"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" /> View ID Card
+                    </button>
+                  )}
                 </>
               )}
             </div>
