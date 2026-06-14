@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { ShieldCheck, Store, Users, CheckCircle2, IndianRupee, User, ArrowUpRight, FileText, Activity, Clock } from "lucide-react";
+import { ShieldCheck, Store, Users, CheckCircle2, User, ArrowUpRight, FileText, Activity, Clock } from "lucide-react";
 
 interface CafeData {
   _id: string;
@@ -27,6 +27,7 @@ interface WorkerData {
     email: string;
   };
   cafePaymentStatus: string;
+  cafePaymentReceipt?: string;
 }
 
 function AdminDashboard() {
@@ -491,15 +492,24 @@ function AdminDashboard() {
                               {new Date(worker.verifiedAt || "").toLocaleDateString()}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              {worker.cafePaymentStatus === 'COLLECTED_BY_ADMIN' || worker.cafePaymentStatus === 'COLLECTED_OFFLINE_BY_ADMIN' ? (
-                                <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">Offline</span>
-                              ) : worker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' ? (
-                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">Paid Online</span>
-                              ) : worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' ? (
-                                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Pending</span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
+                              <div className="flex flex-col items-center gap-1">
+                                {worker.cafePaymentStatus === 'COLLECTED_BY_ADMIN' || worker.cafePaymentStatus === 'COLLECTED_OFFLINE_BY_ADMIN' ? (
+                                  <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">Offline</span>
+                                ) : worker.cafePaymentStatus === 'PAID_ONLINE_BY_CAFE' ? (
+                                  <>
+                                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">Paid Online</span>
+                                    {worker.cafePaymentReceipt && (
+                                      <a href={worker.cafePaymentReceipt} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-primary hover:underline flex items-center justify-center gap-1 mt-1">
+                                        <FileText className="w-3 h-3" /> View Receipt
+                                      </a>
+                                    )}
+                                  </>
+                                ) : worker.cafePaymentStatus === 'PENDING_ADMIN_COLLECTION' ? (
+                                  <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Pending</span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -515,13 +525,13 @@ function AdminDashboard() {
                     <span className="text-sm text-gray-500 font-bold uppercase tracking-wider block mb-1">Selected Total</span>
                     <span className="font-black text-xl text-primary">Rs {selectedWorkersForOffline.length * 19}</span>
                   </div>
-                  <button 
-                    onClick={handleCollectOffline}
-                    className="px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2 shadow-md shadow-green-500/20"
-                  >
-                    <IndianRupee className="w-4 h-4" />
-                    Mark Collected (Offline)
-                  </button>
+                    <button 
+                      onClick={handleCollectOffline}
+                      className="px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2 shadow-md shadow-green-500/20"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Verify & Mark Collected
+                    </button>
                 </div>
               )}
             </div>

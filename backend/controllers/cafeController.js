@@ -117,16 +117,23 @@ export const getVerifiedHistory = async (req, res) => {
 // @desc    Pay online for specific verified workers
 // @route   POST /api/v1/cafes/workers/pay-online
 // @access  Private (Cafe only)
+
+// @desc    Reject a worker
 export const payOnline = async (req, res) => {
   try {
     if (req.user.accountType !== 'cafe' && req.user.accountType !== 'admin') {
       return res.status(403).json({ message: 'Not authorized as a Cafe owner.' });
     }
 
-    const { workerIds } = req.body;
+    const { workerIds, receiptUrl } = req.body;
     
     if (!workerIds || !Array.isArray(workerIds) || workerIds.length === 0) {
       return res.status(400).json({ message: 'No workers selected for online payment.' });
+    }
+
+    const updateData = { cafePaymentStatus: 'PAID_ONLINE_BY_CAFE' };
+    if (receiptUrl) {
+      updateData.cafePaymentReceipt = receiptUrl;
     }
 
     // Update specific pending workers verified by this cafe
@@ -136,7 +143,7 @@ export const payOnline = async (req, res) => {
         verifiedByCafeId: req.user._id, 
         cafePaymentStatus: 'PENDING_ADMIN_COLLECTION' 
       },
-      { $set: { cafePaymentStatus: 'PAID_ONLINE_BY_CAFE' } }
+      { $set: updateData }
     );
 
     res.status(200).json({ message: `Successfully paid for ${result.modifiedCount} verifications online.` });

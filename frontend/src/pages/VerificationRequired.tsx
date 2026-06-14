@@ -337,9 +337,11 @@ export default function VerificationRequired() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 bg-amber-50 border border-amber-100 rounded-2xl">
-                <p className="text-amber-800 font-medium">No authorized cyber cafes found in your district yet.</p>
-                <p className="text-sm text-amber-600 mt-1">Please try searching in a nearby district or wait for cafes to register.</p>
+              <div className="text-center py-8 bg-amber-50 border border-amber-100 rounded-2xl px-4">
+                <p className="text-amber-800 font-bold text-lg mb-2">There is no cyber cafe registered in your area yet.</p>
+                <p className="text-amber-700 font-medium">
+                  Please contact us or WhatsApp your details to <a href="https://wa.me/919990639348" target="_blank" rel="noopener noreferrer" className="font-bold text-amber-900 hover:underline">9990639348</a> to complete your verification.
+                </p>
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity, MapPin } from "lucide-react";
+import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity, MapPin, UploadCloud } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -61,6 +61,7 @@ function CafeDashboard() {
   const [selectedWorkers, setSelectedWorkers] = useState<string[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
 
   // Review Application state
   const [reviewingWorker, setReviewingWorker] = useState<WorkerProfile | null>(null);
@@ -237,13 +238,33 @@ function CafeDashboard() {
     const toastId = toast.loading("Processing payment...");
 
     try {
+      let receiptUrl = "";
+      if (paymentReceipt) {
+        const formData = new FormData();
+        formData.append('image', paymentReceipt);
+        const uploadRes = await fetch('/api/v1/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          receiptUrl = uploadData.imageUrl;
+        } else {
+          toast.update(toastId, { render: "Failed to upload receipt image.", type: "error", isLoading: false, autoClose: 3000 });
+          setProcessingPayment(false);
+          return;
+        }
+      }
+
       const res = await fetch(`/api/v1/cafes/workers/pay-online`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ workerIds: selectedWorkers })
+        body: JSON.stringify({ workerIds: selectedWorkers, receiptUrl })
       });
 
       const data = await res.json();
@@ -251,6 +272,7 @@ function CafeDashboard() {
         toast.update(toastId, { render: data.message || "Payment successful!", type: "success", isLoading: false, autoClose: 3000 });
         setShowPaymentModal(false);
         setSelectedWorkers([]);
+        setPaymentReceipt(null);
         fetchVerifiedHistory(); // Refresh history
       } else {
         toast.update(toastId, { render: data.message || "Payment failed.", type: "error", isLoading: false, autoClose: 3000 });
@@ -912,8 +934,29 @@ function CafeDashboard() {
                   <p>Account Holder Name: fusion services</p>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <UploadCloud className="w-4 h-4 text-primary" /> Upload Payment Receipt *
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setPaymentReceipt(e.target.files[0]);
+                      }
+                    }}
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all outline-none"
+                  />
+                  {paymentReceipt && (
+                    <p className="text-xs text-green-600 mt-2 font-medium flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Selected: {paymentReceipt.name}
+                    </p>
+                  )}
+                </div>
+
                 <p className="text-xs text-gray-500 text-center font-medium">
-                  By clicking confirm, you acknowledge that you have transferred the amount to the Admin's account. This will update the status immediately.
+                  By clicking confirm, you acknowledge that you have transferred the amount to the Admin's account and uploaded the valid receipt.
                 </p>
 
                 <div className="flex gap-4 pt-2">
@@ -926,7 +969,7 @@ function CafeDashboard() {
                   </button>
                   <button
                     onClick={handlePayOnline}
-                    disabled={processingPayment}
+                    disabled={processingPayment || !paymentReceipt}
                     className="flex-1 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-600 shadow-md shadow-primary/20 transition-all disabled:opacity-50"
                   >
                     {processingPayment ? "Processing..." : "Confirm Payment"}

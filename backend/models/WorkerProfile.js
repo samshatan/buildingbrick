@@ -42,6 +42,7 @@ const workerProfileSchema = new mongoose.Schema({
   bankPassbook: { type: String, default: "" },
   onboardingFeePaid: { type: Boolean, default: false },
   paymentPreference: { type: String, enum: ['ONLINE', 'OFFLINE'], default: 'ONLINE' },
+  cafePaymentReceipt: { type: String, default: "" },
   verificationStatus: { type: String, enum: ['INCOMPLETE', 'PENDING', 'VERIFIED', 'REJECTED'], default: 'INCOMPLETE' }
 }, {
   toJSON: {
