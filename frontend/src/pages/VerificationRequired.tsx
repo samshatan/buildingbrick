@@ -16,8 +16,11 @@ export default function VerificationRequired() {
     address: "",
     homeAddress: "",
     postalCode: "",
+    homePostalCode: "",
     state: "",
+    homeState: "",
     district: "",
+    homeDistrict: "",
     fatherName: "",
     motherName: "",
     spouseName: "",
@@ -48,8 +51,11 @@ export default function VerificationRequired() {
               address: data.address || "",
               homeAddress: data.homeAddress || "",
               postalCode: data.postalCode || "",
+              homePostalCode: data.homePostalCode || "",
               state: data.state || "",
+              homeState: data.homeState || "",
               district: data.district || "",
+              homeDistrict: data.homeDistrict || "",
               fatherName: data.fatherName || "",
               motherName: data.motherName || "",
               spouseName: data.spouseName || "",
@@ -75,6 +81,22 @@ export default function VerificationRequired() {
     }
   }, [user, token]);
 
+  const [isSameAsPresent, setIsSameAsPresent] = useState(false);
+
+  const handleSameAsPresentToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setIsSameAsPresent(checked);
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        homeAddress: prev.address,
+        homeState: prev.state,
+        homeDistrict: prev.district,
+        homePostalCode: prev.postalCode
+      }));
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
@@ -83,9 +105,24 @@ export default function VerificationRequired() {
     } else {
       // Auto-reset district if state changes
       if (name === "state") {
-        setFormData(prev => ({ ...prev, state: value, district: "" }));
+        setFormData(prev => ({ 
+          ...prev, 
+          state: value, 
+          district: "",
+          ...(isSameAsPresent ? { homeState: value, homeDistrict: "" } : {})
+        }));
+      } else if (name === "homeState") {
+        setFormData(prev => ({ ...prev, homeState: value, homeDistrict: "" }));
       } else {
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+          const nextState = { ...prev, [name]: value };
+          if (isSameAsPresent) {
+            if (name === 'address') nextState.homeAddress = value;
+            if (name === 'district') nextState.homeDistrict = value;
+            if (name === 'postalCode') nextState.homePostalCode = value;
+          }
+          return nextState;
+        });
       }
     }
   };
@@ -151,7 +188,7 @@ export default function VerificationRequired() {
   };
 
   const handleNextStep1 = async () => {
-    if (!formData.address || !formData.homeAddress || !formData.postalCode || !formData.state || !formData.district || !formData.dailyRate) {
+    if (!formData.address || !formData.homeAddress || !formData.postalCode || !formData.homePostalCode || !formData.state || !formData.homeState || !formData.district || !formData.homeDistrict || !formData.dailyRate) {
       toast.error("Please fill all required fields in Location and Professional details.");
       return;
     }
@@ -159,8 +196,11 @@ export default function VerificationRequired() {
       address: formData.address,
       homeAddress: formData.homeAddress,
       postalCode: formData.postalCode,
+      homePostalCode: formData.homePostalCode,
       state: formData.state,
+      homeState: formData.homeState,
       district: formData.district,
+      homeDistrict: formData.homeDistrict,
       fatherName: formData.fatherName,
       motherName: formData.motherName,
       spouseName: formData.spouseName,
@@ -292,23 +332,10 @@ export default function VerificationRequired() {
                   <MapPin className="w-5 h-5 text-primary" /> Location Details
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Present Address *</label>
                     <textarea required name="address" value={formData.address} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your current street address, building, or landmark" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-sm font-semibold text-gray-700">Permanent / Home Address *</label>
-                      <button 
-                        type="button" 
-                        onClick={() => setFormData(prev => ({ ...prev, homeAddress: prev.address }))}
-                        className="text-xs font-bold text-primary hover:text-primary-600 transition-colors bg-primary/10 px-2 py-1 rounded-md"
-                      >
-                        Same as Present
-                      </button>
-                    </div>
-                    <textarea required name="homeAddress" value={formData.homeAddress} onChange={handleChange} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="Enter your permanent home address" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">State *</label>
@@ -331,6 +358,50 @@ export default function VerificationRequired() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Postal / PIN Code *</label>
                     <input type="text" required name="postalCode" value={formData.postalCode} onChange={handleChange} maxLength={6} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" placeholder="6 Digits" />
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100 my-6"></div>
+
+                <div className="flex items-center gap-2 mb-4">
+                  <input 
+                    type="checkbox" 
+                    id="sameAsPresent"
+                    checked={isSameAsPresent}
+                    onChange={handleSameAsPresentToggle}
+                    className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  />
+                  <label htmlFor="sameAsPresent" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                    Same as present address
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Home Address *</label>
+                    <textarea required name="homeAddress" value={formData.homeAddress} onChange={handleChange} disabled={isSameAsPresent} rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:opacity-60 disabled:bg-gray-100" placeholder="Enter your permanent home address" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Home State *</label>
+                    <select required name="homeState" value={formData.homeState} onChange={handleChange} disabled={isSameAsPresent} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:opacity-60 disabled:bg-gray-100">
+                      <option value="">Select State</option>
+                      {indianStates.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Home District *</label>
+                    <select required name="homeDistrict" value={formData.homeDistrict} onChange={handleChange} disabled={isSameAsPresent || !formData.homeState} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:opacity-60 disabled:bg-gray-100">
+                      <option value="">Select District</option>
+                      {formData.homeState && indiaStatesAndDistricts[formData.homeState]?.map(district => (
+                        <option key={district} value={district}>{district}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Home Postal / PIN Code *</label>
+                    <input type="text" required name="homePostalCode" value={formData.homePostalCode} onChange={handleChange} disabled={isSameAsPresent} maxLength={6} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none disabled:opacity-60 disabled:bg-gray-100" placeholder="6 Digits" />
                   </div>
                 </div>
               </div>

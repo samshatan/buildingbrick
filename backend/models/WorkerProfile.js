@@ -27,8 +27,11 @@ const workerProfileSchema = new mongoose.Schema({
   address: { type: String, default: "" }, // Present Address
   homeAddress: { type: String, default: "" }, // Permanent/Home Address
   postalCode: { type: String, default: "" },
+  homePostalCode: { type: String, default: "" },
   state: { type: String, default: "" },
+  homeState: { type: String, default: "" },
   district: { type: String, default: "" },
+  homeDistrict: { type: String, default: "" },
   fatherName: { type: String, default: "" },
   motherName: { type: String, default: "" },
   spouseName: { type: String, default: "" },

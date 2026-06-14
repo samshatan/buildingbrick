@@ -160,7 +160,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { 
       displayName, bio, skills, dailyRate, experienceYears, location,
-      address, homeAddress, postalCode, state, district, fatherName, motherName, spouseName, alternateMobile, 
+      address, homeAddress, postalCode, homePostalCode, state, homeState, district, homeDistrict, fatherName, motherName, spouseName, alternateMobile, 
       termsAccepted, aadharCard, panCard, bankPassbook, onboardingFeePaid, paymentPreference
     } = req.body;
 
@@ -184,8 +184,11 @@ export const updateProfile = async (req, res) => {
     if (address !== undefined) worker.address = address;
     if (homeAddress !== undefined) worker.homeAddress = homeAddress;
     if (postalCode !== undefined) worker.postalCode = postalCode;
+    if (homePostalCode !== undefined) worker.homePostalCode = homePostalCode;
     if (state !== undefined) worker.state = state;
+    if (homeState !== undefined) worker.homeState = homeState;
     if (district !== undefined) worker.district = district;
+    if (homeDistrict !== undefined) worker.homeDistrict = homeDistrict;
     if (fatherName !== undefined) worker.fatherName = fatherName;
     if (motherName !== undefined) worker.motherName = motherName;
     if (spouseName !== undefined) worker.spouseName = spouseName;

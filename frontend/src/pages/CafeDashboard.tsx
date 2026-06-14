@@ -21,8 +21,11 @@ interface WorkerProfile {
   address?: string;
   homeAddress?: string;
   postalCode?: string;
+  homePostalCode?: string;
   state?: string;
+  homeState?: string;
   district?: string;
+  homeDistrict?: string;
   fatherName?: string;
   motherName?: string;
   spouseName?: string;
@@ -832,7 +835,7 @@ function CafeDashboard() {
                     <div><span className="text-gray-500">Mobile / Email:</span> <span className="font-bold">{reviewingWorker.userId?.phone || reviewingWorker.userId?.email}</span></div>
                     <div><span className="text-gray-500">Alternate Mobile:</span> <span className="font-bold">{reviewingWorker.alternateMobile || 'N/A'}</span></div>
                     <div className="md:col-span-2"><span className="text-gray-500">Present Address:</span> <span className="font-bold">{reviewingWorker.address}, {reviewingWorker.district}, {reviewingWorker.state} - {reviewingWorker.postalCode}</span></div>
-                    <div className="md:col-span-2"><span className="text-gray-500">Permanent Address:</span> <span className="font-bold">{reviewingWorker.homeAddress || 'Same as Present'}</span></div>
+                    <div className="md:col-span-2"><span className="text-gray-500">Permanent Address:</span> <span className="font-bold">{reviewingWorker.homeAddress}, {reviewingWorker.homeDistrict}, {reviewingWorker.homeState} - {reviewingWorker.homePostalCode}</span></div>
                     <div><span className="text-gray-500">Father's Name:</span> <span className="font-bold">{reviewingWorker.fatherName || 'N/A'}</span></div>
                     <div><span className="text-gray-500">Mother's Name:</span> <span className="font-bold">{reviewingWorker.motherName || 'N/A'}</span></div>
                     <div><span className="text-gray-500">Spouse's Name:</span> <span className="font-bold">{reviewingWorker.spouseName || 'N/A'}</span></div>
