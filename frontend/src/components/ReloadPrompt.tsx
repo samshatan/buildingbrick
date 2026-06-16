@@ -6,14 +6,7 @@ function ReloadPrompt() {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW({
-    onRegistered(r: any) {
-      console.log('SW Registered:', r);
-    },
-    onRegisterError(error: any) {
-      console.log('SW registration error', error);
-    },
-  });
+  } = useRegisterSW({});
 
   const close = () => {
     setOfflineReady(false);
