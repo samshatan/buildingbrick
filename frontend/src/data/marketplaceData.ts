@@ -36,7 +36,6 @@ export const workerCategories: WorkerCategory[] = [
       "Painter",
       "Helper",
       "Carpenter/Woodworker",
-      "Mason/Rajmistri",
       "Road Construction Laborer",
       "Demolition Worker",
     ],
