@@ -82,7 +82,6 @@ export const getCategoryId = (type) => {
   if (agricultureTypes.includes(firstType)) return 'agriculture';
   if (utilitiesTypes.includes(firstType)) return 'utilities';
   if (interiorTypes.includes(firstType)) return 'interior';
-  if (interiorTypes.includes(firstType)) return 'interior';
   return 'construction'; // Default fallback
 };
 
