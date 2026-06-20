@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
@@ -107,7 +108,7 @@ export const sendOtp = async (req, res) => {
       return res.status(404).json({ message: 'No account found with this contact.' });
     }
 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = crypto.randomInt(100000, 1000000).toString();
 
     // Save/Update OTP
     await Otp.findOneAndUpdate(
@@ -304,7 +305,7 @@ export const googleAuth = async (req, res) => {
     } else {
       // Create new user as a Hirer (since Google login is for hirers only)
       // We still need a password for the model (can generate a random one since they login via Google)
-      const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+      const randomPassword = crypto.randomBytes(16).toString('hex');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
