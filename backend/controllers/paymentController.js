@@ -12,7 +12,7 @@ const PHONEPE_HOST = ENV === 'UAT'
   : 'https://api.phonepe.com/apis/hermes';
 
 // Utility to generate X-VERIFY signature
-const generateSignature = (payloadString, endpoint) => {
+export const generateSignature = (payloadString, endpoint) => {
   const dataToHash = payloadString + endpoint + SALT_KEY;
   const hash = crypto.createHash('sha256').update(dataToHash).digest('hex');
   return hash + '###' + SALT_INDEX;
