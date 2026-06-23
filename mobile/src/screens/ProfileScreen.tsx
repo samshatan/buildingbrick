@@ -73,18 +73,24 @@ export default function ProfileScreen({ navigation }: any) {
         >
           <Text style={styles.menuText}>My Cart</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('AdminDashboard')}
-        >
-          <Text style={styles.menuText}>Admin Dashboard</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('CafeDashboard')}
-        >
-          <Text style={styles.menuText}>Cafe Dashboard</Text>
-        </TouchableOpacity>
+
+        {userInfo?.userType === 'ADMIN' && (
+          <TouchableOpacity
+            style={[styles.menuItem, styles.adminItem]}
+            onPress={() => navigation.navigate('AdminDashboard')}
+          >
+            <Text style={[styles.menuText, styles.adminText]}>🛡️ Admin Dashboard</Text>
+          </TouchableOpacity>
+        )}
+
+        {(userInfo?.userType === 'CAFE' || userInfo?.userType === 'ADMIN') && (
+          <TouchableOpacity
+            style={[styles.menuItem, styles.cafeItem]}
+            onPress={() => navigation.navigate('CafeDashboard')}
+          >
+            <Text style={[styles.menuText, styles.cafeText]}>☕ Cafe Dashboard</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={styles.sectionTitle}>Information & Support</Text>
@@ -192,6 +198,20 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     color: '#374151',
+  },
+  adminItem: {
+    backgroundColor: '#fef2f2',
+  },
+  adminText: {
+    color: '#991b1b',
+    fontWeight: 'bold',
+  },
+  cafeItem: {
+    backgroundColor: '#ecfdf5',
+  },
+  cafeText: {
+    color: '#065f46',
+    fontWeight: 'bold',
   },
   logoutBtn: {
     marginTop: 32,
