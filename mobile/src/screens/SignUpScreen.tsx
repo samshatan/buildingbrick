@@ -1,161 +1,261 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function SignUpScreen({ navigation }: any) {
+  const [step, setStep] = useState(1); // 1: Send OTP, 2: Verify & Details
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // Email or Phone
+  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
+  const [accountType, setAccountType] = useState('hirer');
   const [loading, setLoading] = useState(false);
 
+  const handleSendOtp = async () => {
+    if (!identifier) {
+      Alert.alert('Required', 'Please enter your email or phone number');
+      return;
+    }
+    setLoading(true);
+    try {
+      await apiClient.post('/auth/send-otp', { identifier, type: 'signup' });
+      Alert.alert('OTP Sent', `A verification code has been sent to ${identifier}`);
+      setStep(2);
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSignUp = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!name || !otp || !password) {
+      Alert.alert('Required', 'Please fill in all fields');
       return;
     }
 
     setLoading(true);
     try {
-      // By default setting role to user. Further customization can be added
-      const response = await apiClient.post('/auth/register', { name, email, password, role: 'user' });
+      const response = await apiClient.post('/auth/signup', {
+        name,
+        identifier,
+        otp,
+        password,
+        accountType
+      });
       
-      if (response.data.success && response.data.token) {
+      if (response.data.token) {
         await AsyncStorage.setItem('userToken', response.data.token);
         await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
-        
-        // Navigate to Home upon success
         navigation.replace('Home');
-      } else {
-        Alert.alert('Sign Up Failed', response.data.message || 'Something went wrong');
       }
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to connect to the server');
+      Alert.alert('Registration Failed', error.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Create Account</Text>
-      <Text style={styles.subtext}>Join BuildingBrick today</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.card}>
+          <Text style={styles.header}>Create Account</Text>
+          <Text style={styles.subtext}>Join the BuildingBrick community</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your full name"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-        />
-      </View>
+          {step === 1 ? (
+            <View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email or Phone Number</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="example@email.com or 9876543210"
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  autoCapitalize="none"
+                />
+              </View>
+              <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Verification Code</Text>}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Verification Code (OTP)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="123456"
+                  value={otp}
+                  onChangeText={setOtp}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="John Doe"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Create Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+              </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+              <Text style={styles.label}>I am a...</Text>
+              <View style={styles.typeContainer}>
+                <TouchableOpacity
+                  style={[styles.typeBtn, accountType === 'hirer' && styles.typeBtnActive]}
+                  onPress={() => setAccountType('hirer')}
+                >
+                  <Text style={[styles.typeText, accountType === 'hirer' && styles.typeTextActive]}>Client</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.typeBtn, accountType === 'worker' && styles.typeBtnActive]}
+                  onPress={() => setAccountType('worker')}
+                >
+                  <Text style={[styles.typeText, accountType === 'worker' && styles.typeTextActive]}>Worker</Text>
+                </TouchableOpacity>
+              </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Create a password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
+              <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Complete Registration</Text>}
+              </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleSignUp}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign Up</Text>
-        )}
-      </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStep(1)}>
+                <Text style={styles.changeContact}>Change email/phone</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.footerLink}>Log In</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.footerLink}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+  },
+  scrollContent: {
     flexGrow: 1,
-    backgroundColor: '#fff',
-    padding: 24,
     justifyContent: 'center',
+    padding: SPACING.lg,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    ...SHADOWS.lg,
   },
   header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 28,
+    fontWeight: '800',
+    color: COLORS.text,
     marginBottom: 8,
   },
   subtext: {
     fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 32,
+    color: COLORS.textLight,
+    marginBottom: SPACING.xl,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: '700',
+    color: COLORS.text,
     marginBottom: 8,
   },
   input: {
+    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
     fontSize: 16,
-    color: '#1f2937',
+    color: COLORS.text,
+  },
+  typeContainer: {
+    flexDirection: 'row',
+    marginBottom: SPACING.lg,
+    gap: SPACING.md,
+  },
+  typeBtn: {
+    flex: 1,
+    padding: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+  typeBtnActive: {
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
+  },
+  typeText: {
+    fontWeight: '700',
+    color: COLORS.textLight,
+  },
+  typeTextActive: {
+    color: COLORS.surface,
   },
   button: {
-    backgroundColor: '#2563eb', // blue-600
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    padding: SPACING.lg,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.md,
   },
   buttonText: {
-    color: '#fff',
+    color: COLORS.surface,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '800',
+  },
+  changeContact: {
+    textAlign: 'center',
+    color: COLORS.textLight,
+    textDecorationLine: 'underline',
+    marginBottom: SPACING.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: SPACING.md,
   },
   footerText: {
-    color: '#6b7280',
+    color: COLORS.textLight,
     fontSize: 14,
   },
   footerLink: {
-    color: '#2563eb',
+    color: COLORS.secondary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
 });

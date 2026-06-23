@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function ProfileScreen({ navigation }: any) {
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -38,8 +39,15 @@ export default function ProfileScreen({ navigation }: any) {
     Alert.alert('Update Profile', 'This feature will allow you to change your name and profile picture. Backend integration is ready!');
   };
 
+  const MenuItem = ({ title, icon, onPress, style = {}, textStyle = {} }: any) => (
+    <TouchableOpacity style={[styles.menuItem, style]} onPress={onPress}>
+      <Text style={[styles.menuText, textStyle]}>{icon}  {title}</Text>
+      <Text style={styles.chevron}>›</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.avatarContainer} onPress={handleUpdateProfile}>
           <View style={styles.avatar} />
@@ -47,183 +55,207 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={styles.editText}>✎</Text>
           </View>
         </TouchableOpacity>
-        <Text style={styles.name}>{userInfo?.name || 'User Name'}</Text>
+        <Text style={styles.name}>{userInfo?.fullName || userInfo?.name || 'User Name'}</Text>
         <Text style={styles.email}>{userInfo?.email || 'user@example.com'}</Text>
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleBadgeText}>{userInfo?.userType || 'USER'}</Text>
+        </View>
       </View>
 
       <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuText}>My Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Jobs')}
-        >
-          <Text style={styles.menuText}>My Jobs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('WorkRequests')}
-        >
-          <Text style={styles.menuText}>Incoming Requests</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Cart')}
-        >
-          <Text style={styles.menuText}>My Cart</Text>
-        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Account</Text>
+        <MenuItem title="My Profile" icon="👤" onPress={handleUpdateProfile} />
+        <MenuItem title="My Jobs" icon="💼" onPress={() => navigation.navigate('Jobs')} />
+        <MenuItem title="My Cart" icon="🛒" onPress={() => navigation.navigate('Cart')} />
 
-        {userInfo?.userType === 'ADMIN' && (
-          <TouchableOpacity
-            style={[styles.menuItem, styles.adminItem]}
+        {userInfo?.userType !== 'WORKER' && (
+          <MenuItem
+            title="Become a Worker"
+            icon="🛠️"
+            onPress={() => navigation.navigate('WorkerOnboarding')}
+            style={styles.workerItem}
+            textStyle={styles.workerText}
+          />
+        )}
+      </View>
+
+      {userInfo?.userType === 'ADMIN' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Administration</Text>
+          <MenuItem
+            title="Admin Dashboard"
+            icon="🛡️"
             onPress={() => navigation.navigate('AdminDashboard')}
-          >
-            <Text style={[styles.menuText, styles.adminText]}>🛡️ Admin Dashboard</Text>
-          </TouchableOpacity>
-        )}
+            style={styles.adminItem}
+            textStyle={styles.adminText}
+          />
+        </View>
+      )}
 
-        {(userInfo?.userType === 'CAFE' || userInfo?.userType === 'ADMIN') && (
-          <TouchableOpacity
-            style={[styles.menuItem, styles.cafeItem]}
+      {(userInfo?.userType === 'CAFE' || userInfo?.userType === 'ADMIN') && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Partner Management</Text>
+          <MenuItem
+            title="Cafe Dashboard"
+            icon="☕"
             onPress={() => navigation.navigate('CafeDashboard')}
-          >
-            <Text style={[styles.menuText, styles.cafeText]}>☕ Cafe Dashboard</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            style={styles.cafeItem}
+            textStyle={styles.cafeText}
+          />
+        </View>
+      )}
 
-      <Text style={styles.sectionTitle}>Information & Support</Text>
       <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('About')}>
-          <Text style={styles.menuText}>About Us</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Contact')}>
-          <Text style={styles.menuText}>Contact Support</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Terms')}>
-          <Text style={styles.menuText}>Terms of Service</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Privacy')}>
-          <Text style={styles.menuText}>Privacy Policy</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Refund')}>
-          <Text style={styles.menuText}>Refund Policy</Text>
-        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Support & Legal</Text>
+        <MenuItem title="About BuildingBrick" icon="ℹ️" onPress={() => navigation.navigate('About')} />
+        <MenuItem title="Contact Support" icon="📞" onPress={() => navigation.navigate('Contact')} />
+        <MenuItem title="Privacy Policy" icon="🔒" onPress={() => navigation.navigate('Privacy')} />
       </View>
 
-      <TouchableOpacity 
-        style={styles.logoutBtn}
-        onPress={handleLogout}
-      >
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
-    </View>
+
+      <Text style={styles.version}>Version 1.0.0 (Stitsch Edition)</Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.background,
   },
   header: {
     alignItems: 'center',
-    padding: 32,
-    backgroundColor: '#ffffff',
+    padding: SPACING.xl,
+    paddingTop: SPACING.xl * 2,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#2563eb',
+    borderBottomColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 16,
+    marginBottom: SPACING.md,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.primary,
   },
   editBadge: {
     position: 'absolute',
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#ffffff',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    right: -4,
+    bottom: -4,
+    backgroundColor: COLORS.surface,
+    width: 28,
+    height: 28,
+    borderRadius: RADIUS.full,
+    ...SHADOWS.md,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   editText: {
-    fontSize: 12,
-    color: '#374151',
+    fontSize: 14,
+    color: COLORS.primary,
   },
   name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.primary,
   },
   email: {
     fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
+    color: COLORS.textLight,
+    marginTop: 2,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginLeft: 24,
-    marginTop: 24,
-    marginBottom: 8,
+  roleBadge: {
+    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+    marginTop: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.secondary,
+    letterSpacing: 1,
   },
   section: {
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e5e7eb',
+    marginTop: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginLeft: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   menuItem: {
-    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: COLORS.background,
   },
   menuText: {
     fontSize: 16,
-    color: '#374151',
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  chevron: {
+    fontSize: 20,
+    color: COLORS.border,
+  },
+  workerItem: {
+    backgroundColor: '#eff6ff',
+  },
+  workerText: {
+    color: COLORS.secondary,
   },
   adminItem: {
     backgroundColor: '#fef2f2',
   },
   adminText: {
     color: '#991b1b',
-    fontWeight: 'bold',
   },
   cafeItem: {
     backgroundColor: '#ecfdf5',
   },
   cafeText: {
     color: '#065f46',
-    fontWeight: 'bold',
   },
   logoutBtn: {
-    marginTop: 32,
-    marginHorizontal: 24,
-    backgroundColor: '#ef4444', // red
-    padding: 16,
-    borderRadius: 8,
+    margin: SPACING.lg,
+    marginTop: SPACING.xl,
+    backgroundColor: '#fff',
+    padding: SPACING.md,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fee2e2',
   },
   logoutText: {
-    color: '#ffffff',
+    color: COLORS.error,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+  },
+  version: {
+    textAlign: 'center',
+    color: COLORS.textLight,
+    fontSize: 12,
+    marginBottom: SPACING.xl,
   },
 });

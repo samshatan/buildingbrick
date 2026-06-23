@@ -1,18 +1,62 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function HomeScreen({ navigation }: any) {
-  // Placeholder for Categories
-  const categories = ['Construction', 'Plumbing', 'Electrical', 'Painting', 'Carpentry'];
+  const [userName, setUserName] = useState('User');
+  const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const categories = [
+    { name: 'Construction', icon: '🏗️', id: 'construction' },
+    { name: 'Plumbing', icon: '🚰', id: 'utilities' },
+    { name: 'Electrical', icon: '⚡', id: 'utilities' },
+    { name: 'Painting', icon: '🎨', id: 'interior' },
+    { name: 'Carpentry', icon: '🪚', id: 'interior' },
+  ];
+
+  const loadData = useCallback(async () => {
+    try {
+      const userStr = await AsyncStorage.getItem('userInfo');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setUserName(user.fullName || user.name || 'User');
+      }
+
+      const response = await apiClient.get('/workers');
+      const workerData = response.data.data || response.data.workers || response.data;
+      setWorkers(Array.isArray(workerData) ? workerData.slice(0, 5) : []);
+    } catch (error) {
+      console.log('Error loading home data', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.secondary} />}
+    >
       <Animated.View entering={FadeIn.duration(800)} style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.greeting}>Hello, User!</Text>
-            <Text style={styles.subtitle}>Find the right worker</Text>
+            <Text style={styles.greeting}>Hello, {userName}!</Text>
+            <Text style={styles.subtitle}>Find your project expert</Text>
           </View>
           <TouchableOpacity
             style={styles.notificationBtn}
@@ -25,29 +69,52 @@ export default function HomeScreen({ navigation }: any) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Categories</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesList}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesList}>
           {categories.map((cat, index) => (
-            <TouchableOpacity key={index} style={styles.categoryCard}>
-              <Text style={styles.categoryText}>{cat}</Text>
+            <TouchableOpacity
+              key={index}
+              style={styles.categoryCard}
+              onPress={() => navigation.navigate('Workers', { categoryId: cat.id })}
+            >
+              <Text style={styles.categoryIcon}>{cat.icon}</Text>
+              <Text style={styles.categoryText}>{cat.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Rated Workers</Text>
-        {/* Placeholder for top workers list */}
-        <View style={styles.workerCard}>
-          <Text style={styles.workerName}>John Doe</Text>
-          <Text style={styles.workerJob}>Plumber - 4.9⭐</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Featured Workers</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Workers')}>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.workerCard}>
-          <Text style={styles.workerName}>Jane Smith</Text>
-          <Text style={styles.workerJob}>Electrician - 4.8⭐</Text>
-        </View>
-        <TouchableOpacity style={styles.viewAllBtn} onPress={() => navigation.navigate('Workers')}>
-          <Text style={styles.viewAllText}>View All Workers</Text>
-        </TouchableOpacity>
+
+        {loading && !refreshing ? (
+          <ActivityIndicator size="small" color={COLORS.secondary} style={{ marginTop: 20 }} />
+        ) : workers.length > 0 ? (
+          workers.map((worker: any, index: number) => (
+            <Animated.View key={worker._id || index} entering={FadeInDown.delay(index * 100)}>
+              <TouchableOpacity
+                style={styles.workerCard}
+                onPress={() => navigation.navigate('WorkerDetails', { worker })}
+              >
+                <View style={styles.workerAvatar} />
+                <View style={styles.workerInfo}>
+                  <Text style={styles.workerName}>{worker.name || worker.displayName || 'Worker'}</Text>
+                  <Text style={styles.workerJob}>{worker.jobTitle || worker.workerType || 'Professional'}</Text>
+                </View>
+                <View style={styles.workerMeta}>
+                  <Text style={styles.workerRating}>⭐ {worker.rating || '4.5'}</Text>
+                  <Text style={styles.workerPrice}>${worker.pricePerHour || worker.dailyRate || '25'}/hr</Text>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No workers available at the moment.</Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -56,25 +123,25 @@ export default function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.background,
   },
   header: {
-    padding: 24,
-    backgroundColor: '#2563eb',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginBottom: 16,
+    padding: SPACING.lg,
+    paddingTop: SPACING.xl * 2,
+    backgroundColor: COLORS.primary,
+    borderBottomLeftRadius: RADIUS.xl,
+    borderBottomRightRadius: RADIUS.xl,
+    ...SHADOWS.lg,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
   },
   notificationBtn: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 10,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    padding: SPACING.sm,
+    borderRadius: RADIUS.md,
   },
   notificationIcon: {
     fontSize: 20,
@@ -82,71 +149,101 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: COLORS.surface,
   },
   subtitle: {
     fontSize: 16,
-    color: '#bfdbfe',
+    color: 'rgba(255, 255, 255, 0.7)',
     marginTop: 4,
   },
   section: {
-    padding: 20,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+  },
+  viewAllText: {
+    color: COLORS.secondary,
+    fontWeight: '700',
   },
   categoriesList: {
-    flexDirection: 'row',
+    paddingRight: SPACING.md,
   },
   categoryCard: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.lg,
+    marginRight: SPACING.md,
+    alignItems: 'center',
+    minWidth: 100,
+    ...SHADOWS.sm,
+  },
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: SPACING.xs,
   },
   categoryText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   workerCard: {
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
+    marginBottom: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.md,
+  },
+  workerAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.border,
+    marginRight: SPACING.md,
+  },
+  workerInfo: {
+    flex: 1,
   },
   workerName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: COLORS.text,
   },
   workerJob: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textLight,
+    marginTop: 2,
+  },
+  workerMeta: {
+    alignItems: 'flex-end',
+  },
+  workerRating: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.warning,
+  },
+  workerPrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.accent,
     marginTop: 4,
   },
-  viewAllBtn: {
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  viewAllText: {
-    color: '#2563eb',
-    fontSize: 16,
-    fontWeight: 'bold',
+  emptyText: {
+    textAlign: 'center',
+    color: COLORS.textLight,
+    marginTop: SPACING.xl,
   },
 });

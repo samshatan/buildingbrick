@@ -18,6 +18,7 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import CartScreen from '../screens/CartScreen';
 import PaymentScreen from '../screens/PaymentScreen';
 import NotificationScreen from '../screens/NotificationScreen';
+import WorkerOnboardingScreen from '../screens/WorkerOnboardingScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import CafeDashboardScreen from '../screens/CafeDashboardScreen';
 
@@ -43,6 +44,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart' }} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Checkout' }} />
         <Stack.Screen name="Notifications" component={NotificationScreen} options={{ title: 'Notifications' }} />
+        <Stack.Screen name="WorkerOnboarding" component={WorkerOnboardingScreen} options={{ title: 'Apply as Worker' }} />
         <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin Panel' }} />
         <Stack.Screen name="CafeDashboard" component={CafeDashboardScreen} options={{ title: 'Cafe Panel' }} />
       </Stack.Navigator>

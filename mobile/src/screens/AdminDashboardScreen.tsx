@@ -22,9 +22,9 @@ export default function AdminDashboardScreen() {
       ]);
 
       setStats({
-        totalUsers: usersRes.data.length || 0,
-        totalWorkers: workersRes.data.length || 0,
-        totalCafes: cafesRes.data.length || 0,
+        totalUsers: (usersRes.data.data || usersRes.data).length || 0,
+        totalWorkers: (workersRes.data.data || workersRes.data).length || 0,
+        totalCafes: (cafesRes.data.data || cafesRes.data).length || 0,
         activeJobs: (jobsRes.data.data || jobsRes.data).length || 0,
       });
     } catch (error) {

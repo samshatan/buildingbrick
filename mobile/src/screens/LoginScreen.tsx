@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// NOTE: Commented out because the native module crashes standard Expo Go
-// import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  useEffect(() => {
-    // NOTE: Commented out because GoogleSignin requires a Development Build
-    // and will crash standard Expo Go. Uncomment when building natively!
-    /*
-    GoogleSignin.configure({
-      webClientId: 'YOUR_WEB_CLIENT_ID_HERE.apps.googleusercontent.com',
-    });
-    */
-  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert('Required', 'Please enter your login details');
       return;
     }
 
@@ -37,220 +25,172 @@ export default function LoginScreen({ navigation }: any) {
         
         navigation.replace('Home');
       } else {
-        Alert.alert('Login Failed', response.data.message || 'Something went wrong');
+        Alert.alert('Login Failed', response.data.message || 'Check your credentials');
       }
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to connect to the server');
+      Alert.alert('Error', error.response?.data?.message || 'Connection to server failed');
     } finally {
       setLoading(false);
     }
   };
 
-  // NOTE: Google Sign In logic hidden for Expo Go testing
-  /*
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    try {
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      
-      // Handle newer v11+ API where signIn returns an object with a 'type' property
-      if (response.type === 'success') {
-        const idToken = response.data.idToken;
-
-        // Send the Google idToken to your backend to authenticate
-        const apiResponse = await apiClient.post('/auth/google', { token: idToken });
-        
-        if (apiResponse.data.success && apiResponse.data.token) {
-          await AsyncStorage.setItem('userToken', apiResponse.data.token);
-          await AsyncStorage.setItem('userInfo', JSON.stringify(apiResponse.data.user));
-          navigation.replace('Home');
-        }
-      } else if (response.type === 'cancelled') {
-        console.log('User cancelled the login flow');
-      }
-    } catch (error: any) {
-      if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Error', 'Play services not available or outdated');
-      } else {
-        console.log('Google login error', error);
-        Alert.alert('Error', 'Google Sign-In failed');
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-  */
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Welcome Back</Text>
-      <Text style={styles.subtext}>Log in to BuildingBrick</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.card}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoText}>🏗️</Text>
+          <Text style={styles.brandName}>BuildingBrick</Text>
+        </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+        <Text style={styles.header}>Welcome Back</Text>
+        <Text style={styles.subtext}>Manage your projects with ease</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email or Phone</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="example@email.com"
+            placeholderTextColor={COLORS.textLight}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
-      </TouchableOpacity>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="••••••••"
+            placeholderTextColor={COLORS.textLight}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleLogin}
-        disabled={loading || googleLoading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Log In</Text>
-        )}
-      </TouchableOpacity>
-
-      {/* NOTE: Google Sign-In is temporarily hidden for Expo Go testing. 
-          Uncomment this block when you switch to a custom Dev Build.
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.dividerText}>OR</Text>
-        <View style={styles.divider} />
-      </View>
-
-      <TouchableOpacity 
-        style={styles.googleButton} 
-        onPress={handleGoogleLogin}
-        disabled={loading || googleLoading}
-      >
-        {googleLoading ? (
-          <ActivityIndicator color="#db4437" />
-        ) : (
-          <Text style={styles.googleButtonText}>Sign In with Google</Text>
-        )}
-      </TouchableOpacity>
-      */}
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.footerLink}>Sign Up</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.disabledBtn]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign In</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>New to the platform? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <Text style={styles.footerLink}>Create Account</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
+    padding: SPACING.lg,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    ...SHADOWS.lg,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+  },
+  logoText: {
+    fontSize: 48,
+  },
+  brandName: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.primary,
+    marginTop: 8,
+    letterSpacing: 1,
   },
   header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 28,
+    fontWeight: '800',
+    color: COLORS.text,
     marginBottom: 8,
   },
   subtext: {
     fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 32,
+    color: COLORS.textLight,
+    marginBottom: SPACING.xl,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: '700',
+    color: COLORS.text,
     marginBottom: 8,
   },
   input: {
+    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
     fontSize: 16,
-    color: '#1f2937',
+    color: COLORS.text,
   },
   forgotPassword: {
-    color: '#2563eb',
+    color: COLORS.secondary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'right',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   button: {
-    backgroundColor: '#2563eb', // blue-600
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    padding: SPACING.lg,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.md,
+  },
+  disabledBtn: {
+    opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
+    color: COLORS.surface,
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#d1d5db',
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: '#6b7280',
-    fontWeight: '600',
-  },
-  googleButton: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  googleButtonText: {
-    color: '#374151',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: SPACING.md,
   },
   footerText: {
-    color: '#6b7280',
+    color: COLORS.textLight,
     fontSize: 14,
   },
   footerLink: {
-    color: '#2563eb',
+    color: COLORS.secondary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
 });

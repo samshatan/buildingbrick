@@ -1,50 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, FlatList, RefreshControl } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
-export default function WorkersScreen({ navigation }: any) {
+export default function WorkersScreen({ navigation, route }: any) {
+  const categoryId = route.params?.categoryId;
   const [workers, setWorkers] = useState([]);
   const [filteredWorkers, setFilteredWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchWorkers();
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredWorkers(workers);
-    } else {
-      const filtered = workers.filter((w: any) =>
-        w.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        w.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        w.role?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredWorkers(filtered);
-    }
-  }, [searchQuery, workers]);
-
-  const fetchWorkers = async () => {
+  const fetchWorkers = useCallback(async () => {
     try {
       const response = await apiClient.get('/workers');
       if (response.data) {
-        // Handle different response structures
         const workerData = response.data.data || response.data.workers || response.data;
         const workersArray = Array.isArray(workerData) ? workerData : [];
         setWorkers(workersArray);
-        setFilteredWorkers(workersArray);
+
+        // Filter by category if coming from home
+        if (categoryId) {
+          const categoryFiltered = workersArray.filter((w: any) =>
+            w.categoryId === categoryId || w.category === categoryId
+          );
+          setFilteredWorkers(categoryFiltered);
+        } else {
+          setFilteredWorkers(workersArray);
+        }
       }
     } catch (error) {
       console.log('Error fetching workers', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  }, [categoryId]);
+
+  useEffect(() => {
+    fetchWorkers();
+  }, [fetchWorkers]);
+
+  useEffect(() => {
+    let result = workers;
+    if (categoryId) {
+      result = result.filter((w: any) => w.categoryId === categoryId || w.category === categoryId);
+    }
+    if (searchQuery.trim() !== '') {
+      result = result.filter((w: any) =>
+        w.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        w.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        w.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        w.workerType?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    setFilteredWorkers(result);
+  }, [searchQuery, workers, categoryId]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchWorkers();
   };
 
   const renderWorker = ({ item, index }: any) => (
-    <Animated.View entering={FadeInUp.delay(index * 100).duration(500)}>
+    <Animated.View entering={FadeInUp.delay(index * 50).duration(400)}>
       <TouchableOpacity 
         style={styles.card}
         onPress={() => navigation.navigate('WorkerDetails', { worker: item })}
@@ -52,51 +72,72 @@ export default function WorkersScreen({ navigation }: any) {
         <View style={styles.cardHeader}>
           <View style={styles.avatarPlaceholder} />
           <View style={styles.info}>
-            <Text style={styles.name}>{item.name || 'Worker Name'}</Text>
-            <Text style={styles.role}>{item.jobTitle || item.role || 'Skilled Professional'}</Text>
+            <Text style={styles.name}>{item.name || item.displayName || 'Worker Name'}</Text>
+            <Text style={styles.role}>{item.jobTitle || item.workerType || 'Skilled Professional'}</Text>
+          </View>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{item.verified ? '✓' : '?'}</Text>
           </View>
         </View>
         <View style={styles.details}>
-          <Text style={styles.price}>${item.pricePerHour || '25'}/hr</Text>
-          <Text style={styles.rating}>⭐ {item.rating || '4.5'}</Text>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Rate</Text>
+            <Text style={styles.price}>${item.pricePerHour || item.dailyRate || '25'}/hr</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Rating</Text>
+            <Text style={styles.rating}>⭐ {item.rating || '4.5'}</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Exp</Text>
+            <Text style={styles.exp}>{item.experienceYears || '5'}y</Text>
+          </View>
         </View>
       </TouchableOpacity>
     </Animated.View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Available Workers</Text>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by name or skill..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+        <Text style={styles.headerTitle}>Expert Marketplace</Text>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by name or skill..."
+            placeholderTextColor={COLORS.textLight}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
-      <Animated.FlatList
-        data={filteredWorkers.length > 0 ? filteredWorkers : (searchQuery ? [] : [1, 2, 3, 4, 5])}
-        keyExtractor={(item, index) => item._id || index.toString()}
-        renderItem={renderWorker}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          searchQuery ? (
+
+      {loading && !refreshing ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={COLORS.secondary} />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredWorkers}
+          keyExtractor={(item, index) => item._id || index.toString()}
+          renderItem={renderWorker}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.secondary} />
+          }
+          ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No workers found matching "{searchQuery}"</Text>
+              <Text style={styles.emptyText}>
+                {searchQuery ? `No results for "${searchQuery}"` : "No workers available in this category."}
+              </Text>
+              <TouchableOpacity style={styles.resetBtn} onPress={() => {setSearchQuery(''); navigation.setParams({categoryId: null})}}>
+                <Text style={styles.resetBtnText}>Clear Filters</Text>
+              </TouchableOpacity>
             </View>
-          ) : null
-        }
-      />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -104,7 +145,7 @@ export default function WorkersScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.background,
   },
   centered: {
     flex: 1,
@@ -112,89 +153,122 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#ffffff',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.md,
+    paddingTop: SPACING.xl,
+    ...SHADOWS.sm,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: SPACING.md,
+  },
+  searchContainer: {
+    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   searchInput: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    padding: 12,
+    height: 48,
     fontSize: 16,
-    color: '#1f2937',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    color: COLORS.text,
   },
   listContainer: {
-    padding: 16,
+    padding: SPACING.md,
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    ...SHADOWS.md,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#e5e7eb',
-    marginRight: 12,
+    width: 56,
+    height: 56,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.border,
+    marginRight: SPACING.md,
   },
   info: {
     flex: 1,
   },
   name: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontWeight: '700',
+    color: COLORS.text,
   },
   role: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textLight,
     marginTop: 2,
+  },
+  badge: {
+    backgroundColor: COLORS.background,
+    padding: SPACING.xs,
+    borderRadius: RADIUS.sm,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: COLORS.accent,
+    fontWeight: 'bold',
   },
   details: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    paddingTop: 12,
+    borderTopColor: COLORS.border,
+    paddingTop: SPACING.md,
+  },
+  detailItem: {
+    alignItems: 'center',
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginBottom: 4,
   },
   price: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#059669', // green
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.accent,
   },
   rating: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#d97706', // orange/gold
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.warning,
+  },
+  exp: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   emptyContainer: {
-    padding: 40,
+    padding: SPACING.xl,
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: COLORS.textLight,
     textAlign: 'center',
+    marginBottom: SPACING.md,
+  },
+  resetBtn: {
+    padding: SPACING.sm,
+  },
+  resetBtnText: {
+    color: COLORS.secondary,
+    fontWeight: '700',
   },
 });
