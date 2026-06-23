@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import tw from 'twrnc';
 import { Cuboid, ArrowRight } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import apiClient from '../api/client';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen({ navigation }: any) {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +17,46 @@ export default function AuthScreen({ navigation }: any) {
   const [role, setRole] = useState<'user' | 'worker'>('user');
   
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
+    iosClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com', // typically requires specific iOS client id, but we'll try this
+    androidClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com', // typically requires specific Android client id, but we'll try this
+  });
+
+  useEffect(() => {
+    const handleGoogleResponse = async () => {
+      if (response?.type === 'success') {
+        setGoogleLoading(true);
+        const { authentication } = response;
+        try {
+          const res = await apiClient.post('/auth/google', { token: authentication?.accessToken });
+          if (res.data?.token) {
+            await AsyncStorage.setItem('userToken', res.data.token);
+            await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
+            navigation.replace('Home');
+          }
+        } catch (err: any) {
+          console.log('Google Auth error', err);
+          setError(err.response?.data?.message || 'Google authentication failed.');
+        } finally {
+          setGoogleLoading(false);
+        }
+      } else if (response?.type === 'error' || response?.type === 'dismiss') {
+        setGoogleLoading(false);
+      }
+    };
+
+    handleGoogleResponse();
+  }, [response]);
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setGoogleLoading(true);
+    await promptAsync();
+  };
 
   const handleSubmit = async () => {
     setError('');
@@ -39,17 +82,18 @@ export default function AuthScreen({ navigation }: any) {
           navigation.replace('Home');
         }
       } else {
-        const res = await apiClient.post('/auth/signup', { 
-          name: fullName, 
-          email, 
-          password,
-          role
+        const res = await apiClient.post('/auth/send-otp', { 
+          identifier: email,
+          type: 'signup'
         });
-        if (res.data?.token) {
-          await AsyncStorage.setItem('userToken', res.data.token);
-          await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
-          navigation.replace('Home');
-        }
+        
+        // Navigate to Verification Screen instead of Home
+        navigation.navigate('Verification', {
+          identifier: email,
+          password,
+          name: fullName,
+          accountType: role
+        });
       }
     } catch (err: any) {
       console.log('Auth error', err);
@@ -64,6 +108,13 @@ export default function AuthScreen({ navigation }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={tw`flex-1 bg-zinc-950`}
     >
+      <TouchableOpacity 
+        onPress={() => navigation.replace('Home')}
+        style={tw`absolute top-14 right-6 w-10 h-10 bg-zinc-900 rounded-full items-center justify-center z-10 border border-zinc-800`}
+      >
+        <Text style={tw`text-zinc-400 font-bold text-lg`}>✕</Text>
+      </TouchableOpacity>
+      
       <ScrollView contentContainerStyle={tw`flex-grow justify-center px-8 py-12`}>
         <View style={tw`mb-10 items-center`}>
           <View style={tw`w-16 h-16 bg-[#cc4518] rounded-[20px] items-center justify-center mb-6`}>
@@ -79,6 +130,27 @@ export default function AuthScreen({ navigation }: any) {
               <Text style={tw`text-red-400 text-xs font-bold`}>{error}</Text>
             </View>
           ) : null}
+
+          <TouchableOpacity 
+            onPress={handleGoogleLogin}
+            disabled={googleLoading}
+            style={tw`w-full py-3.5 bg-white rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color="#09090b" size="small" />
+            ) : (
+              <>
+                <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-5 h-5`} />
+                <Text style={tw`text-zinc-900 font-bold text-sm tracking-wide`}>Continue with Google</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <View style={tw`flex-row items-center justify-between mb-2`}>
+            <View style={tw`flex-1 h-[1px] bg-zinc-800`} />
+            <Text style={tw`text-zinc-600 font-bold text-xs px-4 uppercase tracking-widest`}>OR</Text>
+            <View style={tw`flex-1 h-[1px] bg-zinc-800`} />
+          </View>
 
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5`}>
@@ -141,16 +213,16 @@ export default function AuthScreen({ navigation }: any) {
           <TouchableOpacity 
             onPress={handleSubmit}
             disabled={loading}
-            style={tw`w-full py-4 mt-6 bg-white rounded-xl flex-row items-center justify-center gap-2 ${loading ? 'opacity-70' : ''}`}
+            style={tw`w-full py-4 mt-6 bg-[#cc4518] rounded-xl flex-row items-center justify-center gap-2 ${loading ? 'opacity-70' : ''}`}
           >
             {loading ? (
-              <ActivityIndicator color="#09090b" size="small" />
+              <ActivityIndicator color="white" size="small" />
             ) : (
               <>
-                <Text style={tw`text-zinc-950 font-bold text-xs uppercase tracking-widest`}>
+                <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>
                   {isLogin ? 'Sign In' : 'Create Account'}
                 </Text>
-                <ArrowRight size={16} color="#09090b" />
+                <ArrowRight size={16} color="white" />
               </>
             )}
           </TouchableOpacity>

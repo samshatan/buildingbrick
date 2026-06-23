@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AuthScreen from '../screens/AuthScreen';
+import VerificationScreen from '../screens/VerificationScreen';
 import MainTabNavigator from './MainTabNavigator';
 import WorkerDetailsScreen from '../screens/WorkerDetailsScreen';
 import DirectHireScreen from '../screens/DirectHireScreen';
@@ -16,6 +17,7 @@ import RefundScreen from '../screens/RefundScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import CartScreen from '../screens/CartScreen';
 import PaymentScreen from '../screens/PaymentScreen';
+import MaterialDetailsScreen from '../screens/MaterialDetailsScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import StudioScreen from '../screens/StudioScreen';
 import ProjectsScreen from '../screens/ProjectsScreen';
@@ -31,6 +33,7 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Login" component={AuthScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Verification" component={VerificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
         <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="WorkerDetails" component={WorkerDetailsScreen} options={{ title: 'Worker Profile' }} />
@@ -42,6 +45,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Terms" component={TermsScreen} options={{ title: 'Terms of Service' }} />
         <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: 'Privacy Policy' }} />
         <Stack.Screen name="Refund" component={RefundScreen} options={{ title: 'Refund Policy' }} />
+        <Stack.Screen name="MaterialDetails" component={MaterialDetailsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart' }} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Checkout' }} />
         <Stack.Screen name="Notifications" component={NotificationScreen} options={{ title: 'Notifications' }} />

@@ -22,6 +22,8 @@ import directRequestRoutes from './routes/directRequestRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+import materialRoutes from './routes/materialRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -80,6 +82,8 @@ app.use('/api/v1/direct-requests', directRequestRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/cart', cartRoutes);
+app.use('/api/v1/materials', materialRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {

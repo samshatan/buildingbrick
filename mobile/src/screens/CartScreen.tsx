@@ -1,29 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import apiClient from '../api/client';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function CartScreen({ navigation }: any) {
-  // Dummy cart data - to be replaced with real global state/API later
-  const [cartItems, setCartItems] = useState([
-    { id: '1', name: 'Premium Cement Bag', price: 15.99, quantity: 2, image: '🏗️' },
-    { id: '2', name: 'Standard Paint Gallon', price: 25.50, quantity: 1, image: '🎨' },
-    { id: '3', name: 'Safety Helmet', price: 12.00, quantity: 1, image: '🪖' },
-  ]);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/cart');
+      if (response.data?.data) {
+        setCartItems(response.data.data.items || []);
+        setTotal(response.data.data.totalPrice || 0);
+      }
+    } catch (error) {
+      console.log('Error fetching cart:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCart();
+    }, [])
+  );
 
   const handleCheckout = () => {
     navigation.navigate('Payment', { amount: total, items: cartItems });
   };
 
-  const removeItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const removeItem = async (id: string) => {
+    try {
+      await apiClient.delete(`/cart/remove/${id}`);
+      fetchCart();
+    } catch (error) {
+      console.log('Error removing item:', error);
+    }
   };
 
   const renderItem = ({ item }: any) => (
     <View style={styles.cartItem}>
       <View style={styles.imageBox}>
-        <Text style={styles.imageEmoji}>{item.image}</Text>
+        {item.image && item.image.startsWith('http') ? (
+          <Image source={{ uri: item.image }} style={{ width: '100%', height: '100%', borderRadius: RADIUS.md }} />
+        ) : (
+          <Text style={styles.imageEmoji}>{item.image || '📦'}</Text>
+        )}
       </View>
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.name}</Text>
@@ -32,7 +59,7 @@ export default function CartScreen({ navigation }: any) {
           <Text style={styles.quantityText}>Qty: {item.quantity}</Text>
         </View>
       </View>
-      <TouchableOpacity onPress={() => removeItem(item.id)} style={styles.removeBtn}>
+      <TouchableOpacity onPress={() => removeItem(item._id || item.id)} style={styles.removeBtn}>
         <Text style={styles.removeText}>✕</Text>
       </TouchableOpacity>
     </View>
@@ -42,7 +69,7 @@ export default function CartScreen({ navigation }: any) {
     <View style={styles.container}>
       <FlatList
         data={cartItems}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={
