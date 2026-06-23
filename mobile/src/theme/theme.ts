@@ -1,14 +1,24 @@
 export const COLORS = {
-  primary: '#0F172A', // Slate 900 (Premium Dark)
-  secondary: '#2563EB', // Blue 600
-  accent: '#10B981', // Emerald 500 (Success/Money)
-  background: '#F8FAFC', // Slate 50
+  // Brand Colors (Brick & Masonry Theme)
+  primary: '#8B4513', // SaddleBrown (Main Brand Color)
+  primaryLight: '#D6C4B0',
+  primaryDark: '#4A3B28',
+
+  // Neutral Palette
+  background: '#FAF9F6', // Off-white
   surface: '#FFFFFF',
-  text: '#1E293B', // Slate 800
-  textLight: '#64748B', // Slate 500
-  border: '#E2E8F0', // Slate 200
-  error: '#EF4444', // Red 500
-  warning: '#F59E0B', // Amber 500
+  text: '#2D2926', // Off-black
+  textLight: '#7C746B',
+  border: '#E5E2DA',
+
+  // UI Colors
+  accent: '#7A3B0F',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+
+  // Specialized Colors
+  zinc900: '#1A1715',
 };
 
 export const SPACING = {
@@ -24,30 +34,30 @@ export const RADIUS = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
+  xl: 32, // Large rounded corners as seen in brick-our-house
   full: 9999,
 };
 
 export const SHADOWS = {
   sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#4A3B28',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#4A3B28',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   lg: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
   },
 };

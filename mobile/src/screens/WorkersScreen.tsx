@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, FlatList, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import apiClient from '../api/client';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
@@ -20,10 +20,9 @@ export default function WorkersScreen({ navigation, route }: any) {
         const workersArray = Array.isArray(workerData) ? workerData : [];
         setWorkers(workersArray);
 
-        // Filter by category if coming from home
         if (categoryId) {
           const categoryFiltered = workersArray.filter((w: any) =>
-            w.categoryId === categoryId || w.category === categoryId
+            w.categoryId === categoryId || w.category === categoryId || w.workerType?.toLowerCase().includes(categoryId.toLowerCase())
           );
           setFilteredWorkers(categoryFiltered);
         } else {
@@ -45,7 +44,9 @@ export default function WorkersScreen({ navigation, route }: any) {
   useEffect(() => {
     let result = workers;
     if (categoryId) {
-      result = result.filter((w: any) => w.categoryId === categoryId || w.category === categoryId);
+      result = result.filter((w: any) =>
+        w.categoryId === categoryId || w.category === categoryId || w.workerType?.toLowerCase().includes(categoryId.toLowerCase())
+      );
     }
     if (searchQuery.trim() !== '') {
       result = result.filter((w: any) =>
@@ -75,22 +76,24 @@ export default function WorkersScreen({ navigation, route }: any) {
             <Text style={styles.name}>{item.name || item.displayName || 'Worker Name'}</Text>
             <Text style={styles.role}>{item.jobTitle || item.workerType || 'Skilled Professional'}</Text>
           </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{item.verified ? '✓' : '?'}</Text>
+          <View style={[styles.badge, { backgroundColor: item.verified ? '#F0FDF4' : '#F5F2ED' }]}>
+            <Text style={[styles.badgeText, { color: item.verified ? COLORS.success : COLORS.primary }]}>
+              {item.verified ? '✓ VERIFIED' : 'PENDING'}
+            </Text>
           </View>
         </View>
         <View style={styles.details}>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Rate</Text>
-            <Text style={styles.price}>${item.pricePerHour || item.dailyRate || '25'}/hr</Text>
+            <Text style={styles.detailLabel}>DAILY RATE</Text>
+            <Text style={styles.price}>${item.pricePerHour || item.dailyRate || '25'}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Rating</Text>
+            <Text style={styles.detailLabel}>RATING</Text>
             <Text style={styles.rating}>⭐ {item.rating || '4.5'}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Exp</Text>
-            <Text style={styles.exp}>{item.experienceYears || '5'}y</Text>
+            <Text style={styles.detailLabel}>EXP</Text>
+            <Text style={styles.exp}>{item.experienceYears || '5'} YRS</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -98,10 +101,11 @@ export default function WorkersScreen({ navigation, route }: any) {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Expert Marketplace</Text>
         <View style={styles.searchContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name or skill..."
@@ -114,7 +118,7 @@ export default function WorkersScreen({ navigation, route }: any) {
 
       {loading && !refreshing ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={COLORS.secondary} />
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       ) : (
         <FlatList
@@ -124,21 +128,22 @@ export default function WorkersScreen({ navigation, route }: any) {
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.secondary} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>🔍</Text>
               <Text style={styles.emptyText}>
-                {searchQuery ? `No results for "${searchQuery}"` : "No workers available in this category."}
+                {searchQuery ? `No results for "${searchQuery}"` : "No experts available in this category."}
               </Text>
               <TouchableOpacity style={styles.resetBtn} onPress={() => {setSearchQuery(''); navigation.setParams({categoryId: null})}}>
-                <Text style={styles.resetBtnText}>Clear Filters</Text>
+                <Text style={styles.resetBtnText}>CLEAR ALL FILTERS</Text>
               </TouchableOpacity>
             </View>
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -154,48 +159,60 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: COLORS.surface,
-    padding: SPACING.md,
+    padding: SPACING.lg,
     paddingTop: SPACING.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
     ...SHADOWS.sm,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '800',
     color: COLORS.primary,
     marginBottom: SPACING.md,
   },
   searchContainer: {
     backgroundColor: COLORS.background,
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
   },
   searchInput: {
     height: 48,
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.text,
+    flex: 1,
   },
   listContainer: {
-    padding: SPACING.md,
+    padding: SPACING.lg,
+    paddingBottom: 100,
   },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
     ...SHADOWS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   avatarPlaceholder: {
     width: 56,
     height: 56,
     borderRadius: RADIUS.md,
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.primaryLight,
     marginRight: SPACING.md,
   },
   info: {
@@ -203,26 +220,24 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.text,
   },
   role: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textLight,
     marginTop: 2,
+    fontWeight: '600',
   },
   badge: {
-    backgroundColor: COLORS.background,
-    padding: SPACING.xs,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: RADIUS.sm,
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   badgeText: {
-    color: COLORS.accent,
-    fontWeight: 'bold',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   details: {
     flexDirection: 'row',
@@ -235,40 +250,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   detailLabel: {
-    fontSize: 12,
+    fontSize: 9,
     color: COLORS.textLight,
+    fontWeight: '800',
+    letterSpacing: 1,
     marginBottom: 4,
   },
   price: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.accent,
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.primary,
   },
   rating: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     color: COLORS.warning,
   },
   exp: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.text,
   },
   emptyContainer: {
-    padding: SPACING.xl,
+    padding: 60,
     alignItems: 'center',
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
+    opacity: 0.5,
   },
   emptyText: {
     fontSize: 16,
     color: COLORS.textLight,
     textAlign: 'center',
-    marginBottom: SPACING.md,
+    fontWeight: '600',
+    marginBottom: SPACING.lg,
   },
   resetBtn: {
-    padding: SPACING.sm,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: RADIUS.full,
   },
   resetBtnText: {
-    color: COLORS.secondary,
-    fontWeight: '700',
+    color: COLORS.surface,
+    fontWeight: '800',
+    fontSize: 11,
+    letterSpacing: 1,
   },
 });

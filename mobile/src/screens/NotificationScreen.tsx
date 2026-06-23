@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, SafeAreaView } from 'react-native';
 import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function NotificationScreen() {
   const [notifications, setNotifications] = useState([]);
@@ -54,59 +55,67 @@ export default function NotificationScreen() {
 
   const renderNotification = ({ item }: any) => (
     <TouchableOpacity
-      style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
+      style={[styles.notificationCard, !item.isRead && styles.unreadCard]}
       onPress={() => !item.isRead && markAsRead(item._id)}
+      activeOpacity={0.7}
     >
-      <View style={styles.content}>
-        <Text style={[styles.title, !item.isRead && styles.unreadText]}>{item.title}</Text>
-        <Text style={styles.message}>{item.message}</Text>
-        <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+      <View style={styles.iconContainer}>
+        <Text style={styles.notifIcon}>{item.type === 'job' ? '💼' : '✨'}</Text>
       </View>
-      {!item.isRead && <View style={styles.unreadDot} />}
+      <View style={styles.content}>
+        <View style={styles.notifHeader}>
+          <Text style={[styles.title, !item.isRead && styles.unreadText]}>{item.title}</Text>
+          {!item.isRead && <View style={styles.unreadDot} />}
+        </View>
+        <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
+        <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</Text>
+      </View>
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
         {notifications.some((n: any) => !n.isRead) && (
-          <TouchableOpacity onPress={markAllRead}>
-            <Text style={styles.markAll}>Mark all read</Text>
+          <TouchableOpacity onPress={markAllRead} style={styles.markAllBtn}>
+            <Text style={styles.markAll}>MARK ALL READ</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <FlatList
-        data={notifications}
-        keyExtractor={(item: any) => item._id}
-        renderItem={renderNotification}
-        contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No notifications yet.</Text>
-          </View>
-        }
-      />
-    </View>
+      {loading && !refreshing ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item: any) => item._id}
+          renderItem={renderNotification}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconCircle}>
+                <Text style={styles.emptyIcon}>🔔</Text>
+              </View>
+              <Text style={styles.emptyTitle}>All caught up!</Text>
+              <Text style={styles.emptyText}>You don't have any new notifications.</Text>
+            </View>
+          }
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.background,
   },
   centered: {
     flex: 1,
@@ -117,68 +126,124 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#ffffff',
+    padding: SPACING.lg,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  markAllBtn: {
+    backgroundColor: '#F5F2ED',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
   },
   markAll: {
-    color: '#2563eb',
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '800',
+    fontSize: 10,
+    letterSpacing: 1,
   },
   listContainer: {
-    paddingBottom: 20,
+    padding: SPACING.md,
+    paddingBottom: 40,
   },
-  notificationItem: {
+  notificationCard: {
     flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    padding: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    marginBottom: SPACING.md,
     alignItems: 'center',
+    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  unreadItem: {
-    backgroundColor: '#eff6ff', // light blue
+  unreadCard: {
+    backgroundColor: '#FFF',
+    borderColor: COLORS.primaryLight,
+    borderWidth: 1.5,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  notifIcon: {
+    fontSize: 20,
   },
   content: {
     flex: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
+  notifHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 4,
   },
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
   unreadText: {
-    color: '#1f2937',
+    color: COLORS.primaryDark,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
   },
   message: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textLight,
+    lineHeight: 20,
     marginBottom: 8,
   },
   date: {
-    fontSize: 12,
-    color: '#9ca3af',
-  },
-  unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#2563eb',
-    marginLeft: 12,
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   emptyContainer: {
-    padding: 40,
+    padding: 60,
     alignItems: 'center',
+    marginTop: 40,
+  },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    ...SHADOWS.md,
+  },
+  emptyIcon: {
+    fontSize: 40,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 8,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
+    fontSize: 14,
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
 });

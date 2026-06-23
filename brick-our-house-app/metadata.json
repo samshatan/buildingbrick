@@ -1,0 +1,6 @@
+{
+  "name": "Brick Our House App",
+  "description": "Modern app for home remodeling with 3D visualizations",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import apiClient from '../api/client';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
 export default function DirectHireScreen({ route, navigation }: any) {
   const { worker } = route.params || {};
 
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
-  const [date, setDate] = useState(''); // Simple text input for now, could use a date picker library later
+  const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleHireRequest = async () => {
     if (!description || !address || !date) {
-      Alert.alert('Missing Fields', 'Please fill in all the required information to request this worker.');
+      Alert.alert('Missing Info', 'Please fill in all details to request this expert.');
       return;
     }
 
     setLoading(true);
     try {
-      // Assuming a backend route like /api/v1/direct-requests to create a job/hire request
       const response = await apiClient.post('/direct-requests', {
         workerId: worker?._id || worker?.id,
         description,
@@ -27,159 +27,213 @@ export default function DirectHireScreen({ route, navigation }: any) {
       });
 
       if (response.data) {
-        Alert.alert('Success!', `Your hiring request has been sent to ${worker?.name || 'the worker'}.`);
-        navigation.goBack();
+        Alert.alert('Request Sent', `Your booking request has been sent to ${worker?.name || 'the expert'}.`, [
+          { text: 'View My Jobs', onPress: () => navigation.navigate('Jobs') },
+          { text: 'Done', onPress: () => navigation.popToTop() }
+        ]);
       }
     } catch (error: any) {
-      console.log('Error creating direct hire request:', error);
-      Alert.alert('Request Failed', error.response?.data?.message || 'There was an issue sending your request.');
+      Alert.alert('Booking Error', error.response?.data?.message || 'Failed to send request.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Hire {worker?.name || 'Worker'}</Text>
-        <Text style={styles.subtitle}>Provide details about the job you need done.</Text>
-      </View>
-
-      <View style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Job Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Describe what you need help with..."
-            multiline
-            numberOfLines={4}
-            value={description}
-            onChangeText={setDescription}
-          />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Book {worker?.name || 'Expert'}</Text>
+          <Text style={styles.subtitle}>Provide project details for a custom estimate.</Text>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Job Location (Address)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 123 Main St, City, Zip"
-            value={address}
-            onChangeText={setAddress}
-          />
-        </View>
+        <View style={styles.formCard}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>PROJECT DESCRIPTION</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Describe what you need help with..."
+              multiline
+              numberOfLines={4}
+              value={description}
+              onChangeText={setDescription}
+              placeholderTextColor={COLORS.textLight}
+            />
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Preferred Date</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. YYYY-MM-DD or 'Next Monday'"
-            value={date}
-            onChangeText={setDate}
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>SITE LOCATION</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 123 Construction Rd, City"
+              value={address}
+              onChangeText={setAddress}
+              placeholderTextColor={COLORS.textLight}
+            />
+          </View>
 
-        <View style={styles.summaryBox}>
-          <Text style={styles.summaryTitle}>Payment Summary</Text>
-          <Text style={styles.summaryText}>Hourly Rate: ${worker?.pricePerHour || '25'}/hr</Text>
-          <Text style={styles.summaryNote}>You will discuss final hours and pricing directly with the worker once they accept the request.</Text>
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>PREFERRED START DATE</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. July 15, 2026"
+              value={date}
+              onChangeText={setDate}
+              placeholderTextColor={COLORS.textLight}
+            />
+          </View>
 
-        <TouchableOpacity 
-          style={styles.submitBtn} 
-          onPress={handleHireRequest}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitBtnText}>Send Request</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <View style={styles.estimateBox}>
+            <Text style={styles.estimateTitle}>Pricing Model</Text>
+            <View style={styles.estimateRow}>
+              <Text style={styles.estimateLabel}>Base Daily Rate</Text>
+              <Text style={styles.estimateValue}>${worker?.dailyRate || worker?.pricePerHour || '200'}</Text>
+            </View>
+            <Text style={styles.estimateNote}>
+              The final estimate will be confirmed by the expert after reviewing your project details.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.submitBtn, loading && styles.disabledBtn]}
+            onPress={handleHireRequest}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <View style={styles.btnContent}>
+                <Text style={styles.submitBtnText}>SEND BOOKING REQUEST</Text>
+                <Text style={styles.btnArrow}>→</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.background,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
-    padding: 24,
-    backgroundColor: '#ffffff',
+    padding: SPACING.xl,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: COLORS.border,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.primary,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginTop: 4,
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginTop: 6,
+    lineHeight: 20,
   },
-  formContainer: {
-    padding: 20,
+  formCard: {
+    margin: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    ...SHADOWS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  inputContainer: {
-    marginBottom: 20,
+  inputGroup: {
+    marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.textLight,
+    letterSpacing: 1.5,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#1f2937',
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    fontSize: 15,
+    color: COLORS.text,
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
-  summaryBox: {
-    backgroundColor: '#eff6ff', // blue-50
-    padding: 16,
-    borderRadius: 8,
+  estimateBox: {
+    backgroundColor: '#F5F2ED',
+    padding: SPACING.lg,
+    borderRadius: RADIUS.lg,
+    marginBottom: SPACING.xl,
     borderWidth: 1,
-    borderColor: '#bfdbfe', // blue-200
-    marginBottom: 24,
+    borderColor: COLORS.primaryLight,
   },
-  summaryTitle: {
+  estimateTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e3a8a', // blue-900
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 12,
+  },
+  estimateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  summaryText: {
-    fontSize: 15,
-    color: '#1e40af', // blue-800
-    marginBottom: 4,
+  estimateLabel: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '600',
   },
-  summaryNote: {
-    fontSize: 13,
-    color: '#3b82f6', // blue-500
+  estimateValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  estimateNote: {
+    fontSize: 12,
+    color: COLORS.primaryDark,
     marginTop: 8,
     fontStyle: 'italic',
+    lineHeight: 18,
+    opacity: 0.8,
   },
   submitBtn: {
-    backgroundColor: '#059669', // green-600
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    padding: SPACING.lg,
+    borderRadius: RADIUS.full,
+    ...SHADOWS.lg,
+  },
+  disabledBtn: {
+    opacity: 0.7,
+  },
+  btnContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
   },
   submitBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFF',
+    letterSpacing: 1,
+  },
+  btnArrow: {
+    color: '#FFF',
+    fontSize: 20,
   },
 });
