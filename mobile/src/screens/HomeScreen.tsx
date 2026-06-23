@@ -1,393 +1,175 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Image, Dimensions } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import tw from 'twrnc';
+import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, MapPin } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }: any) {
-  const [userName, setUserName] = useState('User');
-  const [workers, setWorkers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const services = [
-    { title: "Masonry", icon: "🧱", color: COLORS.surface },
-    { title: "Remodeling", icon: "🏠", color: COLORS.surface },
-    { title: "Estimates", icon: "💎", color: COLORS.surface }
-  ];
-
-  const loadData = useCallback(async () => {
-    try {
-      const userStr = await AsyncStorage.getItem('userInfo');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        setUserName(user.fullName || user.name || 'User');
-      }
-
-      const response = await apiClient.get('/workers');
-      const workerData = response.data.data || response.data.workers || response.data;
-      setWorkers(Array.isArray(workerData) ? workerData.slice(0, 5) : []);
-    } catch (error) {
-      console.log('Error loading home data', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const [userName, setUserName] = useState('Builder');
+  const [workers, setWorkers] = useState<any[]>([]);
+  const [loadingWorkers, setLoadingWorkers] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    // Load User
+    const loadUser = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem('userInfo');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (user.name) setUserName(user.name.split(' ')[0]);
+        }
+      } catch (e) {
+        console.log('Error parsing user info', e);
+      }
+    };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadData();
-  };
+    // Load Workers
+    const fetchWorkers = async () => {
+      try {
+        const response = await apiClient.get('/workers');
+        const workerData = response.data?.data || response.data?.workers || response.data || [];
+        setWorkers(Array.isArray(workerData) ? workerData.slice(0, 3) : []);
+      } catch (err) {
+        console.log('Error fetching workers', err);
+      } finally {
+        setLoadingWorkers(false);
+      }
+    };
+
+    loadUser();
+    fetchWorkers();
+  }, []);
+
+  const services = [
+    { title: "Workers", icon: Building, action: () => navigation.navigate('Workers') },
+    { title: "Projects", icon: PaintRoller, action: () => navigation.navigate('Projects') },
+    { title: "Estimates", icon: Sparkles, action: () => navigation.navigate('Studio') },
+    { title: "Materials", icon: ShoppingCart, action: () => navigation.navigate('Cart') }
+  ];
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
-    >
-      {/* Hero Section with Background Image */}
-      <View style={styles.heroContainer}>
+    <ScrollView style={tw`flex-1 bg-zinc-50`} contentContainerStyle={tw`pb-8`}>
+      {/* Header section */}
+      <Animated.View entering={FadeIn.duration(800)} style={[tw`relative w-full bg-zinc-900 overflow-hidden rounded-b-[32px]`, { height: 288 }]}>
         <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80' }}
-          style={styles.heroImage}
+          source={{ uri: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80" }}
+          style={[tw`absolute inset-0 w-full h-full`, { opacity: 0.6 }]}
         />
-        <View style={styles.heroOverlay} />
-
-        <Animated.View entering={FadeIn.duration(800)} style={styles.heroContent}>
-          <Text style={styles.heroTitle}>Build your dream{"\n"}brick home.</Text>
-          <Text style={styles.heroSubtitle}>Riverside Estate Phase 2</Text>
-        </Animated.View>
-
-        <TouchableOpacity
-          style={styles.notificationBtn}
-          onPress={() => navigation.navigate('Notifications')}
-        >
-          <Text style={styles.notificationIcon}>🔔</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 3D Studio Promo Card */}
-      <View style={styles.promoWrapper}>
-        <Animated.View
-          entering={FadeIn.delay(200).duration(800)}
-          style={styles.promoCard}
-        >
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>✨ NEW FEATURE</Text>
-          </View>
-          <Text style={styles.promoTitle}>Visualize with 3D Studio</Text>
-          <Text style={styles.promoDesc}>
-            Design a custom brick facade in real-time. Change colors, styles, and trim instantly.
+        <LinearGradient
+          colors={['transparent', 'rgba(24, 24, 27, 0.4)', '#18181b']}
+          style={tw`absolute inset-0`}
+        />
+        
+        <View style={tw`absolute bottom-6 left-6 right-6`}>
+          <Text style={tw`text-zinc-300 text-sm font-bold uppercase tracking-widest mb-1`}>
+            Welcome back, {userName}
           </Text>
-          <TouchableOpacity
-            style={styles.ctaBtn}
+          <Text style={tw`text-3xl font-bold text-white mb-2 leading-tight`}>
+            Build your dream{'\n'}brick home.
+          </Text>
+          <Text style={tw`text-zinc-100 text-xs font-medium uppercase tracking-widest mt-2`}>
+            Riverside Estate Phase 2
+          </Text>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInUp.delay(200).duration(600).springify()} style={tw`px-6 relative -mt-4`}>
+        {/* Call to action card */}
+        <View style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 flex-col gap-5`}>
+          <View>
+            <View style={tw`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 self-start mb-3`}>
+              <Sparkles size={12} color="#cc4518" />
+              <Text style={tw`text-[#cc4518] text-xs font-bold uppercase tracking-widest`}>New Feature</Text>
+            </View>
+            <Text style={tw`text-xl font-bold text-zinc-700`}>Visualize with 3D Studio</Text>
+            <Text style={tw`text-sm text-zinc-500 mt-2 leading-tight`}>
+              Design a custom brick facade in real-time. Change colors, styles, and trim instantly.
+            </Text>
+          </View>
+          <TouchableOpacity 
             onPress={() => navigation.navigate('Studio')}
+            style={tw`bg-[#cc4518] rounded-full py-4 px-6 flex-row items-center justify-between shadow-lg`}
           >
-            <Text style={styles.ctaText}>OPEN 3D STUDIO</Text>
-            <Text style={styles.ctaArrow}>→</Text>
+            <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>Open 3D Studio</Text>
+            <ArrowRight size={18} color="white" />
           </TouchableOpacity>
-        </Animated.View>
-      </View>
+        </View>
+      </Animated.View>
 
-      {/* Services Grid */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Our Services</Text>
-        <View style={styles.servicesGrid}>
-          {services.map((service, i) => (
-            <Animated.View
+      <Animated.View entering={FadeInUp.delay(400).duration(600).springify()} style={tw`px-6 mt-8`}>
+        <Text style={tw`text-xl font-bold text-zinc-700 mb-4`}>Our Services</Text>
+        <View style={tw`flex-row flex-wrap justify-between`}>
+          {services.map((service) => (
+            <TouchableOpacity 
               key={service.title}
-              entering={FadeInDown.delay(300 + (i * 100))}
-              style={styles.serviceCard}
+              onPress={service.action}
+              style={[tw`bg-white rounded-[24px] p-5 shadow-sm border border-zinc-100 flex-col gap-4 mb-4`, { width: (width - 48 - 16) / 2 }]}
             >
-              <View style={styles.serviceIconCircle}>
-                <Text style={styles.serviceIcon}>{service.icon}</Text>
+              <View style={tw`w-12 h-12 rounded-full flex items-center justify-center bg-zinc-50 border border-zinc-100`}>
+                <service.icon size={22} color="#3f3f46" />
               </View>
-              <Text style={styles.serviceLabel}>{service.title}</Text>
-            </Animated.View>
+              <Text style={tw`font-bold text-zinc-900 text-sm tracking-wide`}>{service.title}</Text>
+            </TouchableOpacity>
           ))}
-          <Animated.View entering={FadeInDown.delay(600)} style={styles.serviceCardMore}>
-            <Text style={styles.serviceMoreText}>SEE ALL +</Text>
-          </Animated.View>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* Expert Marketplace Preview */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Featured Experts</Text>
+      {/* Featured Experts Section */}
+      <Animated.View entering={FadeInUp.delay(600).duration(600).springify()} style={tw`px-6 mt-6`}>
+        <View style={tw`flex-row justify-between items-center mb-4`}>
+          <Text style={tw`text-xl font-bold text-zinc-700`}>Featured Experts</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Workers')}>
-            <Text style={styles.viewAllLink}>View All</Text>
+            <Text style={tw`text-[#cc4518] font-bold text-sm tracking-wide`}>View All</Text>
           </TouchableOpacity>
         </View>
 
-        {loading && !refreshing ? (
-          <ActivityIndicator size="small" color={COLORS.primary} style={{ marginTop: 20 }} />
-        ) : workers.length > 0 ? (
-          workers.map((worker: any, index: number) => (
-            <Animated.View key={worker._id || index} entering={FadeInDown.delay(index * 100)}>
+        <View style={tw`flex-col gap-4`}>
+          {loadingWorkers ? (
+            <View style={tw`flex justify-center items-center py-8`}>
+              <ActivityIndicator color="#cc4518" size="large" />
+            </View>
+          ) : workers.length > 0 ? (
+            workers.map((worker, index) => (
               <TouchableOpacity
-                style={styles.workerCard}
+                key={worker._id || index}
                 onPress={() => navigation.navigate('WorkerDetails', { worker })}
+                style={tw`bg-white rounded-[24px] p-4 shadow-sm border border-zinc-100 flex-row items-center gap-4`}
               >
-                <View style={styles.workerAvatar} />
-                <View style={styles.workerMainInfo}>
-                  <Text style={styles.workerName}>{worker.name || worker.displayName || 'Worker'}</Text>
-                  <Text style={styles.workerRole}>{worker.jobTitle || worker.workerType || 'Professional'}</Text>
+                <View style={tw`w-14 h-14 rounded-full overflow-hidden bg-zinc-100`}>
+                  {worker.photo || worker.image ? (
+                    <Image source={{ uri: worker.photo || worker.image }} style={tw`w-full h-full`} />
+                  ) : (
+                    <View style={tw`w-full h-full flex justify-center items-center bg-orange-100`}>
+                      <Text style={tw`text-[#cc4518] font-bold text-lg`}>{(worker.name || 'W')[0]}</Text>
+                    </View>
+                  )}
                 </View>
-                <View style={styles.workerMeta}>
-                  <Text style={styles.ratingText}>⭐ {worker.rating || '4.5'}</Text>
-                  <Text style={styles.priceText}>${worker.pricePerHour || worker.dailyRate || '25'}/hr</Text>
+                <View style={tw`flex-1`}>
+                  <Text style={tw`text-base font-bold text-zinc-900`} numberOfLines={1}>{worker.name || worker.displayName}</Text>
+                  <Text style={tw`text-xs font-medium text-[#cc4518] mb-1`} numberOfLines={1}>{worker.jobTitle || worker.workerType || 'Professional'}</Text>
+                  <View style={tw`flex-row items-center gap-2`}>
+                    <View style={tw`flex-row items-center gap-1`}>
+                      <Star size={10} color="#eab308" fill="#eab308" />
+                      <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>{worker.rating || '4.5'}</Text>
+                    </View>
+                    <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>•</Text>
+                    <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>${worker.pricePerHour || worker.dailyRate || worker.rate || '25'}/hr</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
-            </Animated.View>
-          ))
-        ) : (
-          <Text style={styles.emptyText}>No workers available at the moment.</Text>
-        )}
-      </View>
+            ))
+          ) : (
+            <View style={tw`py-6 border border-dashed border-zinc-200 rounded-[24px] items-center`}>
+              <Text style={tw`text-zinc-400 text-sm font-medium`}>No experts available right now.</Text>
+            </View>
+          )}
+        </View>
+      </Animated.View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  contentContainer: {
-    paddingBottom: 100,
-  },
-  heroContainer: {
-    height: 300,
-    width: '100%',
-    position: 'relative',
-    borderBottomLeftRadius: RADIUS.xl,
-    borderBottomRightRadius: RADIUS.xl,
-    overflow: 'hidden',
-    backgroundColor: COLORS.zinc900,
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-    opacity: 0.6,
-  },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  heroContent: {
-    position: 'absolute',
-    bottom: SPACING.xl,
-    left: SPACING.lg,
-    right: SPACING.lg,
-  },
-  heroTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#FFF',
-    lineHeight: 38,
-    marginBottom: 8,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: '#EEE',
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  notificationBtn: {
-    position: 'absolute',
-    top: SPACING.xl * 1.5,
-    right: SPACING.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: SPACING.sm,
-    borderRadius: RADIUS.md,
-  },
-  notificationIcon: {
-    fontSize: 20,
-  },
-  promoWrapper: {
-    paddingHorizontal: SPACING.lg,
-    marginTop: -SPACING.lg,
-  },
-  promoCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.lg,
-    ...SHADOWS.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  badge: {
-    backgroundColor: '#F5F2ED',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: RADIUS.full,
-    alignSelf: 'flex-start',
-    marginBottom: SPACING.md,
-  },
-  badgeText: {
-    color: COLORS.primary,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  promoTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
-  promoDesc: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    lineHeight: 22,
-    marginBottom: SPACING.lg,
-  },
-  ctaBtn: {
-    backgroundColor: COLORS.primary,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: SPACING.md,
-    borderRadius: RADIUS.full,
-    ...SHADOWS.lg,
-  },
-  ctaText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-  },
-  ctaArrow: {
-    color: '#FFF',
-    fontSize: 20,
-  },
-  section: {
-    marginTop: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
-  viewAllLink: {
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
-  servicesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.md,
-  },
-  serviceCard: {
-    width: (width - (SPACING.lg * 2) - SPACING.md) / 2,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    ...SHADOWS.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 12,
-  },
-  serviceCardMore: {
-    width: (width - (SPACING.lg * 2) - SPACING.md) / 2,
-    backgroundColor: '#F5F2ED',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primaryLight,
-  },
-  serviceIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  serviceIcon: {
-    fontSize: 24,
-  },
-  serviceLabel: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  serviceMoreText: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  workerCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    padding: SPACING.md,
-    borderRadius: RADIUS.lg,
-    marginBottom: SPACING.md,
-    alignItems: 'center',
-    ...SHADOWS.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  workerAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.border,
-    marginRight: SPACING.md,
-  },
-  workerMainInfo: {
-    flex: 1,
-  },
-  workerName: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  workerRole: {
-    fontSize: 13,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  workerMeta: {
-    alignItems: 'flex-end',
-  },
-  ratingText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.warning,
-  },
-  priceText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.primary,
-    marginTop: 4,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: COLORS.textLight,
-    marginTop: SPACING.xl,
-  },
-});

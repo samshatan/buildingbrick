@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.accent,
   },
   scrollContent: {
     padding: SPACING.lg,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     flex: 2,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.accent,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     alignItems: 'center',

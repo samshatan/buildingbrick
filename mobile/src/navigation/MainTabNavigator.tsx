@@ -1,25 +1,37 @@
-import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
+import { Home, Cuboid, ShoppingCart, Users, FolderOpen, User } from 'lucide-react-native';
+
 import HomeScreen from '../screens/HomeScreen';
 import StudioScreen from '../screens/StudioScreen';
+import MaterialsScreen from '../screens/MaterialsScreen';
+import WorkersScreen from '../screens/WorkersScreen';
 import ProjectsScreen from '../screens/ProjectsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { COLORS, SPACING, RADIUS } from '../theme/theme';
 
 const Tab = createBottomTabNavigator();
 
-const TabIcon = ({ label, focused }: { label: string, focused: boolean }) => {
-  const icon = label === 'Home' ? '🏠' : label === 'Studio' ? '🧱' : label === 'Projects' ? '📂' : '👤';
+const TabIcon = ({ name, focused, color }: { name: string, focused: boolean, color: string }) => {
+  let IconComponent = Home;
+  
+  switch(name) {
+    case 'Home': IconComponent = Home; break;
+    case 'Studio': IconComponent = Cuboid; break;
+    case 'Materials': IconComponent = ShoppingCart; break;
+    case 'Workers': IconComponent = Users; break;
+    case 'Projects': IconComponent = FolderOpen; break;
+    case 'Profile': IconComponent = User; break;
+  }
+
   return (
     <View style={styles.iconContainer}>
       <View style={[
         styles.iconCircle,
         focused && styles.iconCircleActive
       ]}>
-        <Text style={[styles.icon, { opacity: focused ? 1 : 0.5 }]}>{icon}</Text>
+        <IconComponent size={20} color={focused ? "#cc4518" : "#a1a1aa"} strokeWidth={focused ? 2.5 : 1.5} />
       </View>
-      <Text style={[styles.label, { color: focused ? COLORS.primary : COLORS.textLight }]}>{label.toUpperCase()}</Text>
+      <Text style={[styles.label, { color: focused ? "#cc4518" : "#a1a1aa" }]}>{name.toUpperCase()}</Text>
     </View>
   );
 };
@@ -37,28 +49,42 @@ export default function MainTabNavigator() {
         name="Dashboard" 
         component={HomeScreen} 
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Home" focused={focused} />
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Home" focused={focused} color={color} />
         }}
       />
       <Tab.Screen 
         name="Studio"
         component={StudioScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Studio" focused={focused} />
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Studio" focused={focused} color={color} />
+        }}
+      />
+      <Tab.Screen
+        name="Materials"
+        component={MaterialsScreen}
+        options={{
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Materials" focused={focused} color={color} />
+        }}
+      />
+      <Tab.Screen
+        name="Workers"
+        component={WorkersScreen}
+        options={{
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Workers" focused={focused} color={color} />
         }}
       />
       <Tab.Screen
         name="Projects"
         component={ProjectsScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Projects" focused={focused} />
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Projects" focused={focused} color={color} />
         }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen} 
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Profile" focused={focused} />
+          tabBarIcon: ({ focused, color }) => <TabIcon name="Profile" focused={focused} color={color} />
         }}
       />
     </Tab.Navigator>
@@ -69,9 +95,9 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: '#f4f4f5',
     height: 90,
-    paddingBottom: SPACING.md,
+    paddingBottom: 16,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -86,16 +112,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 60,
+    marginTop: 10,
   },
   iconCircle: {
     padding: 8,
     borderRadius: 20,
   },
   iconCircleActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  icon: {
-    fontSize: 22,
+    backgroundColor: '#ffedd5',
   },
   label: {
     fontSize: 8,

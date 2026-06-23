@@ -2,8 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import LoginScreen from '../screens/LoginScreen';
-import SignUpScreen from '../screens/SignUpScreen';
+import AuthScreen from '../screens/AuthScreen';
 import MainTabNavigator from './MainTabNavigator';
 import WorkerDetailsScreen from '../screens/WorkerDetailsScreen';
 import DirectHireScreen from '../screens/DirectHireScreen';
@@ -23,6 +22,7 @@ import ProjectsScreen from '../screens/ProjectsScreen';
 import WorkerOnboardingScreen from '../screens/WorkerOnboardingScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import CafeDashboardScreen from '../screens/CafeDashboardScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,8 +30,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Login" component={AuthScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
         <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="WorkerDetails" component={WorkerDetailsScreen} options={{ title: 'Worker Profile' }} />
@@ -51,6 +50,7 @@ export default function AppNavigator() {
         <Stack.Screen name="WorkerOnboarding" component={WorkerOnboardingScreen} options={{ title: 'Apply as Worker' }} />
         <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin Panel' }} />
         <Stack.Screen name="CafeDashboard" component={CafeDashboardScreen} options={{ title: 'Cafe Panel' }} />
+        <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

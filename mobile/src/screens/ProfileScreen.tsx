@@ -1,261 +1,219 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import tw from 'twrnc';
+import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, ChevronLeft, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+
+type Role = 'user' | 'worker' | 'cafe_owner' | 'admin';
 
 export default function ProfileScreen({ navigation }: any) {
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [role, setRole] = useState<Role>('user');
+  const [activePage, setActivePage] = useState<string | null>(null);
+  const [activeNotificationTab, setActiveNotificationTab] = useState<'All' | 'Projects' | 'Messages'>('All');
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userInfo');
+    navigation.replace('Login');
+  };
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem('userInfo');
-    if (userStr) {
-      setUserInfo(JSON.parse(userStr));
+  const getRoleIcon = () => {
+    switch(role) {
+      case 'admin': return <Shield size={16} color="#52525b" />;
+      case 'cafe_owner': return <Store size={16} color="#52525b" />;
+      case 'worker': return <Briefcase size={16} color="#52525b" />;
+      default: return <UserIcon size={16} color="#52525b" />;
     }
   };
 
-  const handleLogout = async () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Log Out', 
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.removeItem('userToken');
-          await AsyncStorage.removeItem('userInfo');
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-          });
-        }
-      }
-    ]);
+  const getRoleMenuItems = () => {
+    const common = [
+      { icon: Bell, label: "Notifications" },
+      { icon: Settings, label: "Settings" },
+      { icon: HelpCircle, label: "Help & Support" },
+    ];
+
+    switch(role) {
+      case 'admin':
+        return [
+          { icon: Shield, label: "Platform Moderation" },
+          { icon: Briefcase, label: "Manage Roles" },
+          ...common
+        ];
+      case 'cafe_owner':
+        return [
+          { icon: Briefcase, label: "My Job Postings" },
+          { icon: Store, label: "My Business Profile" },
+          ...common
+        ];
+      case 'worker':
+        return [
+          { icon: Briefcase, label: "My Jobs & Earnings" },
+          ...common
+        ];
+      default:
+        return [
+          { icon: Store, label: "Saved Workers" },
+          ...common
+        ];
+    }
   };
 
-  const handleUpdateProfile = () => {
-    Alert.alert('Update Profile', 'This feature will allow you to change your name and profile picture. Backend integration is ready!');
+  const menuItems = getRoleMenuItems();
+
+  const renderSubPage = () => {
+    let content = (
+      <View style={tw`flex-1 items-center justify-center pt-12`}>
+          <View style={tw`w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full items-center justify-center mb-4`}>
+            <Settings size={28} color="#a1a1aa" />
+          </View>
+          <View style={tw`items-center`}>
+            <Text style={tw`text-lg font-bold text-zinc-900 tracking-wide mb-1`}>Coming Soon</Text>
+            <Text style={tw`text-sm font-medium text-zinc-500 text-center`}>The {activePage} section is currently under development.</Text>
+          </View>
+      </View>
+    );
+
+    if (activePage === "Settings") {
+      content = (
+        <View style={tw`flex-col gap-6`}>
+          {['Push Notifications', 'Email Alerts', 'Dark Mode', 'Biometric Login'].map((setting, i) => (
+            <View key={i} style={tw`flex-row items-center justify-between py-2 border-b border-zinc-100 pb-4 ${i === 3 ? 'border-0 pb-0' : ''}`}>
+              <Text style={tw`font-bold text-zinc-700 text-sm tracking-wide`}>{setting}</Text>
+              <View style={tw`w-12 h-6 rounded-full p-1 justify-center ${i === 2 ? 'bg-zinc-200' : 'bg-[#cc4518]'}`}>
+                <View style={[tw`w-4 h-4 rounded-full bg-white shadow-sm`, { transform: [{ translateX: i === 2 ? 0 : 24 }] }]} />
+              </View>
+            </View>
+          ))}
+        </View>
+      );
+    } else if (activePage === "Notifications") {
+      content = (
+          <View style={tw`flex-col h-full -mx-6 px-6`}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`flex-row gap-2 pb-4 mb-4 border-b border-zinc-100`}>
+              {['All', 'Projects', 'Messages'].map(tab => (
+                <TouchableOpacity
+                  key={tab}
+                  onPress={() => setActiveNotificationTab(tab as any)}
+                  style={tw`px-4 py-2 rounded-full ${activeNotificationTab === tab ? "bg-zinc-800" : "bg-zinc-50"}`}
+                >
+                  <Text style={tw`text-[10px] font-bold uppercase tracking-widest ${activeNotificationTab === tab ? "text-white" : "text-zinc-500"}`}>{tab}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
+            <View style={tw`flex-col gap-3 pb-8`}>
+              <View style={tw`p-5 border border-orange-100 bg-orange-50 rounded-[24px] shadow-sm flex-row gap-4`}>
+                <View style={tw`w-10 h-10 rounded-full bg-orange-100 items-center justify-center`}>
+                  <AlertCircle size={18} color="#cc4518" />
+                </View>
+                <View style={tw`flex-1`}>
+                  <Text style={tw`font-bold text-[#cc4518] text-sm tracking-wide mb-1`}>Project Updated</Text>
+                  <Text style={tw`text-xs text-orange-700 font-medium`}>Your project "Riverside Estate" remodeling was marked as ongoing by Sarah Chen.</Text>
+                  <Text style={tw`text-[10px] font-bold text-orange-400 mt-2`}>10 MINS AGO</Text>
+                </View>
+              </View>
+              
+              <View style={tw`p-5 border border-zinc-100 bg-white rounded-[24px] shadow-sm flex-row gap-4`}>
+                <View style={tw`w-10 h-10 rounded-full bg-zinc-100 items-center justify-center`}>
+                  <MessageSquare size={18} color="#71717a" />
+                </View>
+                <View style={tw`flex-1`}>
+                  <Text style={tw`font-bold text-zinc-900 text-sm tracking-wide mb-1`}>New Message from Marcus</Text>
+                  <Text style={tw`text-xs text-zinc-500 font-medium`}>"I've attached the final estimate for the brickwork we discussed."</Text>
+                  <Text style={tw`text-[10px] font-bold text-zinc-400 mt-2`}>1 DAY AGO</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+      );
+    }
+
+    return (
+      <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+        <View style={tw`px-6 pt-6 pb-24 flex-1`}>
+          <View style={tw`flex-row items-center gap-4 mb-8`}>
+            <TouchableOpacity
+              onPress={() => setActivePage(null)}
+              style={tw`w-12 h-12 rounded-full bg-white border border-zinc-200 shadow-sm items-center justify-center`}
+            >
+              <ChevronLeft size={24} color="#3f3f46" />
+            </TouchableOpacity>
+            <Text style={tw`text-3xl font-bold text-zinc-700 flex-1`} numberOfLines={1}>{activePage}</Text>
+          </View>
+          
+          <ScrollView style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 flex-1`} showsVerticalScrollIndicator={false}>
+            {content}
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    );
   };
 
-  const MenuItem = ({ title, icon, onPress, style = {}, textStyle = {} }: any) => (
-    <TouchableOpacity style={[styles.menuItem, style]} onPress={onPress}>
-      <Text style={[styles.menuText, textStyle]}>{icon}  {title}</Text>
-      <Text style={styles.chevron}>›</Text>
-    </TouchableOpacity>
-  );
+  if (activePage) {
+    return renderSubPage();
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.avatarContainer} onPress={handleUpdateProfile}>
-          <View style={styles.avatar} />
-          <View style={styles.editBadge}>
-            <Text style={styles.editText}>✎</Text>
+    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+      <ScrollView contentContainerStyle={tw`px-6 pt-6 pb-32`}>
+        <Animated.View entering={FadeInUp.duration(400)} style={tw`flex-row justify-between items-end mb-8`}>
+          <Text style={tw`text-4xl font-bold text-zinc-700`}>Profile</Text>
+          
+          <View style={tw`bg-white rounded-full p-1 border border-zinc-200 shadow-sm flex-row`}>
+            <TouchableOpacity onPress={() => setRole('user')} style={tw`px-2 py-1 rounded-full ${role === 'user' ? 'bg-zinc-800' : ''}`}>
+              <Text style={tw`text-[10px] font-bold uppercase tracking-wider ${role === 'user' ? 'text-white' : 'text-zinc-500'}`}>User</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setRole('worker')} style={tw`px-2 py-1 rounded-full ${role === 'worker' ? 'bg-zinc-800' : ''}`}>
+              <Text style={tw`text-[10px] font-bold uppercase tracking-wider ${role === 'worker' ? 'text-white' : 'text-zinc-500'}`}>Worker</Text>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-        <Text style={styles.name}>{userInfo?.fullName || userInfo?.name || 'User Name'}</Text>
-        <Text style={styles.email}>{userInfo?.email || 'user@example.com'}</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>{userInfo?.userType || 'USER'}</Text>
-        </View>
-      </View>
+        </Animated.View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <MenuItem title="My Profile" icon="👤" onPress={handleUpdateProfile} />
-        <MenuItem title="My Jobs" icon="💼" onPress={() => navigation.navigate('Jobs')} />
-        <MenuItem title="My Cart" icon="🛒" onPress={() => navigation.navigate('Cart')} />
+        <Animated.View entering={FadeInUp.delay(100).duration(400)} style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 flex-row items-center gap-5 mb-8`}>
+          <View style={tw`w-20 h-20 rounded-full bg-orange-100 items-center justify-center overflow-hidden border-4 border-white shadow-sm`}>
+            <Image source={{ uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" }} style={tw`w-full h-full`} />
+          </View>
+          <View style={tw`flex-1`}>
+            <Text style={tw`text-xl font-bold text-zinc-900 tracking-wide`} numberOfLines={1}>Emily Stone</Text>
+            <Text style={tw`text-sm font-medium text-zinc-500 mt-0.5`} numberOfLines={1}>emily.stone@example.com</Text>
+            <View style={tw`flex-row items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 self-start mt-2`}>
+              {getRoleIcon()}
+              <Text style={tw`text-zinc-600 text-[10px] font-bold uppercase tracking-widest`}>{role.replace('_', ' ')}</Text>
+            </View>
+          </View>
+        </Animated.View>
 
-        {userInfo?.userType !== 'WORKER' && (
-          <MenuItem
-            title="Become a Worker"
-            icon="🛠️"
-            onPress={() => navigation.navigate('WorkerOnboarding')}
-            style={styles.workerItem}
-            textStyle={styles.workerText}
-          />
-        )}
-      </View>
+        <Animated.View entering={FadeInUp.delay(200).duration(500)} style={tw`bg-white rounded-[32px] p-3 shadow-sm border border-zinc-100 mb-6`}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={item.label}
+              onPress={() => setActivePage(item.label)}
+              style={tw`flex-row items-center justify-between p-4 ${index !== menuItems.length - 1 ? 'border-b border-zinc-100' : ''}`}
+            >
+              <View style={tw`flex-row items-center gap-4`}>
+                <View style={tw`w-12 h-12 rounded-full bg-zinc-50 border border-zinc-100 items-center justify-center`}>
+                    <item.icon size={22} color="#3f3f46" />
+                </View>
+                <Text style={tw`font-bold text-zinc-900 tracking-wide text-sm`}>{item.label}</Text>
+              </View>
+              <ChevronRight size={20} color="#d4d4d8" />
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
 
-      {userInfo?.userType === 'ADMIN' && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Administration</Text>
-          <MenuItem
-            title="Admin Dashboard"
-            icon="🛡️"
-            onPress={() => navigation.navigate('AdminDashboard')}
-            style={styles.adminItem}
-            textStyle={styles.adminText}
-          />
-        </View>
-      )}
-
-      {(userInfo?.userType === 'CAFE' || userInfo?.userType === 'ADMIN') && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Partner Management</Text>
-          <MenuItem
-            title="Cafe Dashboard"
-            icon="☕"
-            onPress={() => navigation.navigate('CafeDashboard')}
-            style={styles.cafeItem}
-            textStyle={styles.cafeText}
-          />
-        </View>
-      )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Support & Legal</Text>
-        <MenuItem title="About BuildingBrick" icon="ℹ️" onPress={() => navigation.navigate('About')} />
-        <MenuItem title="Contact Support" icon="📞" onPress={() => navigation.navigate('Contact')} />
-        <MenuItem title="Privacy Policy" icon="🔒" onPress={() => navigation.navigate('Privacy')} />
-      </View>
-
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.version}>Version 1.0.0 (Stitsch Edition)</Text>
-    </ScrollView>
+        <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={tw`mt-4 flex-row items-center justify-center gap-2 bg-transparent border-2 border-orange-100 rounded-full py-4 shadow-sm`}
+          >
+            <LogOut size={16} color="#cc4518" />
+            <Text style={tw`text-[#cc4518] font-bold text-xs uppercase tracking-widest`}>Log Out</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    alignItems: 'center',
-    padding: SPACING.xl,
-    paddingTop: SPACING.xl * 2,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    ...SHADOWS.sm,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: SPACING.md,
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.primary,
-  },
-  editBadge: {
-    position: 'absolute',
-    right: -4,
-    bottom: -4,
-    backgroundColor: COLORS.surface,
-    width: 28,
-    height: 28,
-    borderRadius: RADIUS.full,
-    ...SHADOWS.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  editText: {
-    fontSize: 14,
-    color: COLORS.primary,
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  email: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  roleBadge: {
-    backgroundColor: COLORS.background,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 4,
-    borderRadius: RADIUS.full,
-    marginTop: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  roleBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.secondary,
-    letterSpacing: 1,
-  },
-  section: {
-    marginTop: SPACING.lg,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.textLight,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginLeft: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    padding: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.background,
-  },
-  menuText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  chevron: {
-    fontSize: 20,
-    color: COLORS.border,
-  },
-  workerItem: {
-    backgroundColor: '#eff6ff',
-  },
-  workerText: {
-    color: COLORS.secondary,
-  },
-  adminItem: {
-    backgroundColor: '#fef2f2',
-  },
-  adminText: {
-    color: '#991b1b',
-  },
-  cafeItem: {
-    backgroundColor: '#ecfdf5',
-  },
-  cafeText: {
-    color: '#065f46',
-  },
-  logoutBtn: {
-    margin: SPACING.lg,
-    marginTop: SPACING.xl,
-    backgroundColor: '#fff',
-    padding: SPACING.md,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#fee2e2',
-  },
-  logoutText: {
-    color: COLORS.error,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  version: {
-    textAlign: 'center',
-    color: COLORS.textLight,
-    fontSize: 12,
-    marginBottom: SPACING.xl,
-  },
-});
