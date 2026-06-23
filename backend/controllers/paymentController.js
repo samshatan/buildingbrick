@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 import WorkerProfile from '../models/WorkerProfile.js';
+import Order from '../models/Order.js';
+import Cart from '../models/Cart.js';
 
 // Configuration
 const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT';
@@ -130,5 +132,55 @@ export const phonePeCallback = async (req, res) => {
   } catch (error) {
     console.error('PhonePe Callback Error:', error);
     res.status(500).send('Error processing callback');
+  }
+};
+
+// @desc    Process a cart checkout (Simulated for Demo)
+// @route   POST /api/v1/payment/process
+// @access  Private
+export const processCheckout = async (req, res) => {
+  try {
+    const { amount, items, paymentMethod, cardDetails } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No items in cart' });
+    }
+
+    // 1. Create the Order
+    const order = await Order.create({
+      user: req.user._id,
+      items: items.map(i => ({
+        materialId: i.materialId,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        image: i.image,
+        retailer: i.retailer
+      })),
+      totalAmount: amount,
+      paymentStatus: 'PAID', // Simulating successful card charge
+      orderStatus: 'PROCESSING'
+    });
+
+    // 2. Clear the User's Cart
+    await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+
+    res.status(200).json({ success: true, data: order, message: 'Payment successful!' });
+  } catch (error) {
+    console.error('Checkout error:', error);
+    res.status(500).json({ success: false, message: 'Server error processing payment.' });
+  }
+};
+
+// @desc    Get user material orders
+// @route   GET /api/v1/payment/orders
+// @access  Private
+export const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    console.error('Fetch orders error:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching orders.' });
   }
 };

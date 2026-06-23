@@ -25,6 +25,7 @@ import WorkerOnboardingScreen from '../screens/WorkerOnboardingScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import CafeDashboardScreen from '../screens/CafeDashboardScreen';
 import ChatScreen from '../screens/ChatScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ export default function AppNavigator() {
         <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin Panel' }} />
         <Stack.Screen name="CafeDashboard" component={CafeDashboardScreen} options={{ title: 'Cafe Panel' }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Orders" component={OrdersScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

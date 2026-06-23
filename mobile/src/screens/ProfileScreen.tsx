@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image, Alert } from 'react-na
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, ChevronLeft, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react-native';
+import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, ChevronLeft, CheckCircle2, MessageSquare, AlertCircle, Package } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Role = 'user' | 'worker' | 'cafe_owner' | 'admin';
@@ -66,16 +66,20 @@ export default function ProfileScreen({ navigation }: any) {
         return [
           { icon: Briefcase, label: "My Job Postings" },
           { icon: Store, label: "My Business Profile" },
+          { icon: Package, label: "My Material Orders" },
           ...common
         ];
       case 'worker':
         return [
           { icon: Briefcase, label: "My Jobs & Earnings" },
+          { icon: Package, label: "My Material Orders" },
           ...common
         ];
       default:
         return [
+          { icon: Briefcase, label: "My Job Postings" },
           { icon: Store, label: "Saved Workers" },
+          { icon: Package, label: "My Material Orders" },
           ...common
         ];
     }
@@ -269,6 +273,8 @@ export default function ProfileScreen({ navigation }: any) {
                   navigation.navigate('Notifications');
                 } else if (item.label === 'Saved Workers') {
                   navigation.navigate('Workers');
+                } else if (item.label === 'My Material Orders') {
+                  navigation.navigate('Orders');
                 } else {
                   setActivePage(item.label);
                 }

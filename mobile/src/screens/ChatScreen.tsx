@@ -1,29 +1,83 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import tw from 'twrnc';
 import { ChevronLeft, Send, Camera, Image as ImageIcon } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import apiClient from '../api/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ChatScreen({ route, navigation }: any) {
-  const { worker } = route.params || { worker: { name: 'Support', photo: '' } };
-  const [messages, setMessages] = useState([
-    { id: '1', text: `Hi there! Let me know if you need any help with your project.`, sender: 'worker', time: '10:00 AM' }
-  ]);
+  const { worker } = route.params || { worker: { name: 'Support', photo: '', userId: '' } };
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
+  const [currentUserId, setCurrentUserId] = useState('');
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const getWorkerImage = (w: any) => w.photo || w.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80";
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        const userInfo = await AsyncStorage.getItem('userInfo');
+        if (userInfo) {
+          const parsed = JSON.parse(userInfo);
+          setCurrentUserId(parsed._id || parsed.id);
+        }
+      } catch (e) {}
+    };
+    initUser();
+  }, []);
 
-  const sendMessage = () => {
+  const fetchMessages = async () => {
+    try {
+      // Use worker.userId for fetching messages. If not available, fallback to worker._id
+      const targetId = worker.userId || worker._id;
+      if (!targetId) return;
+
+      const res = await apiClient.get(`/messages/${targetId}`);
+      if (res.data?.success) {
+        setMessages(res.data.data);
+      }
+    } catch (error) {
+      console.log('Error fetching messages', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000); // Simple polling every 5s
+    return () => clearInterval(interval);
+  }, [worker]);
+
+  const getWorkerImage = (w: any) => w.photo || w.image || w.avatarUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80";
+
+  const sendMessage = async () => {
     if (!inputText.trim()) return;
     
-    setMessages([...messages, {
-      id: Date.now().toString(),
+    const targetId = worker.userId || worker._id;
+    if (!targetId) return;
+
+    // Optimistic UI update
+    const tempMsg = {
+      _id: Date.now().toString(),
       text: inputText.trim(),
-      sender: 'user',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }]);
+      senderId: currentUserId,
+      createdAt: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempMsg]);
     setInputText('');
+    
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+
+    try {
+      await apiClient.post('/messages', {
+        receiverId: targetId,
+        text: tempMsg.text
+      });
+      fetchMessages();
+    } catch (error) {
+      console.log('Error sending message:', error);
+      Alert.alert("Error", "Failed to send message");
+    }
   };
 
   const pickImage = async () => {
@@ -31,39 +85,58 @@ export default function ChatScreen({ route, navigation }: any) {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
+      base64: true
     });
 
-    if (!result.canceled) {
-      setMessages([...messages, {
-        id: Date.now().toString(),
-        text: '📸 Image Attached',
-        sender: 'user',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
+    if (!result.canceled && result.assets[0].base64) {
+      sendImageMessage(`data:image/jpeg;base64,${result.assets[0].base64}`);
     }
   };
 
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      alert('Sorry, we need camera permissions to make this work!');
+      Alert.alert('Permission Denied', 'Sorry, we need camera permissions to make this work!');
       return;
     }
 
     let result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
+      base64: true
     });
 
-    if (!result.canceled) {
-      setMessages([...messages, {
-        id: Date.now().toString(),
-        text: '📸 Photo Attached',
-        sender: 'user',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
+    if (!result.canceled && result.assets[0].base64) {
+      sendImageMessage(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
+  const sendImageMessage = async (base64Image: string) => {
+    const targetId = worker.userId || worker._id;
+    if (!targetId) return;
+
+    // Optimistic
+    const tempMsg = {
+      _id: Date.now().toString(),
+      text: '',
+      imageUrl: base64Image,
+      senderId: currentUserId,
+      createdAt: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempMsg]);
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+
+    try {
+      await apiClient.post('/messages', {
+        receiverId: targetId,
+        imageUrl: base64Image
+      });
+      fetchMessages();
+    } catch (error) {
+      console.log('Error sending image:', error);
+      Alert.alert("Error", "Failed to send image");
     }
   };
 
@@ -84,17 +157,27 @@ export default function ChatScreen({ route, navigation }: any) {
       </View>
 
       {/* Messages */}
-      <ScrollView contentContainerStyle={tw`p-4 pb-8`} style={tw`flex-1 bg-zinc-50`}>
-        {messages.map((msg) => (
-          <View key={msg.id} style={tw`mb-4 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-            <View style={tw`max-w-[80%] rounded-2xl px-4 py-3 ${msg.sender === 'user' ? 'bg-[#cc4518] rounded-tr-sm' : 'bg-white border border-zinc-200 rounded-tl-sm'}`}>
-              <Text style={tw`text-sm font-medium ${msg.sender === 'user' ? 'text-white' : 'text-zinc-800'}`}>
-                {msg.text}
-              </Text>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={tw`p-4 pb-8`} style={tw`flex-1 bg-zinc-50`} onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
+        {messages.map((msg) => {
+          const isUser = msg.senderId === currentUserId;
+          const timeString = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          return (
+            <View key={msg._id || msg.id} style={tw`mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
+              <View style={tw`max-w-[80%] rounded-2xl px-4 py-3 ${isUser ? 'bg-[#cc4518] rounded-tr-sm' : 'bg-white border border-zinc-200 rounded-tl-sm'}`}>
+                {msg.imageUrl ? (
+                  <Image source={{ uri: msg.imageUrl }} style={tw`w-48 h-48 rounded-xl`} />
+                ) : null}
+                {msg.text ? (
+                  <Text style={tw`text-sm font-medium ${isUser ? 'text-white' : 'text-zinc-800'} ${msg.imageUrl ? 'mt-2' : ''}`}>
+                    {msg.text}
+                  </Text>
+                ) : null}
+              </View>
+              <Text style={tw`text-[9px] font-bold text-zinc-400 mt-1 mx-1`}>{timeString}</Text>
             </View>
-            <Text style={tw`text-[9px] font-bold text-zinc-400 mt-1 mx-1`}>{msg.time}</Text>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
 
       {/* Input Bar */}

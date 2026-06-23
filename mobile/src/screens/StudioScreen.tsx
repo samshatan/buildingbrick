@@ -1,87 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Dimensions, LogBox } from 'react-native';
-
-LogBox.ignoreLogs([
-  'THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated',
-  'THREE.Clock: This module has been deprecated',
-  'Multiple instances of Three.js being imported'
-]);
-import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated';
+import { View, Text, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { RefreshCw, X } from 'lucide-react-native';
+import { RefreshCw, X, Box } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Canvas } from '@react-three/fiber/native';
-// Native version of OrbitControls/ContactShadows might have issues depending on drei version.
-// Using basic lighting and manual rotation if OrbitControls fails.
-
-import * as THREE from 'three';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-function HouseModel({ brickColor, roofingColor }: { brickColor: string, roofingColor: string }) {
-  const wallMaterial = new THREE.MeshStandardMaterial({
-    color: brickColor,
-    roughness: 0.8,
-  });
-
-  const roofMaterial = new THREE.MeshStandardMaterial({
-    color: roofingColor,
-    roughness: 0.9,
-  });
-
-  return (
-    <group position={[0, -1, 0]}>
-      {/* Main Building Frame */}
-      <mesh castShadow receiveShadow position={[0, 1.5, 0]}>
-        <boxGeometry args={[4, 3, 3]} />
-        <primitive object={wallMaterial} attach="material" />
-      </mesh>
-      
-      {/* Front extension/Garage */}
-      <mesh castShadow receiveShadow position={[1, 1, 1.5]}>
-        <boxGeometry args={[2, 2, 2]} />
-        <primitive object={wallMaterial} attach="material" />
-      </mesh>
-
-      {/* Roof Main */}
-      <mesh castShadow receiveShadow position={[0, 3.5, 0]}>
-        <coneGeometry args={[3.2, 1.5, 4]} />
-        <primitive object={roofMaterial} attach="material" />
-      </mesh>
-      <group position={[0, 3.5, 0]} rotation={[0, Math.PI / 4, 0]}>
-        <mesh castShadow receiveShadow>
-          <coneGeometry args={[3.2, 1.5, 4]} />
-          <primitive object={roofMaterial} attach="material" />
-        </mesh>
-      </group>
-
-      {/* Door */}
-      <mesh position={[-0.8, 0.8, 1.51]}>
-        <planeGeometry args={[0.8, 1.6]} />
-        <meshStandardMaterial color="#2d2d2d" />
-      </mesh>
-
-      {/* Garage Door */}
-      <mesh position={[1, 0.9, 2.51]}>
-        <planeGeometry args={[1.5, 1.8]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh>
-      
-      {/* Window */}
-      <mesh position={[-1, 1.5, 1.51]}>
-        <planeGeometry args={[0.8, 1]} />
-        <meshStandardMaterial color="#1f4e79" roughness={0.1} />
-      </mesh>
-
-      {/* Grass/Base */}
-      <mesh receiveShadow position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[15, 15]} />
-        <meshStandardMaterial color="#4a7c59" />
-      </mesh>
-    </group>
-  );
-}
 
 export default function StudioScreen({ navigation }: any) {
   const [brickStyle, setBrickStyle] = useState('#cc4518');
@@ -148,16 +73,29 @@ export default function StudioScreen({ navigation }: any) {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* 3D Canvas Viewport */}
-      <View style={{ height: SCREEN_HEIGHT * 0.55 }}>
-        <Canvas shadows camera={{ position: [5, 4, 8], fov: 45 }}>
-          <ambientLight intensity={0.6} />
-          <directionalLight castShadow position={[5, 10, 5]} intensity={1.5} />
-          
-          <group>
-            <HouseModel brickColor={brickStyle} roofingColor={roofStyle} />
-          </group>
-        </Canvas>
+      {/* Mock 3D Viewport to prevent Expo Go Crashes */}
+      <View style={[tw`items-center justify-center bg-zinc-200`, { height: SCREEN_HEIGHT * 0.55 }]}>
+        <Image 
+          source={{ uri: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80' }} 
+          style={tw`absolute inset-0 w-full h-full opacity-60`} 
+        />
+        <View style={tw`bg-white/90 p-4 rounded-2xl shadow-sm border border-zinc-100 items-center max-w-[80%]`}>
+          <Box size={32} color="#cc4518" style={tw`mb-2`} />
+          <Text style={tw`text-center font-bold text-zinc-900 mb-1`}>3D View Disabled</Text>
+          <Text style={tw`text-center text-xs text-zinc-500`}>Live 3D rendering uses native code that crashes standard Expo Go. It is fully functional when you build the native app.</Text>
+        </View>
+        
+        {/* Color Indicators overlaid on the image */}
+        <View style={tw`absolute bottom-12 flex-row gap-4`}>
+          <View style={tw`items-center`}>
+            <View style={[tw`w-8 h-8 rounded-full border-2 border-white shadow-sm mb-1`, { backgroundColor: brickStyle }]} />
+            <Text style={tw`text-[10px] font-bold text-white bg-black/50 px-2 py-0.5 rounded-md`}>Wall</Text>
+          </View>
+          <View style={tw`items-center`}>
+            <View style={[tw`w-8 h-8 rounded-full border-2 border-white shadow-sm mb-1`, { backgroundColor: roofStyle }]} />
+            <Text style={tw`text-[10px] font-bold text-white bg-black/50 px-2 py-0.5 rounded-md`}>Roof</Text>
+          </View>
+        </View>
       </View>
 
       {/* Controls Container */}

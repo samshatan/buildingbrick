@@ -24,6 +24,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import materialRoutes from './routes/materialRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -84,6 +85,7 @@ app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/materials', materialRoutes);
+app.use('/api/v1/messages', messageRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {

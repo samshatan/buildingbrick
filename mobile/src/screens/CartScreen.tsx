@@ -17,8 +17,12 @@ export default function CartScreen({ navigation }: any) {
         setCartItems(response.data.data.items || []);
         setTotal(response.data.data.totalPrice || 0);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Error fetching cart:', error);
+      if (error.response?.status === 401) {
+        setCartItems([]);
+        setTotal(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -219,10 +223,10 @@ const styles = StyleSheet.create({
   grandTotalValue: {
     fontSize: 22,
     fontWeight: '800',
-    color: COLORS.secondary,
+    color: COLORS.primary,
   },
   checkoutBtn: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.primary,
     padding: SPACING.lg,
     borderRadius: RADIUS.md,
     alignItems: 'center',
