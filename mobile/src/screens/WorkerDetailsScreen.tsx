@@ -4,6 +4,7 @@ import tw from 'twrnc';
 import { Star, ChevronLeft, BadgeCheck } from 'lucide-react-native';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
 import { LinearGradient } from 'expo-linear-gradient';
+import apiClient from '../api/client';
 
 const { width } = Dimensions.get('window');
 
@@ -13,20 +14,32 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
   const [isSending, setIsSending] = useState(false);
 
   const handleHire = async () => {
+    if (!requestText.trim()) {
+      Alert.alert("Missing Details", "Please describe the job and your requirements before sending a request.");
+      return;
+    }
+
     setIsSending(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSending(false);
-      
-      // Simulate Notification with an Alert since Expo Go doesn't support Push anymore
+    try {
+      await apiClient.post('/direct-requests', {
+        workerProfileId: worker._id || worker.id,
+        hirerPhone: "Not provided",
+        hirerAddress: "Not provided",
+        message: requestText.trim()
+      });
+
       Alert.alert(
         "Request Sent! 🏗️", 
-        `Your hire request has been sent to ${worker.name || worker.displayName}. They will review it shortly.`,
+        `Your direct hire request has been sent to ${worker.name || worker.displayName}. They will review it shortly.`,
         [{ text: "OK", onPress: () => navigation.goBack() }]
       );
-      
-    }, 1500);
+    } catch (error: any) {
+      console.log('Error sending direct request:', error);
+      Alert.alert("Error", error.response?.data?.message || "Failed to send request.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const getWorkerImage = (w: any) => w.photo || w.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80";

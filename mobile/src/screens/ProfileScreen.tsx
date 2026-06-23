@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
@@ -102,9 +102,16 @@ export default function ProfileScreen({ navigation }: any) {
           {['Push Notifications', 'Email Alerts', 'Dark Mode', 'Biometric Login'].map((setting, i) => (
             <View key={i} style={tw`flex-row items-center justify-between py-2 border-b border-zinc-100 pb-4 ${i === 3 ? 'border-0 pb-0' : ''}`}>
               <Text style={tw`font-bold text-zinc-700 text-sm tracking-wide`}>{setting}</Text>
-              <View style={tw`w-12 h-6 rounded-full p-1 justify-center ${i === 2 ? 'bg-zinc-200' : 'bg-[#cc4518]'}`}>
+              <TouchableOpacity 
+                onPress={() => {
+                  // This is a simple visual toggle for demo purposes
+                  // In a real app, you'd save this to AsyncStorage or backend
+                  Alert.alert("Setting Updated", `${setting} has been updated.`);
+                }}
+                style={tw`w-12 h-6 rounded-full p-1 justify-center ${i === 2 ? 'bg-zinc-200' : 'bg-[#cc4518]'}`}
+              >
                 <View style={[tw`w-4 h-4 rounded-full bg-white shadow-sm`, { transform: [{ translateX: i === 2 ? 0 : 24 }] }]} />
-              </View>
+              </TouchableOpacity>
             </View>
           ))}
         </View>
@@ -255,7 +262,17 @@ export default function ProfileScreen({ navigation }: any) {
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={item.label}
-              onPress={() => setActivePage(item.label)}
+              onPress={() => {
+                if (item.label === 'My Jobs & Earnings' || item.label === 'My Job Postings') {
+                  navigation.navigate('Projects');
+                } else if (item.label === 'Notifications') {
+                  navigation.navigate('Notifications');
+                } else if (item.label === 'Saved Workers') {
+                  navigation.navigate('Workers');
+                } else {
+                  setActivePage(item.label);
+                }
+              }}
               style={tw`flex-row items-center justify-between p-4 ${index !== menuItems.length - 1 ? 'border-b border-zinc-100' : ''}`}
             >
               <View style={tw`flex-row items-center gap-4`}>
