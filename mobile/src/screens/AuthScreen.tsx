@@ -1,29 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import tw from 'twrnc';
-import { Cuboid, ArrowRight } from 'lucide-react-native';
+import { Cuboid, ArrowRight, Camera, Fingerprint } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
+import { useTheme } from '../context/ThemeProvider';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen({ navigation }: any) {
+  const { theme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'user' | 'worker'>('user');
+  const [role, setRole] = useState<'hirer' | 'worker'>('hirer');
+  
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [workerTypes, setWorkerTypes] = useState<string[]>([]);
+  
+  const WORKER_CATEGORIES = [
+    "Contractor", "Bricklayer", "Painter", "Helper", "Carpenter",
+    "House Helps", "Cooks", "Maids", 
+    "Electrician", "Plumber", "Welder"
+  ];
   
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasBiometricToken, setHasBiometricToken] = useState(false);
+
+  useEffect(() => {
+    const checkBiometrics = async () => {
+      const token = await AsyncStorage.getItem('biometricToken');
+      if (token) {
+        setHasBiometricToken(true);
+      }
+    };
+    checkBiometrics();
+  }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
-    iosClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com', // typically requires specific iOS client id, but we'll try this
-    androidClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com', // typically requires specific Android client id, but we'll try this
+    iosClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
+    androidClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
   });
 
   useEffect(() => {
@@ -58,11 +82,62 @@ export default function AuthScreen({ navigation }: any) {
     await promptAsync();
   };
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const toggleWorkerType = (type: string) => {
+    if (workerTypes.includes(type)) {
+      setWorkerTypes(workerTypes.filter(t => t !== type));
+    } else {
+      setWorkerTypes([...workerTypes, type]);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Authenticate to log in to BrickOurHouse",
+      });
+      if (result.success) {
+        const token = await AsyncStorage.getItem('biometricToken');
+        if (token) {
+          setLoading(true);
+          await AsyncStorage.setItem('userToken', token);
+          try {
+            const userRes = await apiClient.get('/auth/me', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            await AsyncStorage.setItem('userInfo', JSON.stringify(userRes.data));
+            navigation.replace('Home');
+          } catch(e) {
+            setError('Session expired. Please log in with password.');
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('biometricToken');
+            setHasBiometricToken(false);
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
+    } catch(e) {
+      console.log('Biometric error', e);
+    }
+  };
+
   const handleSubmit = async () => {
     setError('');
     
-    if (!email || !password) {
-      setError('Email and password are required.');
+    if (!identifier || !password) {
+      setError('Mobile number (or email) and password are required.');
       return;
     }
 
@@ -71,11 +146,22 @@ export default function AuthScreen({ navigation }: any) {
       return;
     }
 
+    if (!isLogin && role === 'worker') {
+      if (!profileImage) {
+        setError('Profile photo is mandatory for workers.');
+        return;
+      }
+      if (workerTypes.length === 0) {
+        setError('Please select at least one worker type.');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
-        const res = await apiClient.post('/auth/login', { email, password });
+        const res = await apiClient.post('/auth/login', { identifier, password });
         if (res.data?.token) {
           await AsyncStorage.setItem('userToken', res.data.token);
           await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
@@ -83,16 +169,17 @@ export default function AuthScreen({ navigation }: any) {
         }
       } else {
         const res = await apiClient.post('/auth/send-otp', { 
-          identifier: email,
+          identifier: identifier,
           type: 'signup'
         });
         
-        // Navigate to Verification Screen instead of Home
         navigation.navigate('Verification', {
-          identifier: email,
+          identifier: identifier,
           password,
           name: fullName,
-          accountType: role
+          accountType: role,
+          photoUri: profileImage,
+          category: workerTypes.join(', ')
         });
       }
     } catch (err: any) {
@@ -106,22 +193,22 @@ export default function AuthScreen({ navigation }: any) {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={tw`flex-1 bg-zinc-950`}
+      style={tw`flex-1 bg-[${theme.bg}]`}
     >
       <TouchableOpacity 
         onPress={() => navigation.replace('Home')}
-        style={tw`absolute top-14 right-6 w-10 h-10 bg-zinc-900 rounded-full items-center justify-center z-10 border border-zinc-800`}
+        style={tw`absolute top-14 right-6 w-10 h-10 bg-[${theme.card}] rounded-full items-center justify-center z-10 border border-[${theme.border}]`}
       >
-        <Text style={tw`text-zinc-400 font-bold text-lg`}>✕</Text>
+        <Text style={tw`text-[${theme.textSecondary}] font-bold text-lg`}>✕</Text>
       </TouchableOpacity>
       
       <ScrollView contentContainerStyle={tw`flex-grow justify-center px-8 py-12`}>
         <View style={tw`mb-10 items-center`}>
-          <View style={tw`w-16 h-16 bg-[#cc4518] rounded-[20px] items-center justify-center mb-6`}>
+          <View style={tw`w-16 h-16 bg-[#cc4518] rounded-[20px] items-center justify-center mb-6 shadow-md`}>
             <Cuboid size={32} color="white" />
           </View>
-          <Text style={tw`text-4xl font-bold text-white mb-2 tracking-tight`}>BrickOurHouse</Text>
-          <Text style={tw`text-zinc-400 text-sm font-medium`}>Build your vision, block by block.</Text>
+          <Text style={tw`text-4xl font-bold text-[${theme.text}] mb-2 tracking-tight`}>BrickOurHouse</Text>
+          <Text style={tw`text-[${theme.textSecondary}] text-sm font-medium`}>Build your vision, block by block.</Text>
         </View>
 
         <View style={tw`flex flex-col gap-4`}>
@@ -131,81 +218,127 @@ export default function AuthScreen({ navigation }: any) {
             </View>
           ) : null}
 
+          {isLogin && hasBiometricToken && (
+            <TouchableOpacity 
+              onPress={handleBiometricLogin}
+              style={tw`w-full py-3.5 bg-[${theme.card}] border border-[#cc4518] rounded-xl flex-row items-center justify-center gap-3 mb-2`}
+            >
+              <Fingerprint size={20} color="#cc4518" />
+              <Text style={tw`text-[#cc4518] font-bold text-sm tracking-wide`}>Login with Face ID / Fingerprint</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity 
             onPress={handleGoogleLogin}
             disabled={googleLoading}
-            style={tw`w-full py-3.5 bg-white rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
+            style={tw`w-full py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
           >
             {googleLoading ? (
-              <ActivityIndicator color="#09090b" size="small" />
+              <ActivityIndicator color={theme.text} size="small" />
             ) : (
               <>
                 <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-5 h-5`} />
-                <Text style={tw`text-zinc-900 font-bold text-sm tracking-wide`}>Continue with Google</Text>
+                <Text style={tw`text-[${theme.text}] font-bold text-sm tracking-wide`}>Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>
 
           <View style={tw`flex-row items-center justify-between mb-2`}>
-            <View style={tw`flex-1 h-[1px] bg-zinc-800`} />
-            <Text style={tw`text-zinc-600 font-bold text-xs px-4 uppercase tracking-widest`}>OR</Text>
-            <View style={tw`flex-1 h-[1px] bg-zinc-800`} />
+            <View style={tw`flex-1 h-[1px] bg-[${theme.border}]`} />
+            <Text style={tw`text-[${theme.textSecondary}] font-bold text-xs px-4 uppercase tracking-widest`}>OR</Text>
+            <View style={tw`flex-1 h-[1px] bg-[${theme.border}]`} />
           </View>
 
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5`}>
-              <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Full Name</Text>
+              <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Full Name</Text>
               <TextInput 
                 placeholder="John Doe" 
-                placeholderTextColor="#52525b"
+                placeholderTextColor={theme.textSecondary}
                 value={fullName}
                 onChangeText={setFullName}
-                style={tw`w-full px-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm font-medium text-white`} 
+                style={tw`w-full px-4 py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl text-sm font-medium text-[${theme.text}]`} 
               />
             </View>
           )}
           
           <View style={tw`flex flex-col gap-1.5`}>
-            <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Email Address</Text>
+            <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Mobile Number or Email</Text>
             <TextInput 
-              placeholder="you@example.com" 
-              placeholderTextColor="#52525b"
-              value={email}
-              onChangeText={setEmail}
+              placeholder="+91234567890" 
+              placeholderTextColor={theme.textSecondary}
+              value={identifier}
+              onChangeText={setIdentifier}
               autoCapitalize="none"
-              keyboardType="email-address"
-              style={tw`w-full px-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm font-medium text-white`} 
+              keyboardType="default"
+              style={tw`w-full px-4 py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl text-sm font-medium text-[${theme.text}]`} 
             />
           </View>
 
           <View style={tw`flex flex-col gap-1.5`}>
-            <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Password</Text>
+            <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Password</Text>
             <TextInput 
               placeholder="••••••••" 
-              placeholderTextColor="#52525b"
+              placeholderTextColor={theme.textSecondary}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              style={tw`w-full px-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm font-medium text-white`} 
+              style={tw`w-full px-4 py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl text-sm font-medium text-[${theme.text}]`} 
             />
           </View>
 
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5 mt-2`}>
-              <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>I am a</Text>
+              <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>I am a</Text>
               <View style={tw`flex-row gap-2`}>
                 <TouchableOpacity
-                  onPress={() => setRole('user')}
-                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'user' ? 'bg-[#cc4518] border-[#cc4518]' : 'bg-zinc-900 border-zinc-800'}`}
+                  onPress={() => setRole('hirer')}
+                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'hirer' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
-                  <Text style={tw`text-xs font-bold ${role === 'user' ? 'text-white' : 'text-zinc-400'}`}>User / App</Text>
+                  <Text style={tw`text-xs font-bold ${role === 'hirer' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>User / App</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => setRole('worker')}
-                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'worker' ? 'bg-[#cc4518] border-[#cc4518]' : 'bg-zinc-900 border-zinc-800'}`}
+                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'worker' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
-                  <Text style={tw`text-xs font-bold ${role === 'worker' ? 'text-white' : 'text-zinc-400'}`}>Worker</Text>
+                  <Text style={tw`text-xs font-bold ${role === 'worker' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Worker</Text>
                 </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {!isLogin && role === 'worker' && (
+            <View style={tw`flex flex-col gap-4 mt-2`}>
+              <View style={tw`flex flex-col gap-1.5`}>
+                <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Profile Photo *</Text>
+                <TouchableOpacity 
+                  onPress={pickImage}
+                  style={tw`w-full h-24 border border-dashed border-[${theme.border}] bg-[${theme.card}] rounded-xl items-center justify-center`}
+                >
+                  {profileImage ? (
+                    <Image source={{ uri: profileImage }} style={tw`w-full h-full rounded-xl`} />
+                  ) : (
+                    <>
+                      <Camera size={24} color={theme.textSecondary} style={tw`mb-2`} />
+                      <Text style={tw`text-[${theme.textSecondary}] text-xs font-medium`}>Tap to upload photo</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <View style={tw`flex flex-col gap-1.5`}>
+                <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Worker Type *</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-2 pb-2`}>
+                  {WORKER_CATEGORIES.map((cat, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => toggleWorkerType(cat)}
+                      style={tw`px-3 py-2 rounded-lg border ${workerTypes.includes(cat) ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
+                    >
+                      <Text style={tw`text-xs font-medium ${workerTypes.includes(cat) ? 'text-white' : `text-[${theme.textSecondary}]`}`}>{cat}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             </View>
           )}
@@ -235,7 +368,7 @@ export default function AuthScreen({ navigation }: any) {
               setError('');
             }}
           >
-            <Text style={tw`text-xs font-bold text-zinc-400`}>
+            <Text style={tw`text-xs font-bold text-[${theme.textSecondary}]`}>
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </Text>
           </TouchableOpacity>

@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 
 export default function VerificationScreen({ route, navigation }: any) {
-  const { name, identifier, password, accountType } = route.params;
+  const { name, identifier, password, accountType, photoUri, category } = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -23,13 +23,32 @@ export default function VerificationScreen({ route, navigation }: any) {
     setLoading(true);
 
     try {
-      const res = await apiClient.post('/auth/signup', { 
-        name, 
-        identifier, 
-        otp,
-        password,
-        accountType,
-        category: accountType === 'worker' ? 'construction' : undefined
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('identifier', identifier);
+      formData.append('otp', otp);
+      formData.append('password', password);
+      formData.append('accountType', accountType);
+      
+      if (accountType === 'worker' && category) {
+        formData.append('category', category);
+      }
+      
+      if (accountType === 'worker' && photoUri) {
+        const uriParts = photoUri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        
+        formData.append('photo', {
+          uri: photoUri,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
+
+      const res = await apiClient.post('/auth/signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (res.data?.token) {

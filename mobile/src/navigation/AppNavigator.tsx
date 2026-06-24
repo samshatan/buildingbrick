@@ -8,6 +8,7 @@ import MainTabNavigator from './MainTabNavigator';
 import WorkerDetailsScreen from '../screens/WorkerDetailsScreen';
 import DirectHireScreen from '../screens/DirectHireScreen';
 import JobsScreen from '../screens/JobsScreen';
+import WorkersScreen from '../screens/WorkersScreen';
 import WorkRequestsScreen from '../screens/WorkRequestsScreen';
 import AboutScreen from '../screens/AboutScreen';
 import ContactScreen from '../screens/ContactScreen';
@@ -33,6 +34,8 @@ import ManageRolesScreen from '../screens/ManageRolesScreen';
 import UsersManagementScreen from '../screens/UsersManagementScreen';
 import WorkerVerificationScreen from '../screens/WorkerVerificationScreen';
 import AnalyticalReportsScreen from '../screens/AnalyticalReportsScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +49,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="WorkerDetails" component={WorkerDetailsScreen} options={{ title: 'Worker Profile' }} />
         <Stack.Screen name="DirectHire" component={DirectHireScreen} options={{ title: 'Book Worker' }} />
+        <Stack.Screen name="Workers" component={WorkersScreen} options={{ title: 'Saved Workers' }} />
         <Stack.Screen name="Jobs" component={JobsScreen} options={{ title: 'My Jobs' }} />
         <Stack.Screen name="WorkRequests" component={WorkRequestsScreen} options={{ title: 'Incoming Requests' }} />
         <Stack.Screen name="About" component={AboutScreen} options={{ title: 'About Us' }} />
@@ -71,6 +75,8 @@ export default function AppNavigator() {
         <Stack.Screen name="UsersManagement" component={UsersManagementScreen} options={{ headerShown: false }} />
         <Stack.Screen name="WorkerVerification" component={WorkerVerificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AnalyticalReports" component={AnalyticalReportsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

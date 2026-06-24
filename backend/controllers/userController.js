@@ -75,7 +75,7 @@ export const becomeWorker = async (req, res) => {
 // @access  Private
 export const updateAccount = async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phone, avatarUrl } = req.body;
     const userId = req.user._id;
 
     const user = await User.findById(userId);
@@ -114,6 +114,18 @@ export const updateAccount = async (req, res) => {
       }
     }
 
+    if (avatarUrl) {
+      user.avatarUrl = avatarUrl;
+      
+      if (user.accountType === 'worker') {
+        const workerProfile = await WorkerProfile.findOne({ userId });
+        if (workerProfile) {
+          workerProfile.photo = avatarUrl;
+          await workerProfile.save();
+        }
+      }
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -124,5 +136,36 @@ export const updateAccount = async (req, res) => {
   } catch (error) {
     console.error('Update account error:', error);
     res.status(500).json({ message: 'Server error updating account.' });
+  }
+};
+
+// @desc    Update user preferences
+// @route   PATCH /api/v1/users/preferences
+// @access  Private
+export const updatePreferences = async (req, res) => {
+  try {
+    const { pushNotifications, darkMode, biometricLogin, pushToken } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (pushNotifications !== undefined) user.preferences.pushNotifications = pushNotifications;
+    if (darkMode !== undefined) user.preferences.darkMode = darkMode;
+    if (biometricLogin !== undefined) user.preferences.biometricLogin = biometricLogin;
+    
+    if (pushToken !== undefined) user.pushToken = pushToken;
+
+    await user.save();
+
+    res.status(200).json({
+      message: 'Preferences updated successfully',
+      user: mapUserResponse(user),
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({ message: 'Server error updating preferences.' });
   }
 };

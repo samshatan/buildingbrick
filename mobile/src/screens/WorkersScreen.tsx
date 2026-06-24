@@ -73,10 +73,12 @@ export default function WorkersScreen({ navigation, route }: any) {
           <View style={tw`flex-1`}>
             <View style={tw`flex-row justify-between items-start mb-1`}>
               <Text style={tw`text-lg font-bold text-zinc-900 pr-2 flex-1`} numberOfLines={1}>{worker.name || worker.displayName}</Text>
-              <View style={tw`flex-row items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full`}>
-                <Star size={12} color="#eab308" fill="#eab308" />
-                <Text style={tw`text-yellow-600 text-[10px] font-bold`}>{worker.rating || 4.5}</Text>
-              </View>
+              {worker.rating > 0 && (
+                <View style={tw`flex-row items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full`}>
+                  <Star size={12} color="#eab308" fill="#eab308" />
+                  <Text style={tw`text-yellow-600 text-[10px] font-bold`}>{worker.rating.toFixed(1)}</Text>
+                </View>
+              )}
             </View>
             <Text style={tw`text-sm font-medium text-[#cc4518] mb-2`}>{worker.jobTitle || worker.workerType || worker.role || 'Professional'}</Text>
             <View style={tw`flex-row items-center gap-3`}>
@@ -86,19 +88,21 @@ export default function WorkersScreen({ navigation, route }: any) {
               </View>
               <View style={tw`flex-row items-center gap-1`}>
                 <Briefcase size={12} color="#a1a1aa" />
-                <Text style={tw`text-[11px] font-bold uppercase tracking-wider text-zinc-400`}>{worker.reviews || worker.reviewCount || 12} jobs</Text>
+                <Text style={tw`text-[11px] font-bold uppercase tracking-wider text-zinc-400`}>{worker.jobsCompleted || 0} jobs</Text>
               </View>
             </View>
           </View>
         </View>
 
-        <View style={tw`flex-row flex-wrap gap-2 pt-3 border-t border-zinc-50`}>
-          {(worker.skills || ['General Labor']).map((skill: string) => (
-            <View key={skill} style={tw`px-2.5 py-1 bg-zinc-50 rounded-md border border-zinc-100`}>
-              <Text style={tw`text-zinc-600 text-[10px] font-bold uppercase tracking-wider`}>{skill}</Text>
-            </View>
-          ))}
-        </View>
+        {worker.skills && worker.skills.trim() !== '' && (
+          <View style={tw`flex-row flex-wrap gap-2 pt-3 border-t border-zinc-50`}>
+            {worker.skills.split(',').map((skill: string, idx: number) => (
+              <View key={idx} style={tw`px-2.5 py-1 bg-zinc-50 rounded-md border border-zinc-100`}>
+                <Text style={tw`text-zinc-600 text-[10px] font-bold uppercase tracking-wider`}>{skill.trim()}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={tw`flex-row items-center justify-between pt-2`}>
           <View style={tw`flex-row items-end`}>

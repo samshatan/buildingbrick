@@ -62,7 +62,8 @@ export const mapUserResponse = (user) => {
     fullName: user.name,
     userType: user.accountType.toUpperCase(), // converts 'worker' -> 'WORKER', 'hirer' -> 'HIRER'
     avatarUrl: user.avatarUrl || "https://picsum.photos/seed/default-avatar/200/200",
-    coverImageUrl: user.coverImageUrl || ""
+    coverImageUrl: user.coverImageUrl || "",
+    preferences: user.preferences || { pushNotifications: true, darkMode: false, biometricLogin: false }
   };
 };
 

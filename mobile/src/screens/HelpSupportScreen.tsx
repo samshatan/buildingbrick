@@ -90,7 +90,7 @@ export default function HelpSupportScreen({ navigation }: any) {
             />
             <TouchableOpacity onPress={submitTicket} style={tw`bg-[#cc4518] rounded-xl py-3 flex-row items-center justify-center gap-2`}>
               <Send size={18} color="white" />
-              <Text style={tw`text-white font-bold tracking-wide`}>Submit Ticket</Text>
+              <Text style={tw`text-white font-bold text-sm tracking-wide`}>Submit Request</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

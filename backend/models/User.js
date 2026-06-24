@@ -13,6 +13,12 @@ const userSchema = new mongoose.Schema({
   state: { type: String, default: "" },
   district: { type: String, default: "" },
   postalCode: { type: String, default: "" },
+  preferences: {
+    pushNotifications: { type: Boolean, default: true },
+    darkMode: { type: Boolean, default: false },
+    biometricLogin: { type: Boolean, default: false }
+  },
+  pushToken: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now }
 });
 

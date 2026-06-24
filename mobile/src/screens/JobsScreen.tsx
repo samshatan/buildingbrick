@@ -6,8 +6,21 @@ export default function JobsScreen() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Set this to false when you want to test with actual database data or see the empty state
+  const USE_MOCK_DATA = true;
+
+  const mockJobs = [
+    { _id: 'job1', title: 'Roof Installation', status: 'Pending', date: 'Oct 10, 2026', workerName: 'Charlie Builder', amount: '2500' },
+    { _id: 'job2', title: 'Kitchen Remodel', status: 'Completed', date: 'Oct 01, 2026', workerName: 'Sarah Remodels', amount: '8400' },
+    { _id: 'job3', title: 'Driveway Paving', status: 'Accepted', date: 'Oct 15, 2026', workerName: 'Paver Bros', amount: '1200' }
+  ];
+
   useEffect(() => {
-    fetchJobs();
+    if (USE_MOCK_DATA) {
+      setLoading(false);
+    } else {
+      fetchJobs();
+    }
   }, []);
 
   const fetchJobs = async () => {
@@ -77,11 +90,7 @@ export default function JobsScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={jobs.length > 0 ? jobs : [
-          { _id: 'job1', title: 'Roof Installation', status: 'Pending', date: 'Oct 10, 2026', workerName: 'Charlie Builder', amount: '2500' },
-          { _id: 'job2', title: 'Kitchen Remodel', status: 'Completed', date: 'Oct 01, 2026', workerName: 'Sarah Remodels', amount: '8400' },
-          { _id: 'job3', title: 'Driveway Paving', status: 'Accepted', date: 'Oct 15, 2026', workerName: 'Paver Bros', amount: '1200' }
-        ]}
+        data={USE_MOCK_DATA ? mockJobs : jobs}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderJobCard}
         contentContainerStyle={styles.listContainer}
