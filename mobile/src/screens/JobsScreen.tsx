@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity }
 import apiClient from '../api/client';
 
 export default function JobsScreen() {
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,7 +77,11 @@ export default function JobsScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={jobs.length > 0 ? jobs : [1, 2, 3]} // Dummy array if no jobs returned
+        data={jobs.length > 0 ? jobs : [
+          { _id: 'job1', title: 'Roof Installation', status: 'Pending', date: 'Oct 10, 2026', workerName: 'Charlie Builder', amount: '2500' },
+          { _id: 'job2', title: 'Kitchen Remodel', status: 'Completed', date: 'Oct 01, 2026', workerName: 'Sarah Remodels', amount: '8400' },
+          { _id: 'job3', title: 'Driveway Paving', status: 'Accepted', date: 'Oct 15, 2026', workerName: 'Paver Bros', amount: '1200' }
+        ]}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderJobCard}
         contentContainerStyle={styles.listContainer}

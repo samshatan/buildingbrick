@@ -275,6 +275,14 @@ export default function ProfileScreen({ navigation }: any) {
                   navigation.navigate('Workers');
                 } else if (item.label === 'My Material Orders') {
                   navigation.navigate('Orders');
+                } else if (item.label === 'Help & Support') {
+                  navigation.navigate('HelpSupport');
+                } else if (item.label === 'Platform Moderation') {
+                  navigation.navigate('PlatformModeration');
+                } else if (item.label === 'Manage Roles') {
+                  navigation.navigate('ManageRoles');
+                } else if (item.label === 'My Business Profile') {
+                  navigation.navigate('BusinessProfile');
                 } else {
                   setActivePage(item.label);
                 }

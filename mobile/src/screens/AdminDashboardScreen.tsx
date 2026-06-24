@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import apiClient from '../api/client';
 
-export default function AdminDashboardScreen() {
+export default function AdminDashboardScreen({ navigation }: any) {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalWorkers: 0,
@@ -84,13 +84,13 @@ export default function AdminDashboardScreen() {
 
       <View style={styles.actionsContainer}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Users', 'User management list coming soon!')}>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('UsersManagement')}>
           <Text style={styles.actionBtnText}>Manage Users</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Workers', 'Worker verification list coming soon!')}>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('WorkerVerification')}>
           <Text style={styles.actionBtnText}>Verify Workers</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Reports', 'Analytical reports coming soon!')}>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AnalyticalReports')}>
           <Text style={styles.actionBtnText}>View Reports</Text>
         </TouchableOpacity>
       </View>

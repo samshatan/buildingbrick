@@ -88,7 +88,10 @@ export default function WorkRequestsScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={requests.length > 0 ? requests : [1, 2]} // Dummy array if empty
+        data={requests.length > 0 ? requests : [
+          { _id: 'mock1', title: 'Plumbing Repair', date: 'Oct 24, 2026', location: 'Downtown Seattle', clientName: 'Alice Smith' },
+          { _id: 'mock2', title: 'Electrical Wiring', date: 'Oct 26, 2026', location: 'Bellevue', clientName: 'Bob Johnson' }
+        ]}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderRequestCard}
         contentContainerStyle={styles.listContainer}

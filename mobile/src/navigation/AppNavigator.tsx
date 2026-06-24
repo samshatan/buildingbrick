@@ -26,6 +26,13 @@ import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import CafeDashboardScreen from '../screens/CafeDashboardScreen';
 import ChatScreen from '../screens/ChatScreen';
 import OrdersScreen from '../screens/OrdersScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import BusinessProfileScreen from '../screens/BusinessProfileScreen';
+import PlatformModerationScreen from '../screens/PlatformModerationScreen';
+import ManageRolesScreen from '../screens/ManageRolesScreen';
+import UsersManagementScreen from '../screens/UsersManagementScreen';
+import WorkerVerificationScreen from '../screens/WorkerVerificationScreen';
+import AnalyticalReportsScreen from '../screens/AnalyticalReportsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +64,13 @@ export default function AppNavigator() {
         <Stack.Screen name="CafeDashboard" component={CafeDashboardScreen} options={{ title: 'Cafe Panel' }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Orders" component={OrdersScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BusinessProfile" component={BusinessProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PlatformModeration" component={PlatformModerationScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ManageRoles" component={ManageRolesScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="UsersManagement" component={UsersManagementScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="WorkerVerification" component={WorkerVerificationScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AnalyticalReports" component={AnalyticalReportsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
