@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from "react-router-dom";
-import { Home, Search, Briefcase, User } from "lucide-react";
+import { Home, Search, Briefcase, User, ShoppingCart } from "lucide-react";
 
 function BottomNav() {
   const navItems = [
     { label: "Home", to: "/", icon: <Home className="w-5 h-5 mb-1" /> },
     { label: "Workers", to: "/workers", icon: <Search className="w-5 h-5 mb-1" /> },
     { label: "Jobs", to: "/requests", icon: <Briefcase className="w-5 h-5 mb-1" /> },
+    { label: "Materials", to: "/materials", icon: <ShoppingCart className="w-5 h-5 mb-1" /> },
     { label: "Profile", to: "/profile", icon: <User className="w-5 h-5 mb-1" /> },
   ];
 

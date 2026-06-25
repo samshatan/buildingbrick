@@ -149,7 +149,7 @@ export default function EditProfileScreen({ navigation }: any) {
           {/* Form Fields */}
           <View style={tw`bg-white rounded-[24px] p-5 shadow-sm border border-zinc-100 flex-col gap-4`}>
             <View style={tw`flex-col gap-1.5`}>
-              <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Full Name</Text>
+              <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Full Name</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -160,7 +160,7 @@ export default function EditProfileScreen({ navigation }: any) {
             </View>
 
             <View style={tw`flex-col gap-1.5`}>
-              <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Email Address</Text>
+              <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Email Address</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -173,7 +173,7 @@ export default function EditProfileScreen({ navigation }: any) {
             </View>
 
             <View style={tw`flex-col gap-1.5`}>
-              <Text style={tw`text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Phone Number</Text>
+              <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1`}>Phone Number</Text>
               <TextInput
                 value={phone}
                 onChangeText={setPhone}

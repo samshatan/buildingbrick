@@ -121,7 +121,7 @@ export default function ProjectsScreen() {
             <View style={tw`absolute bottom-6 left-6 right-6`}>
               <View style={tw`flex-row items-center gap-1.5 mb-2`}>
                 <MapPin size={12} color="#f87171" />
-                <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-red-400`}>{project.location}</Text>
+                <Text style={tw`text-xs font-bold uppercase tracking-widest text-red-400`}>{project.location}</Text>
               </View>
               <Text style={tw`text-3xl font-bold text-white leading-tight`}>{project.title}</Text>
             </View>
@@ -151,7 +151,7 @@ export default function ProjectsScreen() {
                   ].map((btn, i) => (
                     <TouchableOpacity key={i} style={tw`flex-1 items-center justify-center gap-2 p-3 bg-[${theme.bg}] rounded-2xl border border-[${theme.border}]`}>
                       <btn.icon size={20} color={theme.textSecondary} />
-                      <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest`}>{btn.label}</Text>
+                      <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest`}>{btn.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -172,7 +172,7 @@ export default function ProjectsScreen() {
                         </View>
                         <View style={tw`-mt-0.5`}>
                           <Text style={[tw`text-sm font-bold`, step.done ? tw`text-[${theme.text}]` : tw`text-[${theme.textSecondary}]`]}>{step.label}</Text>
-                          <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest mt-0.5`}>{step.date}</Text>
+                          <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest mt-0.5`}>{step.date}</Text>
                         </View>
                       </View>
                     ))}

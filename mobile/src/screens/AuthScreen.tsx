@@ -251,7 +251,7 @@ export default function AuthScreen({ navigation }: any) {
 
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5`}>
-              <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Full Name</Text>
+              <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Full Name</Text>
               <TextInput 
                 placeholder="John Doe" 
                 placeholderTextColor={theme.textSecondary}
@@ -263,7 +263,7 @@ export default function AuthScreen({ navigation }: any) {
           )}
           
           <View style={tw`flex flex-col gap-1.5`}>
-            <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Mobile Number or Email</Text>
+            <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Mobile Number or Email</Text>
             <TextInput 
               placeholder="+91234567890" 
               placeholderTextColor={theme.textSecondary}
@@ -276,7 +276,7 @@ export default function AuthScreen({ navigation }: any) {
           </View>
 
           <View style={tw`flex flex-col gap-1.5`}>
-            <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Password</Text>
+            <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Password</Text>
             <TextInput 
               placeholder="••••••••" 
               placeholderTextColor={theme.textSecondary}
@@ -289,7 +289,7 @@ export default function AuthScreen({ navigation }: any) {
 
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5 mt-2`}>
-              <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>I am a</Text>
+              <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>I am a</Text>
               <View style={tw`flex-row gap-2`}>
                 <TouchableOpacity
                   onPress={() => setRole('hirer')}
@@ -310,7 +310,7 @@ export default function AuthScreen({ navigation }: any) {
           {!isLogin && role === 'worker' && (
             <View style={tw`flex flex-col gap-4 mt-2`}>
               <View style={tw`flex flex-col gap-1.5`}>
-                <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Profile Photo *</Text>
+                <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Profile Photo *</Text>
                 <TouchableOpacity 
                   onPress={pickImage}
                   style={tw`w-full h-24 border border-dashed border-[${theme.border}] bg-[${theme.card}] rounded-xl items-center justify-center`}
@@ -327,7 +327,7 @@ export default function AuthScreen({ navigation }: any) {
               </View>
 
               <View style={tw`flex flex-col gap-1.5`}>
-                <Text style={tw`text-[10px] font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Worker Type *</Text>
+                <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Worker Type *</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-2 pb-2`}>
                   {WORKER_CATEGORIES.map((cat, idx) => (
                     <TouchableOpacity

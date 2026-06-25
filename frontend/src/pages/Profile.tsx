@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BadgeCheck, Briefcase, Camera, Clock, CreditCard, LayoutDashboard, LogOut, Star, ToggleLeft, ToggleRight, UserCircle, X, Search, Edit2 } from "lucide-react";
+import { BadgeCheck, Briefcase, Camera, Clock, CreditCard, LayoutDashboard, LogOut, Star, ToggleLeft, ToggleRight, UserCircle, X, Search, Edit2, Package } from "lucide-react";
 import { workerSubscriptionPlan, workerCategories } from "@/data/marketplaceData";
 import { useAuth } from "../context/AuthContext";
 import type { WorkerProfileResponse } from "@/components/WorkerCard";
@@ -351,6 +351,12 @@ function Profile() {
                     Active Contracts
                   </Link>
                 </>
+              )}
+              {["WORKER", "HIRER", "ADMIN", "CAFE"].includes(user.userType) && (
+                <Link to="/material-orders" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                  <Package className="w-5 h-5" />
+                  My Material Orders
+                </Link>
               )}
             </nav>
 

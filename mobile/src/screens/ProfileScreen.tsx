@@ -160,7 +160,7 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={tw`text-sm font-medium text-[${theme.textSecondary}] mt-0.5`} numberOfLines={1}>{userInfo?.email || userInfo?.phone || '...'}</Text>
             <View style={tw`flex-row items-center gap-1.5 px-2.5 py-1 rounded-md bg-[${theme.border}] self-start mt-2`}>
               {getRoleIcon()}
-              <Text style={tw`text-[${theme.textSecondary}] text-[10px] font-bold uppercase tracking-widest`}>{role.replace('_', ' ')}</Text>
+              <Text style={tw`text-[${theme.textSecondary}] text-xs font-bold uppercase tracking-widest`}>{role.replace('_', ' ')}</Text>
             </View>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={tw`w-10 h-10 rounded-full bg-[${theme.bg}] border border-[${theme.border}] items-center justify-center shadow-sm`}>

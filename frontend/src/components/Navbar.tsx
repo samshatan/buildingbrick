@@ -10,7 +10,8 @@ import {
   HiOutlineInformationCircle,
   HiOutlineEnvelope,
   HiOutlineUser,
-  HiMagnifyingGlass
+  HiMagnifyingGlass,
+  HiOutlineShoppingCart
 } from "react-icons/hi2";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
@@ -60,6 +61,7 @@ function Navbar() {
     { label: "Find Workers", to: "/workers", icon: HiOutlineUsers },
     { label: "Find Jobs", to: "/requests", icon: HiOutlineBriefcase },
     { label: "Post Work", to: "/hire-request", icon: HiOutlinePlusCircle },
+    { label: "Materials", to: "/materials", icon: HiOutlineShoppingCart },
     { label: "About", to: "/about", icon: HiOutlineInformationCircle },
     { label: "Contact", to: "/contact", icon: HiOutlineEnvelope },
   ];

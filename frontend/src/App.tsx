@@ -23,6 +23,8 @@ const Orders = lazy(() => import('./pages/Orders'))
 const SignUp = lazy(() => import('./pages/SignUp'))
 const About = lazy(() => import('./pages/About'))
 const Profile = lazy(() => import('./pages/Profile'))
+const Materials = lazy(() => import('./pages/Materials'))
+const MaterialOrders = lazy(() => import('./pages/MaterialOrders'))
 const WorkRequests = lazy(() => import('./pages/WorkRequests'))
 const DirectHire = lazy(() => import('./pages/DirectHire'))
 const CafeDashboard = lazy(() => import('./pages/CafeDashboard'))
@@ -71,6 +73,8 @@ function App() {
           <Route path='/worker/:workerId' element={<Product />} />
           <Route path='/direct-hire/:workerId' element={<DirectHire />} />
           <Route path='/hire-request' element={<Cart />} />
+          <Route path='/materials' element={<Materials />} />
+          <Route path='/material-orders' element={<MaterialOrders />} />
           <Route path='/requests' element={<WorkRequests />} />
           <Route path='/jobs' element={<Orders />} />
           <Route path='/profile' element={<Profile />} />
