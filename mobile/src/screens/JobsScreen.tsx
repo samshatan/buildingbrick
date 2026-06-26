@@ -1,34 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import tw from 'twrnc';
+import { Briefcase, Calendar, ChevronRight, Clock, CheckCircle2, XCircle } from 'lucide-react-native';
 import apiClient from '../api/client';
+import { COLORS } from '../theme/theme';
 
 export default function JobsScreen() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Set this to false when you want to test with actual database data or see the empty state
-  const USE_MOCK_DATA = true;
-
-  const mockJobs = [
-    { _id: 'job1', title: 'Roof Installation', status: 'Pending', date: 'Oct 10, 2026', workerName: 'Charlie Builder', amount: '2500' },
-    { _id: 'job2', title: 'Kitchen Remodel', status: 'Completed', date: 'Oct 01, 2026', workerName: 'Sarah Remodels', amount: '8400' },
-    { _id: 'job3', title: 'Driveway Paving', status: 'Accepted', date: 'Oct 15, 2026', workerName: 'Paver Bros', amount: '1200' }
-  ];
-
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      setLoading(false);
-    } else {
-      fetchJobs();
-    }
+    fetchJobs();
   }, []);
 
   const fetchJobs = async () => {
     try {
-      // Endpoint updated to /jobs based on backend routing
       const response = await apiClient.get('/jobs');
       if (response.data) {
-        // Handle different response structures
         const jobData = response.data.data || response.data.jobs || response.data;
         setJobs(Array.isArray(jobData) ? jobData : []);
       }
@@ -39,151 +29,106 @@ export default function JobsScreen() {
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'accepted': return <CheckCircle2 size={14} color="#2563eb" />;
+      case 'completed': return <CheckCircle2 size={14} color={COLORS.success} />;
+      case 'cancelled': return <XCircle size={14} color={COLORS.error} />;
+      default: return <Clock size={14} color={COLORS.warning} />;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'pending': return '#d97706'; // orange
-      case 'accepted': return '#2563eb'; // blue
-      case 'completed': return '#059669'; // green
-      case 'cancelled': return '#dc2626'; // red
-      default: return '#6b7280'; // gray
+      case 'accepted': return 'text-blue-600 bg-blue-50 border-blue-100';
+      case 'completed': return 'text-emerald-600 bg-emerald-50 border-emerald-100';
+      case 'cancelled': return 'text-red-600 bg-red-50 border-red-100';
+      default: return 'text-amber-600 bg-amber-50 border-amber-100';
     }
   };
 
   const renderJobCard = ({ item, index }: any) => {
-    // Handling dummy data if the API is empty for preview purposes
-    const jobTitle = item.title || item.description || `Job Request #${index + 1}`;
-    const status = item.status || (index === 0 ? 'Pending' : 'Completed');
-    const date = item.date || item.createdAt?.substring(0, 10) || '2026-06-22';
+    const jobTitle = item.title || item.requestId?.title || `Job Request #${item._id?.substring(0,5) || index + 1}`;
+    const status = item.status || 'Pending';
+    const date = item.date || item.createdAt?.substring(0, 10) || 'Just now';
+    const workerName = item.worker?.name || item.workerId?.name || item.workerName || 'Worker';
     
     return (
-      <TouchableOpacity style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.jobTitle} numberOfLines={1}>{jobTitle}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) + '20' }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(status) }]}>
-              {status.toUpperCase()}
-            </Text>
+      <Animated.View entering={FadeInUp.delay(index * 100).duration(500).springify()}>
+        <TouchableOpacity style={tw`bg-white rounded-[24px] p-5 mb-4 shadow-sm border border-zinc-100`}>
+          <View style={tw`flex-row justify-between items-start mb-4`}>
+            <View style={tw`flex-1 mr-4`}>
+              <Text style={tw`text-lg font-bold text-zinc-900 mb-1`} numberOfLines={1}>{jobTitle}</Text>
+              <View style={tw`flex-row items-center gap-1.5`}>
+                <Calendar size={12} color="#71717a" />
+                <Text style={tw`text-xs font-medium text-zinc-500`}>{date}</Text>
+              </View>
+            </View>
+            <View style={tw`px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${getStatusColor(status)}`}>
+              {getStatusIcon(status)}
+              <Text style={tw`text-[10px] font-bold uppercase tracking-widest ${getStatusColor(status).split(' ')[0]}`}>
+                {status}
+              </Text>
+            </View>
           </View>
-        </View>
-        
-        <View style={styles.cardBody}>
-          <Text style={styles.jobDetail}>Date: {date}</Text>
-          <Text style={styles.jobDetail}>Worker: {item.worker?.name || item.workerName || 'Assigned Worker'}</Text>
-        </View>
-        
-        <View style={styles.cardFooter}>
-          <Text style={styles.amount}>Total: ${item.amount || item.totalPrice || '---'}</Text>
-          <Text style={styles.viewDetails}>View Details</Text>
-        </View>
-      </TouchableOpacity>
+          
+          <View style={tw`flex-row justify-between items-center pt-4 border-t border-zinc-50`}>
+            <View style={tw`flex-row items-center gap-2`}>
+              <View style={tw`w-8 h-8 rounded-full bg-orange-50 items-center justify-center`}>
+                <Text style={tw`text-[${COLORS.primary}] font-bold text-xs`}>{workerName[0]}</Text>
+              </View>
+              <View>
+                <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Assigned To</Text>
+                <Text style={tw`text-sm font-bold text-zinc-700`}>{workerName}</Text>
+              </View>
+            </View>
+            
+            <View style={tw`flex-row items-center gap-2`}>
+              <View style={tw`items-end mr-1`}>
+                <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Total</Text>
+                <Text style={tw`text-base font-bold text-zinc-900`}>${item.amount || item.agreedRate || item.totalPrice || '---'}</Text>
+              </View>
+              <View style={tw`w-8 h-8 rounded-full bg-zinc-50 items-center justify-center border border-zinc-100`}>
+                <ChevronRight size={16} color="#52525b" />
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={USE_MOCK_DATA ? mockJobs : jobs}
-        keyExtractor={(item, index) => item._id || index.toString()}
-        renderItem={renderJobCard}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>You don't have any jobs yet.</Text>
-          </View>
-        }
-      />
-    </View>
+    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+      <View style={tw`px-6 pt-6 pb-2`}>
+        <Text style={tw`text-3xl font-bold text-zinc-900 mb-1`}>My Jobs</Text>
+        <Text style={tw`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-6`}>Manage your service requests</Text>
+      </View>
+      
+      {loading ? (
+        <View style={tw`flex-1 justify-center items-center`}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={jobs}
+          keyExtractor={(item, index) => item._id || item.id || index.toString()}
+          renderItem={renderJobCard}
+          contentContainerStyle={tw`px-6 pb-24 pt-2`}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Animated.View entering={FadeInUp.duration(500)} style={tw`flex-1 justify-center items-center py-20 px-6`}>
+              <View style={tw`w-20 h-20 rounded-full bg-zinc-100 items-center justify-center mb-6`}>
+                <Briefcase size={32} color="#a1a1aa" />
+              </View>
+              <Text style={tw`text-xl font-bold text-zinc-900 mb-2`}>No Jobs Yet</Text>
+              <Text style={tw`text-sm text-zinc-500 text-center leading-relaxed`}>
+                You haven't booked any workers or services yet. Once you do, they will appear here.
+              </Text>
+            </Animated.View>
+          }
+        />
+      )}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContainer: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  jobTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    flex: 1,
-    marginRight: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  cardBody: {
-    marginBottom: 12,
-  },
-  jobDetail: {
-    fontSize: 14,
-    color: '#4b5563',
-    marginBottom: 4,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    paddingTop: 12,
-  },
-  amount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  viewDetails: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2563eb',
-  },
-  emptyContainer: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-});

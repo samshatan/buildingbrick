@@ -13,6 +13,7 @@ export const COLORS = {
 
   // UI Colors
   accent: '#7A3B0F',
+  secondary: '#A0522D', // Sienna
   success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',

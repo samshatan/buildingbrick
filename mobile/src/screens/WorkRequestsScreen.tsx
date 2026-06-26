@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import tw from 'twrnc';
+import { Calendar, MapPin, CheckCircle2, XCircle, Inbox } from 'lucide-react-native';
 import apiClient from '../api/client';
+import { COLORS } from '../theme/theme';
 
 export default function WorkRequestsScreen() {
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -12,7 +18,6 @@ export default function WorkRequestsScreen() {
 
   const fetchRequests = async () => {
     try {
-      // Assuming a backend endpoint like /worker/requests or /jobs/requests
       const response = await apiClient.get('/requests');
       if (response.data) {
         setRequests(response.data.data || response.data);
@@ -26,185 +31,113 @@ export default function WorkRequestsScreen() {
 
   const handleAction = async (id: string, action: 'accept' | 'decline') => {
     try {
-      // Optimistic UI update or show loading state
-      Alert.alert('Action processing', `You chose to ${action} this request.`);
-      // await apiClient.post(`/requests/${id}/${action}`);
-      // fetchRequests();
+      setActionLoading(id);
+      await apiClient.post(`/requests/${id}/${action}`);
+      Alert.alert('Success', `You have ${action}ed the request.`);
+      fetchRequests();
     } catch (error) {
-      console.log('Error updating request status', error);
+      console.log(`Error ${action}ing request`, error);
+      Alert.alert('Error', `Failed to ${action} the request. Please try again.`);
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const renderRequestCard = ({ item, index }: any) => {
-    const title = item.title || item.description || `New Request #${index + 1}`;
-    const date = item.date || 'Pending Date';
+    const title = item.title || item.description || `New Request #${item._id?.substring(0,5) || index + 1}`;
+    const date = item.date || item.createdAt?.substring(0, 10) || 'Pending Date';
     const location = item.address || item.location || 'Client Location';
-    const clientName = item.client?.name || item.clientName || 'Anonymous Client';
+    const clientName = item.client?.name || item.clientName || item.hirerUserId?.name || 'Anonymous Client';
+    const isActionLoading = actionLoading === (item._id || item.id);
 
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.title} numberOfLines={1}>{title}</Text>
-            <Text style={styles.clientName}>From: {clientName}</Text>
+      <Animated.View entering={FadeInUp.delay(index * 100).duration(500).springify()}>
+        <View style={tw`bg-white rounded-[24px] p-5 mb-4 shadow-sm border border-zinc-100 overflow-hidden`}>
+          <View style={tw`absolute top-0 left-0 bottom-0 w-1.5 bg-[#cc4518]`} />
+          <View style={tw`flex-row justify-between items-start mb-4 pl-2`}>
+            <View style={tw`flex-1 mr-4`}>
+              <Text style={tw`text-lg font-bold text-zinc-900 mb-1`} numberOfLines={1}>{title}</Text>
+              <Text style={tw`text-xs font-medium text-zinc-500`}>From: {clientName}</Text>
+            </View>
+            <View style={tw`px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100`}>
+              <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[#cc4518]`}>NEW</Text>
+            </View>
           </View>
-          <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>NEW</Text>
+
+          <View style={tw`bg-zinc-50 rounded-xl p-3 mb-4 pl-4`}>
+            <View style={tw`flex-row items-center gap-2 mb-2`}>
+              <Calendar size={14} color="#71717a" />
+              <Text style={tw`text-sm font-medium text-zinc-600`}>{date}</Text>
+            </View>
+            <View style={tw`flex-row items-center gap-2`}>
+              <MapPin size={14} color="#71717a" />
+              <Text style={tw`text-sm font-medium text-zinc-600`}>{location}</Text>
+            </View>
+          </View>
+
+          <View style={tw`flex-row justify-between gap-3 pl-2`}>
+            <TouchableOpacity 
+              style={tw`flex-1 bg-red-50 py-3 rounded-xl border border-red-100 flex-row justify-center items-center gap-2`}
+              onPress={() => handleAction(item._id || item.id, 'decline')}
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? <ActivityIndicator size="small" color={COLORS.error} /> : (
+                <>
+                  <XCircle size={16} color={COLORS.error} />
+                  <Text style={tw`text-red-600 font-bold text-sm`}>Decline</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={tw`flex-1 bg-emerald-600 py-3 rounded-xl flex-row justify-center items-center gap-2`}
+              onPress={() => handleAction(item._id || item.id, 'accept')}
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? <ActivityIndicator size="small" color="white" /> : (
+                <>
+                  <CheckCircle2 size={16} color="white" />
+                  <Text style={tw`text-white font-bold text-sm`}>Accept</Text>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailText}>📅 Date: {date}</Text>
-          <Text style={styles.detailText}>📍 Location: {location}</Text>
-        </View>
-
-        <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={[styles.btn, styles.declineBtn]}
-            onPress={() => handleAction(item._id || index, 'decline')}
-          >
-            <Text style={styles.declineBtnText}>Decline</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.btn, styles.acceptBtn]}
-            onPress={() => handleAction(item._id || index, 'accept')}
-          >
-            <Text style={styles.acceptBtnText}>Accept Job</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </Animated.View>
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={requests.length > 0 ? requests : [
-          { _id: 'mock1', title: 'Plumbing Repair', date: 'Oct 24, 2026', location: 'Downtown Seattle', clientName: 'Alice Smith' },
-          { _id: 'mock2', title: 'Electrical Wiring', date: 'Oct 26, 2026', location: 'Bellevue', clientName: 'Bob Johnson' }
-        ]}
-        keyExtractor={(item, index) => item._id || index.toString()}
-        renderItem={renderRequestCard}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>You have no new work requests right now.</Text>
-          </View>
-        }
-      />
-    </View>
+    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+      <View style={tw`px-6 pt-6 pb-2`}>
+        <Text style={tw`text-3xl font-bold text-zinc-900 mb-1`}>Work Requests</Text>
+        <Text style={tw`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-6`}>Review incoming job offers</Text>
+      </View>
+      
+      {loading ? (
+        <View style={tw`flex-1 justify-center items-center`}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={requests}
+          keyExtractor={(item, index) => item._id || item.id || index.toString()}
+          renderItem={renderRequestCard}
+          contentContainerStyle={tw`px-6 pb-24 pt-2`}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Animated.View entering={FadeInUp.duration(500)} style={tw`flex-1 justify-center items-center py-20 px-6`}>
+              <View style={tw`w-20 h-20 rounded-full bg-zinc-100 items-center justify-center mb-6`}>
+                <Inbox size={32} color="#a1a1aa" />
+              </View>
+              <Text style={tw`text-xl font-bold text-zinc-900 mb-2`}>No New Requests</Text>
+              <Text style={tw`text-sm text-zinc-500 text-center leading-relaxed`}>
+                You don't have any pending work requests right now. When a client hires you, it will show up here.
+              </Text>
+            </Animated.View>
+          }
+        />
+      )}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContainer: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6', // blue border for new requests
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    maxWidth: '85%',
-  },
-  clientName: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  newBadge: {
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  newBadgeText: {
-    color: '#2563eb',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  detailsContainer: {
-    backgroundColor: '#f3f4f6',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#4b5563',
-    marginBottom: 4,
-  },
-  actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  btn: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  declineBtn: {
-    backgroundColor: '#fee2e2', // red-100
-    marginRight: 8,
-  },
-  declineBtnText: {
-    color: '#dc2626', // red-600
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  acceptBtn: {
-    backgroundColor: '#059669', // green-600
-    marginLeft: 8,
-  },
-  acceptBtnText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  emptyContainer: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-});
