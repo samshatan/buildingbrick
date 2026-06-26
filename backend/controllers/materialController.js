@@ -12,6 +12,21 @@ export const getMaterials = async (req, res) => {
   }
 };
 
+// @desc    Get single material
+// @route   GET /api/v1/materials/:id
+// @access  Public
+export const getMaterialById = async (req, res) => {
+  try {
+    const material = await Material.findById(req.params.id);
+    if (!material) {
+      return res.status(404).json({ success: false, message: 'Material not found' });
+    }
+    res.status(200).json({ success: true, data: material });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
 // @desc    Seed materials (TEMPORARY for development)
 // @route   POST /api/v1/materials/seed
 // @access  Public

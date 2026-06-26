@@ -6,7 +6,7 @@ import type { WorkerProfileResponse } from "@/components/WorkerCard";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
-function Product() {
+function WorkerProfile() {
   const { workerId } = useParams();
   const { user, token } = useAuth();
   const [worker, setWorker] = useState<WorkerProfileResponse | null>(null);
@@ -442,4 +442,4 @@ function Product() {
   );
 }
 
-export default Product;
+export default WorkerProfile;

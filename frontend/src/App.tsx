@@ -15,17 +15,21 @@ import InstallPrompt from './components/InstallPrompt'
 // Lazy-loaded pages
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Login'))
-const Collection = lazy(() => import('./pages/Collection'))
+const Workers = lazy(() => import('./pages/Workers'))
+const WorkerProfile = lazy(() => import('./pages/WorkerProfile'))
 const Contact = lazy(() => import('./pages/Contact'))
-const Product = lazy(() => import('./pages/Product'))
 const Cart = lazy(() => import('./pages/Cart'))
 const Orders = lazy(() => import('./pages/Orders'))
 const SignUp = lazy(() => import('./pages/SignUp'))
 const About = lazy(() => import('./pages/About'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Materials = lazy(() => import('./pages/Materials'))
+const MaterialDetails = lazy(() => import('./pages/MaterialDetails'))
 const MaterialOrders = lazy(() => import('./pages/MaterialOrders'))
 const WorkRequests = lazy(() => import('./pages/WorkRequests'))
+const Jobs = lazy(() => import('./pages/Jobs'))
+const Projects = lazy(() => import('./pages/Projects'))
+const WorkerOnboarding = lazy(() => import('./pages/WorkerOnboarding'))
 const DirectHire = lazy(() => import('./pages/DirectHire'))
 const CafeDashboard = lazy(() => import('./pages/CafeDashboard'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
@@ -69,14 +73,18 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/about' element={<About />} />
           <Route path='/contact' element={<Contact />} />
-          <Route path='/workers' element={<Collection />} />
-          <Route path='/worker/:workerId' element={<Product />} />
+          <Route path='/workers' element={<Workers />} />
+          <Route path='/worker/:workerId' element={<WorkerProfile />} />
           <Route path='/direct-hire/:workerId' element={<DirectHire />} />
           <Route path='/hire-request' element={<Cart />} />
           <Route path='/materials' element={<Materials />} />
+          <Route path='/materials/:id' element={<MaterialDetails />} />
           <Route path='/material-orders' element={<MaterialOrders />} />
           <Route path='/requests' element={<WorkRequests />} />
-          <Route path='/jobs' element={<Orders />} />
+          <Route path='/jobs' element={<Jobs />} />
+          <Route path='/projects' element={<Projects />} />
+          <Route path='/worker-onboarding' element={<WorkerOnboarding />} />
+          <Route path='/orders' element={<Orders />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />

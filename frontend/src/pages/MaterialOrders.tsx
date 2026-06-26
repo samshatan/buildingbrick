@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Title from "@/components/Title";
-import { Package, Clock, CheckCircle2, ChevronRight, AlertCircle } from 'lucide-react';
+import { Package, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 

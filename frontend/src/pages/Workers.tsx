@@ -6,7 +6,7 @@ import { workerCategories } from "@/data/marketplaceData";
 import { Filter, Search, ChevronDown, Check, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
-function Collection() {
+function Workers() {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('category');
 
@@ -391,4 +391,4 @@ function Collection() {
   );
 }
 
-export default Collection;
+export default Workers;

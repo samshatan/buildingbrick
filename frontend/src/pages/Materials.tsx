@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Title from "@/components/Title";
-import { Search, ShoppingCart, Store, Package } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Search, Store, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 
 function Materials() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,26 +90,26 @@ function Materials() {
         {/* Materials Grid */}
         <div className="flex-1">
           {loading ? (
-             <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-gray-100 shadow-sm h-full min-h-[400px]">
-               <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary mb-4"></div>
-               <p className="text-gray-500 font-medium">Loading materials...</p>
-             </div>
+            <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-gray-100 shadow-sm h-full min-h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary mb-4"></div>
+              <p className="text-gray-500 font-medium">Loading materials...</p>
+            </div>
           ) : filteredMaterials.length === 0 ? (
-             <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-gray-100 shadow-sm h-full min-h-[400px] text-center px-4">
-               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                 <Package className="w-10 h-10 text-gray-400" />
-               </div>
-               <h3 className="text-xl font-bold text-gray-900 mb-2">No materials found</h3>
-               <p className="text-gray-500 font-medium max-w-sm">
-                 We couldn't find any materials matching your current filters.
-               </p>
-               <button 
-                 onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
-                 className="mt-8 px-6 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 font-bold rounded-full transition-colors text-sm"
-               >
-                 Clear all filters
-               </button>
-             </div>
+            <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-gray-100 shadow-sm h-full min-h-[400px] text-center px-4">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                <Package className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No materials found</h3>
+              <p className="text-gray-500 font-medium max-w-sm">
+                We couldn't find any materials matching your current filters.
+              </p>
+              <button 
+                onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
+                className="mt-8 px-6 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 font-bold rounded-full transition-colors text-sm"
+              >
+                Clear all filters
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredMaterials.map(material => {
@@ -116,7 +117,7 @@ function Materials() {
                 const bestPrice = sortedPrices.length > 0 ? sortedPrices[0] : 0;
                 
                 return (
-                  <div key={material._id || material.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+                  <Link to={`/materials/${material._id || material.id}`} key={material._id || material.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
                     <div className="w-full h-48 rounded-2xl overflow-hidden mb-4 bg-gray-50 border border-gray-100">
                       {material.image ? (
                         <img src={material.image} alt={material.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -142,7 +143,7 @@ function Materials() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
