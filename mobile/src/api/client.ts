@@ -4,9 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 // Use 10.0.2.2 for Android Emulator, and localhost for iOS Simulator
-const API_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:8000/api/v1' 
-  : 'http://localhost:8000/api/v1';
+export const SOCKET_URL = Platform.OS === 'android' 
+  ? 'http://10.0.2.2:8000' 
+  : 'http://localhost:8000';
+
+const API_URL = `${SOCKET_URL}/api/v1`;
 
 const apiClient = axios.create({
   baseURL: API_URL,

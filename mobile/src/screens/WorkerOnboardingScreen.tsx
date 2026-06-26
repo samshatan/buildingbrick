@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Camera, Image as ImageIcon } from 'lucide-react-native';
 import apiClient from '../api/client';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
@@ -23,7 +25,9 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
     district: '',
     fatherName: '',
     aadharCard: '',
+    aadharCardImage: '',
     panCard: '',
+    panCardImage: '',
     bankPassbook: '',
     termsAccepted: true,
   });
@@ -37,11 +41,48 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
       Alert.alert('Required', 'Please fill in your name and job title.');
       return;
     }
-    if (step === 2 && (!formData.aadharCard || !formData.panCard)) {
-      Alert.alert('Required', 'Identity documents are required for verification.');
+    if (step === 2 && (!formData.aadharCard || !formData.panCard || !formData.aadharCardImage || !formData.panCardImage)) {
+      Alert.alert('Required', 'Identity documents (numbers and photos) are required for verification.');
       return;
     }
     setStep(step + 1);
+  };
+
+  const pickImage = async (field: string) => {
+    Alert.alert(
+      "Upload Document",
+      "Choose a method",
+      [
+        {
+          text: "Camera",
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') return Alert.alert('Permission Denied');
+            let result = await ImagePicker.launchCameraAsync({
+              base64: true,
+              quality: 0.5,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              updateForm(field, `data:image/jpeg;base64,${result.assets[0].base64}`);
+            }
+          }
+        },
+        {
+          text: "Gallery",
+          onPress: async () => {
+            let result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              base64: true,
+              quality: 0.5,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              updateForm(field, `data:image/jpeg;base64,${result.assets[0].base64}`);
+            }
+          }
+        },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
   };
 
   const handleSubmit = async () => {
@@ -128,6 +169,15 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
           keyboardType="numeric"
           maxLength={12}
         />
+        <TouchableOpacity style={styles.imagePickerBtn} onPress={() => pickImage('aadharCardImage')}>
+          <Camera size={20} color={COLORS.primary} />
+          <Text style={styles.imagePickerText}>
+            {formData.aadharCardImage ? 'Aadhar Photo Added' : 'Upload Aadhar Photo'}
+          </Text>
+        </TouchableOpacity>
+        {formData.aadharCardImage ? (
+          <Image source={{ uri: formData.aadharCardImage }} style={styles.previewImage} />
+        ) : null}
       </View>
 
       <View style={styles.inputGroup}>
@@ -139,6 +189,15 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
           autoCapitalize="characters"
           maxLength={10}
         />
+        <TouchableOpacity style={styles.imagePickerBtn} onPress={() => pickImage('panCardImage')}>
+          <Camera size={20} color={COLORS.primary} />
+          <Text style={styles.imagePickerText}>
+            {formData.panCardImage ? 'PAN Photo Added' : 'Upload PAN Photo'}
+          </Text>
+        </TouchableOpacity>
+        {formData.panCardImage ? (
+          <Image source={{ uri: formData.panCardImage }} style={styles.previewImage} />
+        ) : null}
       </View>
 
       <View style={styles.inputGroup}>
@@ -224,6 +283,7 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -299,15 +359,39 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     flex: 2,
-    backgroundColor: COLORS.accent,
-    padding: SPACING.md,
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
     borderRadius: RADIUS.md,
     alignItems: 'center',
-    ...SHADOWS.md,
+    marginBottom: SPACING.xl,
   },
   nextBtnText: {
-    color: COLORS.surface,
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
+  imagePickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    padding: SPACING.md,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.sm,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed'
+  },
+  imagePickerText: {
+    marginLeft: SPACING.sm,
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 14
+  },
+  previewImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.sm,
+    resizeMode: 'cover'
+  }
 });

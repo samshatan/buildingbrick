@@ -18,6 +18,14 @@ export const sendMessage = async (req, res) => {
       imageUrl: imageUrl || null
     });
 
+    const io = req.app.get('io');
+    if (io) {
+      // Emit to receiver
+      io.to(receiverId.toString()).emit('receiveMessage', message);
+      // Optional: Emit to sender for confirmation
+      io.to(req.user._id.toString()).emit('receiveMessage', message);
+    }
+
     res.status(201).json({ success: true, data: message });
   } catch (error) {
     console.error('Error sending message:', error);

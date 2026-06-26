@@ -4,7 +4,8 @@ import tw from 'twrnc';
 import { ChevronLeft, Send, Camera, Image as ImageIcon } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import apiClient from '../api/client';
+import apiClient, { SOCKET_URL } from '../api/client';
+import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ChatScreen({ route, navigation }: any) {
@@ -13,6 +14,7 @@ export default function ChatScreen({ route, navigation }: any) {
   const [inputText, setInputText] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const initUser = async () => {
@@ -44,9 +46,37 @@ export default function ChatScreen({ route, navigation }: any) {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 5000); // Simple polling every 5s
-    return () => clearInterval(interval);
-  }, [worker]);
+    
+    // Connect to Socket
+    socketRef.current = io(SOCKET_URL);
+    
+    socketRef.current.on('connect', () => {
+      console.log('Connected to socket server');
+      if (currentUserId) {
+        socketRef.current?.emit('join', currentUserId);
+      }
+    });
+
+    socketRef.current.on('receiveMessage', (msg: any) => {
+      // If the message involves this chat
+      const targetId = worker.userId || worker._id;
+      if (msg.senderId === targetId || msg.receiverId === targetId || msg.senderId === currentUserId) {
+        setMessages(prev => {
+          // Check if message already exists (optimistic update)
+          const exists = prev.find(m => m._id === msg._id || (m.text === msg.text && m.senderId === msg.senderId && Date.now() - new Date(m.createdAt).getTime() < 5000));
+          if (exists) return prev;
+          return [...prev, msg];
+        });
+        setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [worker, currentUserId]);
 
   const getWorkerImage = (w: any) => w.photo || w.image || w.avatarUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80";
 
@@ -73,7 +103,7 @@ export default function ChatScreen({ route, navigation }: any) {
         receiverId: targetId,
         text: tempMsg.text
       });
-      fetchMessages();
+      // Removing fetchMessages() as socket will handle the real message
     } catch (error) {
       console.log('Error sending message:', error);
       Alert.alert("Error", "Failed to send message");

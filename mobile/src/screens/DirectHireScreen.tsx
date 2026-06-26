@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 import apiClient from '../api/client';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
 
@@ -10,6 +12,41 @@ export default function DirectHireScreen({ route, navigation }: any) {
   const [address, setAddress] = useState('');
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 28.6139,
+    longitude: 77.2090,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+
+  const getLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setMapRegion({
+        ...mapRegion,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      let geocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      if (geocode.length > 0) {
+        const addr = `${geocode[0].name || ''} ${geocode[0].street || ''}, ${geocode[0].city || ''}, ${geocode[0].region || ''}`;
+        setAddress(addr.trim());
+      }
+    } catch (error) {
+      console.log('Error getting location', error);
+    }
+  };
 
   const handleHireRequest = async () => {
     if (!description || !address || !date) {
@@ -65,7 +102,12 @@ export default function DirectHireScreen({ route, navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>SITE LOCATION</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={[styles.label, { marginBottom: 0 }]}>SITE LOCATION</Text>
+              <TouchableOpacity onPress={getLocation}>
+                <Text style={{ color: COLORS.primary, fontSize: 12, fontWeight: '700' }}>Get Current Location</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={styles.input}
               placeholder="e.g. 123 Construction Rd, City"
@@ -73,6 +115,15 @@ export default function DirectHireScreen({ route, navigation }: any) {
               onChangeText={setAddress}
               placeholderTextColor={COLORS.textLight}
             />
+            <View style={styles.mapContainer}>
+              <MapView 
+                style={styles.map} 
+                region={mapRegion}
+                onRegionChangeComplete={(region) => setMapRegion(region)}
+              >
+                <Marker coordinate={{ latitude: mapRegion.latitude, longitude: mapRegion.longitude }} />
+              </MapView>
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -235,5 +286,17 @@ const styles = StyleSheet.create({
   btnArrow: {
     color: '#FFF',
     fontSize: 20,
+  },
+  mapContainer: {
+    height: 150,
+    marginTop: SPACING.md,
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
