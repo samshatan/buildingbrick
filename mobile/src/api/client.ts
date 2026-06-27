@@ -3,10 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Platform } from 'react-native';
 
-// Use 10.0.2.2 for Android Emulator, and localhost for iOS Simulator
-export const SOCKET_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:8000' 
-  : 'http://localhost:8000';
+// Production Render backend
+export const SOCKET_URL = 'https://brickourhouse-backend.onrender.com';
 
 const API_URL = `${SOCKET_URL}/api/v1`;
 

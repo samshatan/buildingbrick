@@ -234,22 +234,91 @@ export default function VerificationRequired() {
     if (success) setStep(3);
   };
 
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePayment = async () => {
     setIsLoading(true);
+    const isLoaded = await loadRazorpay();
+    if (!isLoaded) {
+      toast.error("Razorpay SDK failed to load. Are you online?");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/v1/payment/phonepe/initiate`, {
+      const res = await fetch(`/api/v1/payment/razorpay/initiate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ workerProfileId })
+        body: JSON.stringify({ amount: 19 })
       });
       const data = await res.json();
       
-      if (res.ok && data.success && data.url) {
-        // Redirect to PhonePe Checkout
-        window.location.href = data.url;
+      if (res.ok && data.success && data.order) {
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder', // Ensure you add this to your .env
+          amount: data.order.amount,
+          currency: data.order.currency,
+          name: "BrickOurHouse",
+          description: "Worker Onboarding Fee",
+          order_id: data.order.id,
+          handler: async function (response: any) {
+             try {
+               const verifyRes = await fetch('/api/v1/payment/razorpay/verify', {
+                 method: 'POST',
+                 headers: {
+                   'Content-Type': 'application/json',
+                   Authorization: `Bearer ${token}`
+                 },
+                 body: JSON.stringify({
+                   razorpay_order_id: response.razorpay_order_id,
+                   razorpay_payment_id: response.razorpay_payment_id,
+                   razorpay_signature: response.razorpay_signature,
+                   paymentType: 'WORKER_ONBOARDING',
+                   referenceId: workerProfileId
+                 })
+               });
+               const verifyData = await verifyRes.json();
+               if (verifyData.success) {
+                  toast.success("Payment successful!");
+                  setStep(4);
+               } else {
+                  toast.error("Payment verification failed.");
+               }
+             } catch(err) {
+               toast.error("Error verifying payment.");
+             }
+          },
+          prefill: {
+            name: user?.fullName || "",
+            email: user?.email || "",
+            contact: formData.alternateMobile || ""
+          },
+          theme: {
+            color: "#0f172a" 
+          }
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+        paymentObject.on('payment.failed', function (response: any) {
+           toast.error(response.error.description || "Payment failed");
+        });
+        setIsLoading(false);
       } else {
         toast.error(data.message || "Payment initiation failed.");
         setIsLoading(false);
@@ -259,6 +328,7 @@ export default function VerificationRequired() {
       setIsLoading(false);
     }
   };
+
 
   const handleOfflinePayment = async () => {
     setIsLoading(true);

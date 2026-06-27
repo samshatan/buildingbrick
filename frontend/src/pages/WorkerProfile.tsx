@@ -12,7 +12,7 @@ function WorkerProfile() {
   const [worker, setWorker] = useState<WorkerProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     displayName: '',
@@ -133,7 +133,7 @@ function WorkerProfile() {
   }
 
   const category = workerCategories.find((cat) => cat.id === worker.categoryId);
-  
+
   // Format worker types cleanly if they are comma separated
   const displayWorkerTypes = worker.workerType.split(',').map(t => t.trim());
 
@@ -151,14 +151,14 @@ function WorkerProfile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
+
         {/* Profile Header Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm relative overflow-hidden mb-8">
           {/* Decorative background element */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3"></div>
-          
+
           <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
-            
+
             <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
               <div className="relative">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-primary/10 flex items-center justify-center shadow-inner border border-primary/20 shrink-0">
@@ -174,13 +174,13 @@ function WorkerProfile() {
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-white rounded-full flex items-center justify-center shadow-sm" title="Available"></div>
                 )}
               </div>
-              
+
               <div className="pt-2">
                 <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                   <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{worker.displayName}</h1>
                   {worker.verified && <BadgeCheck className="w-6 h-6 text-green-500 shrink-0" />}
                 </div>
-                
+
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
                   {displayWorkerTypes.map((type, idx) => (
                     <span key={idx} className="px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full text-xs font-bold">
@@ -191,7 +191,7 @@ function WorkerProfile() {
                     {category?.name ?? "General"}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-center sm:justify-start gap-6 text-sm font-medium text-gray-600">
                   <div className="flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-gray-400" />
@@ -212,7 +212,7 @@ function WorkerProfile() {
               <span className={`text-xs font-bold px-3 py-1 rounded-full w-full text-center mt-2 ${worker.availabilityStatus === "AVAILABLE" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
                 {worker.availabilityStatus === "AVAILABLE" ? "Available for Hire" : "Currently Busy"}
               </span>
-              
+
               <div className="flex flex-col w-full gap-2 mt-4">
                 <button
                   onClick={handleShare}
@@ -220,7 +220,7 @@ function WorkerProfile() {
                 >
                   <Share2 className="w-4 h-4" /> Share Profile
                 </button>
-                
+
                 {user && (user.id === (worker.userId as any)?._id || user.id === worker.userId) && (
                   <button
                     onClick={openEditModal}
@@ -236,19 +236,19 @@ function WorkerProfile() {
 
         {/* Content Layout */}
         <div className="grid lg:grid-cols-3 gap-8 items-start">
-          
+
           {/* Main Info Column */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Custom Tabs */}
             <div className="flex gap-8 border-b border-gray-200">
-              <button 
+              <button
                 onClick={() => setActiveTab('overview')}
                 className={`pb-4 text-sm font-bold transition-all ${activeTab === 'overview' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 Overview
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('reviews')}
                 className={`pb-4 text-sm font-bold transition-all ${activeTab === 'reviews' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-900'}`}
               >
@@ -258,7 +258,7 @@ function WorkerProfile() {
 
             {activeTab === 'overview' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                
+
                 <section>
                   <h3 className="text-xl font-bold text-gray-900 mb-4">About Me</h3>
                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -272,17 +272,17 @@ function WorkerProfile() {
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Skills & Expertise</h3>
                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="flex flex-wrap gap-2">
-                       {worker.skills ? worker.skills.split(',').map((skill, i) => (
-                         <div key={i} className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg text-sm font-bold text-gray-700 border border-gray-200">
-                           <CheckCircle2 className="w-4 h-4 text-primary" />
-                           {skill.trim()}
-                         </div>
-                       )) : (
-                         <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg text-sm font-bold text-gray-700 border border-gray-200">
-                           <CheckCircle2 className="w-4 h-4 text-primary" />
-                           General Labor
-                         </div>
-                       )}
+                      {worker.skills ? worker.skills.split(',').map((skill, i) => (
+                        <div key={i} className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg text-sm font-bold text-gray-700 border border-gray-200">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                          {skill.trim()}
+                        </div>
+                      )) : (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg text-sm font-bold text-gray-700 border border-gray-200">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                          General Labor
+                        </div>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -304,10 +304,10 @@ function WorkerProfile() {
 
           {/* Sticky Sidebar */}
           <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-            
+
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Hire this professional</h3>
-              
+
               <div className="space-y-4 mb-8">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500 font-medium flex items-center gap-2"><Clock className="w-4 h-4" /> Experience</span>
@@ -349,14 +349,14 @@ function WorkerProfile() {
           <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
               <h3 className="text-xl font-bold text-gray-900">Edit Profile</h3>
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            
+
             <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
               <div className="space-y-1.5">
                 <label className="block text-sm font-bold text-gray-700">Display Name</label>
@@ -369,7 +369,7 @@ function WorkerProfile() {
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="block text-sm font-bold text-gray-700">Daily Rate (Rs)</label>
@@ -394,7 +394,7 @@ function WorkerProfile() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="block text-sm font-bold text-gray-700">Biography</label>
                 <textarea
@@ -406,7 +406,7 @@ function WorkerProfile() {
                   placeholder="Tell clients about yourself..."
                 ></textarea>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="block text-sm font-bold text-gray-700">Skills (comma separated)</label>
                 <input

@@ -38,6 +38,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const Terms = lazy(() => import('./pages/Terms'))
 const RefundPolicy = lazy(() => import('./pages/RefundPolicy'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const Messages = lazy(() => import('./pages/Messages'))
 
 
 const Loader = () => (
@@ -94,6 +95,7 @@ function App() {
           <Route path='/terms' element={<Terms />} />
           <Route path='/privacy-policy' element={<PrivacyPolicy />} />
           <Route path='/refund-policy' element={<RefundPolicy />} />
+          <Route path='/messages' element={<Messages />} />
         </Routes>
       </Suspense>
       <div className="print:hidden">

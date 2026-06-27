@@ -1,22 +1,36 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "BrickOurHouse",
+    "slug": "brick-our-house",
     "scheme": "buildingapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.brickourhouse.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow BrickOurHouse to access your camera to upload profile pictures and documents.",
+        "NSPhotoLibraryUsageDescription": "Allow BrickOurHouse to access your photos to upload documents."
+      }
     },
     "android": {
+      "package": "com.brickourhouse.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/icon.png"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -24,6 +38,11 @@
     },
     "plugins": [
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f7698a3c-a7d3-4f20-a706-f0977060cbb6"
+      }
+    }
   }
 }

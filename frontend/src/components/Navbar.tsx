@@ -11,7 +11,8 @@ import {
   HiOutlineEnvelope,
   HiOutlineUser,
   HiMagnifyingGlass,
-  HiOutlineShoppingCart
+  HiOutlineShoppingCart,
+  HiOutlineChatBubbleLeftEllipsis
 } from "react-icons/hi2";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
@@ -99,6 +100,9 @@ function Navbar() {
           </>
         ) : (
           <div className="flex items-center gap-3">
+            <Link to="/messages" className="relative p-2 text-gray-600 hover:text-primary transition-colors rounded-full hover:bg-gray-100 focus:outline-none hidden sm:block">
+              <HiOutlineChatBubbleLeftEllipsis className="w-6 h-6" />
+            </Link>
             <NotificationBell />
             <Link to="/profile" className="relative transition-all hover:scale-105 duration-200">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary bg-primary-50 flex items-center justify-center shadow-sm">
@@ -209,20 +213,36 @@ function Navbar() {
             ))}
             
             {user && (
-              <NavLink
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) => 
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all mt-2 ${
-                    isActive 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`
-                }
-                to="/profile"
-              >
-                <HiOutlineUser className="w-5 h-5 opacity-80" />
-                Profile Dashboard
-              </NavLink>
+              <>
+                <NavLink
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => 
+                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all mt-2 ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }
+                  to="/messages"
+                >
+                  <HiOutlineChatBubbleLeftEllipsis className="w-5 h-5 opacity-80" />
+                  Messages
+                </NavLink>
+                <NavLink
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => 
+                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all mt-1 ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }
+                  to="/profile"
+                >
+                  <HiOutlineUser className="w-5 h-5 opacity-80" />
+                  Profile Dashboard
+                </NavLink>
+              </>
             )}
           </div>
 
