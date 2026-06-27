@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { io, Socket } from 'socket.io-client';
-import { Send, Search, User, MessageCircle, ArrowLeft } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { Send, Search, MessageCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
 
@@ -34,7 +34,6 @@ export default function Messages() {
   const [activeChat, setActiveChat] = useState<Conversation['user'] | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [loadingChats, setLoadingChats] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,8 +67,6 @@ export default function Messages() {
         return updated;
       });
     });
-
-    setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();
