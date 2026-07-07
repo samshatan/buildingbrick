@@ -127,6 +127,25 @@ function AdminDashboard() {
     }
   };
 
+  const handleResolveDispute = async (disputeId: string, resolution: string) => {
+    const toastId = toast.loading("Resolving dispute...");
+    try {
+      const res = await fetch(`/api/v1/disputes/${disputeId}/resolve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ resolution })
+      });
+      if (res.ok) {
+        toast.update(toastId, { render: "Dispute resolved successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        fetchData();
+      } else {
+        toast.update(toastId, { render: "Failed to resolve dispute", type: "error", isLoading: false, autoClose: 3000 });
+      }
+    } catch (err) {
+      toast.update(toastId, { render: "An error occurred", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
   const handleViewCafeDetails = async (cafe: CafeData) => {
     setSelectedCafeForModal(cafe);
     setSelectedWorkersForOffline([]);
