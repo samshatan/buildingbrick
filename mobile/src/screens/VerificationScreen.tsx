@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 
 export default function VerificationScreen({ route, navigation }: any) {
-  const { name, identifier, password, accountType, photoUri, category } = route.params;
+  const { name, identifier, password, accountType, photoUri, category, workerRole } = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -29,6 +29,9 @@ export default function VerificationScreen({ route, navigation }: any) {
       formData.append('otp', otp);
       formData.append('password', password);
       formData.append('accountType', accountType);
+      if (workerRole) {
+        formData.append('workerRole', workerRole);
+      }
       
       if (accountType === 'worker' && category) {
         formData.append('category', category);

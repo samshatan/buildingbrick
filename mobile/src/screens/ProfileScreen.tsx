@@ -192,6 +192,33 @@ export default function ProfileScreen({ navigation }: any) {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(200).duration(500)} style={tw`bg-[${theme.card}] rounded-[32px] p-3 shadow-sm border border-[${theme.border}] mb-6`}>
+          {userInfo?.userType === 'WORKER' && userInfo?.registrationFeePaid === false && (
+            <TouchableOpacity 
+              onPress={async () => {
+                try {
+                  const res = await apiClient.post('/payment/phonepe/initiate', { 
+                    workerProfileId: userInfo.id,
+                    paymentType: 'REGISTRATION'
+                  });
+                  if (res.data && res.data.success) {
+                    Alert.alert('Payment Initiated', 'In a real app, this would open ' + res.data.url);
+                  }
+                } catch (e) {
+                  Alert.alert('Error', 'Failed to initiate payment.');
+                }
+              }}
+              style={tw`bg-red-50 p-4 rounded-2xl border border-red-100 mb-4 flex-row items-center justify-between`}
+            >
+              <View style={tw`flex-1 mr-4`}>
+                <Text style={tw`text-red-800 font-bold text-sm mb-0.5`}>Registration Fee Required</Text>
+                <Text style={tw`text-red-600 text-xs font-medium leading-tight`}>Pay to unlock job applications.</Text>
+              </View>
+              <View style={tw`bg-red-600 px-4 py-2.5 rounded-xl shadow-sm`}>
+                <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>Pay Now</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={item.label}

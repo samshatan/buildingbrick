@@ -54,7 +54,7 @@ export const generateToken = (id) => {
 };
 
 // Helper to map accountType casing to frontend expectations
-export const mapUserResponse = (user) => {
+export const mapUserResponse = (user, workerProfile = null) => {
   return {
     id: user._id.toString(),
     email: user.email,
@@ -63,7 +63,10 @@ export const mapUserResponse = (user) => {
     userType: user.accountType.toUpperCase(), // converts 'worker' -> 'WORKER', 'hirer' -> 'HIRER'
     avatarUrl: user.avatarUrl || "https://picsum.photos/seed/default-avatar/200/200",
     coverImageUrl: user.coverImageUrl || "",
-    preferences: user.preferences || { pushNotifications: true, darkMode: false, biometricLogin: false }
+    preferences: user.preferences || { pushNotifications: true, darkMode: false, biometricLogin: false },
+    workerRole: workerProfile ? workerProfile.workerRole : undefined,
+    registrationFeePaid: workerProfile ? workerProfile.registrationFeePaid : undefined,
+    subscriptionStatus: workerProfile ? workerProfile.subscriptionStatus : undefined,
   };
 };
 
@@ -167,7 +170,7 @@ export const sendOtp = async (req, res) => {
 // @access  Public
 export const signup = async (req, res) => {
   try {
-    const { name, identifier, otp, password, accountType, category, optionalEmail } = req.body;
+    const { name, identifier, otp, password, accountType, category, optionalEmail, workerRole } = req.body;
     const avatarUrl = req.file ? req.file.path : req.body.avatarUrl;
 
     if (!name || !identifier || !otp || !password || !accountType) {
@@ -216,13 +219,36 @@ export const signup = async (req, res) => {
     await Otp.deleteOne({ _id: validOtp._id });
 
     // If registering as a worker, create corresponding WorkerProfile
+    let profile = null;
     if (accountType.toLowerCase() === 'worker') {
       const categoryId = getCategoryId(category);
-      await WorkerProfile.create({
+      
+      let wRole = workerRole || 'LABOUR';
+      let regPaid = false;
+      let regAmount = 19;
+      let subStatus = 'NONE';
+      
+      if (wRole === 'LABOUR') {
+        regPaid = false;
+        regAmount = 19;
+        subStatus = 'FREE_UNTIL_HIRED';
+      } else if (wRole === 'CONTRACTOR') {
+        regPaid = false;
+        regAmount = 499;
+      } else if (wRole === 'SELLER') {
+        regPaid = true; // Free for now
+        regAmount = 0;
+      }
+
+      profile = await WorkerProfile.create({
         userId: user._id,
         displayName: name,
         categoryId: categoryId,
         workerType: category || 'Other',
+        workerRole: wRole,
+        registrationFeePaid: regPaid,
+        registrationFeeAmount: regAmount,
+        subscriptionStatus: subStatus,
         dailyRate: 0,
         experienceYears: 0,
         bio: '',
@@ -232,7 +258,7 @@ export const signup = async (req, res) => {
 
     res.status(201).json({
       token: generateToken(user._id),
-      user: mapUserResponse(user),
+      user: mapUserResponse(user, profile),
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -262,9 +288,14 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
+    let profile = null;
+    if (user.accountType === 'worker') {
+      profile = await WorkerProfile.findOne({ userId: user._id });
+    }
+
     res.status(200).json({
       token: generateToken(user._id),
-      user: mapUserResponse(user),
+      user: mapUserResponse(user, profile),
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -337,7 +368,13 @@ export const getMe = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(mapUserResponse(user));
+    
+    let profile = null;
+    if (user.accountType === 'worker') {
+      profile = await WorkerProfile.findOne({ userId: user._id });
+    }
+    
+    res.json(mapUserResponse(user, profile));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

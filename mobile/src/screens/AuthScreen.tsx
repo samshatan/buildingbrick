@@ -19,6 +19,7 @@ export default function AuthScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'hirer' | 'worker'>('hirer');
+  const [workerRole, setWorkerRole] = useState<'LABOUR' | 'CONTRACTOR' | 'SELLER' | 'NONE'>('NONE');
   
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [workerTypes, setWorkerTypes] = useState<string[]>([]);
@@ -178,6 +179,7 @@ export default function AuthScreen({ navigation }: any) {
           password,
           name: fullName,
           accountType: role,
+          workerRole: workerRole,
           photoUri: profileImage,
           category: workerTypes.join(', ')
         });
@@ -290,18 +292,34 @@ export default function AuthScreen({ navigation }: any) {
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5 mt-2`}>
               <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>I am a</Text>
-              <View style={tw`flex-row gap-2`}>
+              <View style={tw`flex-row flex-wrap gap-2`}>
                 <TouchableOpacity
-                  onPress={() => setRole('hirer')}
-                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'hirer' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
+                  onPress={() => { setRole('hirer'); setWorkerRole('NONE'); }}
+                  style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${role === 'hirer' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
-                  <Text style={tw`text-xs font-bold ${role === 'hirer' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>User / App</Text>
+                  <Text style={tw`text-xs font-bold text-center ${role === 'hirer' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>User / Hirer</Text>
+                  <Text style={tw`text-[9px] mt-1 ${role === 'hirer' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Free</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setRole('worker')}
-                  style={tw`flex-1 py-3 px-4 rounded-xl border items-center ${role === 'worker' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
+                  onPress={() => { setRole('worker'); setWorkerRole('LABOUR'); }}
+                  style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'LABOUR' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
-                  <Text style={tw`text-xs font-bold ${role === 'worker' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Worker</Text>
+                  <Text style={tw`text-xs font-bold text-center ${workerRole === 'LABOUR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Labour / Worker</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'LABOUR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs 19 Reg. Fee</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => { setRole('worker'); setWorkerRole('CONTRACTOR'); }}
+                  style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'CONTRACTOR' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
+                >
+                  <Text style={tw`text-xs font-bold text-center ${workerRole === 'CONTRACTOR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Main Contractor</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'CONTRACTOR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs 499 Reg. Fee</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => { setRole('worker'); setWorkerRole('SELLER'); }}
+                  style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'SELLER' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
+                >
+                  <Text style={tw`text-xs font-bold text-center ${workerRole === 'SELLER' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Material Seller</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'SELLER' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Free (for now)</Text>
                 </TouchableOpacity>
               </View>
             </View>

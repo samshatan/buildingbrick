@@ -40,7 +40,15 @@ const workerProfileSchema = new mongoose.Schema({
   aadharCard: { type: String, default: "" },
   panCard: { type: String, default: "" },
   bankPassbook: { type: String, default: "" },
-  onboardingFeePaid: { type: Boolean, default: false },
+  onboardingFeePaid: { type: Boolean, default: false }, // Legacy field, replaced by registrationFeePaid
+  // New Role & Subscription Fields
+  workerRole: { type: String, enum: ['LABOUR', 'CONTRACTOR', 'SELLER', 'OTHER'], default: 'LABOUR' },
+  registrationFeePaid: { type: Boolean, default: false },
+  registrationFeeAmount: { type: Number, default: 0 },
+  subscriptionStatus: { type: String, enum: ['FREE_UNTIL_HIRED', 'TRIAL', 'ACTIVE', 'EXPIRED', 'NONE'], default: 'NONE' },
+  trialEndDate: { type: Date, default: null },
+  subscriptionValidUntil: { type: Date, default: null },
+  
   paymentPreference: { type: String, enum: ['ONLINE', 'OFFLINE'], default: 'ONLINE' },
   cafePaymentReceipt: { type: String, default: "" },
   verificationStatus: { type: String, enum: ['INCOMPLETE', 'PENDING', 'VERIFIED', 'REJECTED'], default: 'INCOMPLETE' },

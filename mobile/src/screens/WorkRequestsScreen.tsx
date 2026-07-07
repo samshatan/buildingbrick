@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
@@ -39,6 +40,18 @@ export default function WorkRequestsScreen() {
 
   const handleAction = async (id: string, action: 'accept' | 'decline') => {
     try {
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr);
+        if (userInfo.userType === 'WORKER' && userInfo.registrationFeePaid === false) {
+          Alert.alert(
+            'Registration Fee Required',
+            'You must pay the registration fee before accepting or declining jobs. Please visit your Profile to pay.'
+          );
+          return;
+        }
+      }
+
       setActionLoading(id);
       await apiClient.post(`/requests/${id}/${action}`);
       Alert.alert('Success', `You have ${action}ed the request.`);

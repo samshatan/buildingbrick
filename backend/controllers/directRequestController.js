@@ -89,6 +89,22 @@ export const updateRequestStatus = async (req, res) => {
     request.status = status;
     await request.save();
 
+    // Trigger Subscription Logic if ACCEPTED
+    if (status === 'ACCEPTED' && workerProfile.subscriptionStatus === 'FREE_UNTIL_HIRED') {
+      workerProfile.subscriptionStatus = 'TRIAL';
+      const now = new Date();
+      workerProfile.trialEndDate = new Date(now.setDate(now.getDate() + 90)); // 90 days from now
+      await workerProfile.save();
+
+      // Notify Worker about the trial
+      await Notification.create({
+        userId: workerProfile.userId,
+        message: `Congratulations on your first job! Your 3-month free trial has started.`,
+        type: 'SUCCESS',
+        link: '/profile'
+      });
+    }
+
     // Notify Hirer
     await Notification.create({
       userId: request.hirerId,

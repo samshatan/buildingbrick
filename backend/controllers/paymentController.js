@@ -51,13 +51,15 @@ export const initiatePhonePePayment = async (req, res) => {
     // Generate a unique Merchant Transaction ID
     const merchantTransactionId = `TXN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-    // Define amount in Paise (Rs 19.00 = 1900 paise)
-    const amount = 1900; 
+    // We use the worker's registrationFeeAmount for the registration payment
+    // Define amount in Paise
+    const paymentAmount = req.body.amount ? req.body.amount * 100 : (worker.registrationFeeAmount || 19) * 100;
+    const paymentType = req.body.paymentType || 'REGISTRATION'; // 'REGISTRATION' or 'SUBSCRIPTION'
 
     // Important: Determine the frontend redirect URL
     // We assume the frontend is running on localhost:5173 or the host originating the request
     const origin = req.headers.origin || 'http://localhost:5173';
-    const redirectUrl = `${origin}/verification-required?success=true`;
+    const redirectUrl = `${origin}/payment-success?type=${paymentType}`;
     
     // We also need a backend webhook endpoint that PhonePe will call S2S
     // Normally this needs to be a public IP. For local testing, PhonePe cannot hit localhost.
@@ -68,7 +70,7 @@ export const initiatePhonePePayment = async (req, res) => {
       merchantId: MERCHANT_ID,
       merchantTransactionId: merchantTransactionId,
       merchantUserId: req.user._id.toString(),
-      amount: amount,
+      amount: paymentAmount,
       redirectUrl: redirectUrl,
       redirectMode: 'REDIRECT',
       callbackUrl: `${origin}/api/v1/payment/phonepe/callback`, // Needs a public IP in PROD
@@ -98,14 +100,17 @@ export const initiatePhonePePayment = async (req, res) => {
     const responseData = await response.json();
 
     if (responseData.success) {
-      // Store transaction intent temporarily if needed, but here we just return the URL
-      // We will also optimistically mark fee as paid here for local testing purposes 
-      // since UAT webhooks won't reach localhost.
-      // In production, you MUST move this to the callback URL verification!
       if (ENV === 'UAT') {
-         worker.onboardingFeePaid = true;
-         if (worker.verificationStatus === 'INCOMPLETE') {
-           worker.verificationStatus = 'PENDING';
+         if (paymentType === 'REGISTRATION') {
+           worker.registrationFeePaid = true;
+           worker.onboardingFeePaid = true; // Sync legacy field
+           if (worker.verificationStatus === 'INCOMPLETE') {
+             worker.verificationStatus = 'PENDING';
+           }
+         } else if (paymentType === 'SUBSCRIPTION') {
+           worker.subscriptionStatus = 'ACTIVE';
+           const now = new Date();
+           worker.subscriptionValidUntil = new Date(now.setMonth(now.getMonth() + 1)); // Valid for 1 month
          }
          await worker.save();
       }
