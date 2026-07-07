@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
@@ -13,6 +13,12 @@ export default function WorkRequestsScreen() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Dispute modal state
+  const [disputeModalVisible, setDisputeModalVisible] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [selectedRequestForDispute, setSelectedRequestForDispute] = useState<any>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -40,6 +46,37 @@ export default function WorkRequestsScreen() {
     } catch (error) {
       console.log(`Error ${action}ing request`, error);
       Alert.alert('Error', `Failed to ${action} the request. Please try again.`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleOpenDispute = (req: any) => {
+    setSelectedRequestForDispute(req);
+    setDisputeReason("");
+    setDisputeDescription("");
+    setDisputeModalVisible(true);
+  };
+
+  const submitDispute = async () => {
+    if (!disputeReason || !disputeDescription) {
+      Alert.alert('Error', 'Please provide both a reason and a description.');
+      return;
+    }
+
+    try {
+      setActionLoading('dispute');
+      await apiClient.post('/disputes', {
+        requestType: 'WorkRequest', // Or DirectRequest based on your data, assuming WorkRequest for now
+        requestId: selectedRequestForDispute._id || selectedRequestForDispute.id,
+        reason: disputeReason,
+        description: disputeDescription
+      });
+      Alert.alert('Success', 'Dispute submitted successfully.');
+      setDisputeModalVisible(false);
+    } catch (error) {
+      console.log('Error submitting dispute', error);
+      Alert.alert('Error', 'Failed to submit dispute. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -85,31 +122,43 @@ export default function WorkRequestsScreen() {
           </View>
 
           <View style={tw`flex-row justify-between gap-3 pl-2`}>
-            <TouchableOpacity 
-              style={tw`flex-1 bg-red-50 py-3 rounded-xl border border-red-100 flex-row justify-center items-center gap-2`}
-              onPress={() => handleAction(item._id || item.id, 'decline')}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? <ActivityIndicator size="small" color={COLORS.error} /> : (
-                <>
-                  <XCircle size={16} color={COLORS.error} />
-                  <Text style={tw`text-red-600 font-bold text-sm`}>Decline</Text>
-                </>
-              )}
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={tw`flex-1 bg-emerald-600 py-3 rounded-xl flex-row justify-center items-center gap-2`}
-              onPress={() => handleAction(item._id || item.id, 'accept')}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? <ActivityIndicator size="small" color="white" /> : (
-                <>
-                  <CheckCircle2 size={16} color="white" />
-                  <Text style={tw`text-white font-bold text-sm`}>Accept</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            {item.status === 'ACCEPTED' || item.status === 'CLOSED' ? (
+               <TouchableOpacity 
+                 style={tw`flex-1 bg-red-50 py-3 rounded-xl border border-red-100 flex-row justify-center items-center gap-2`}
+                 onPress={() => handleOpenDispute(item)}
+               >
+                 <XCircle size={16} color={COLORS.error} />
+                 <Text style={tw`text-red-600 font-bold text-sm`}>Report Issue</Text>
+               </TouchableOpacity>
+            ) : (
+              <>
+                <TouchableOpacity 
+                  style={tw`flex-1 bg-red-50 py-3 rounded-xl border border-red-100 flex-row justify-center items-center gap-2`}
+                  onPress={() => handleAction(item._id || item.id, 'decline')}
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? <ActivityIndicator size="small" color={COLORS.error} /> : (
+                    <>
+                      <XCircle size={16} color={COLORS.error} />
+                      <Text style={tw`text-red-600 font-bold text-sm`}>Decline</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={tw`flex-1 bg-emerald-600 py-3 rounded-xl flex-row justify-center items-center gap-2`}
+                  onPress={() => handleAction(item._id || item.id, 'accept')}
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? <ActivityIndicator size="small" color="white" /> : (
+                    <>
+                      <CheckCircle2 size={16} color="white" />
+                      <Text style={tw`text-white font-bold text-sm`}>Accept</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </Animated.View>
@@ -147,6 +196,60 @@ export default function WorkRequestsScreen() {
           }
         />
       )}
+
+      {/* Dispute Modal */}
+      <Modal
+        visible={disputeModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setDisputeModalVisible(false)}
+      >
+        <View style={tw`flex-1 justify-center items-center bg-black/50 p-4`}>
+          <View style={tw`bg-white w-full rounded-[24px] p-6 shadow-xl`}>
+            <Text style={tw`text-2xl font-bold text-gray-900 mb-2`}>Report Issue</Text>
+            <Text style={tw`text-sm text-gray-500 mb-6`}>Please provide details about the dispute.</Text>
+            
+            <Text style={tw`text-sm font-bold text-gray-700 mb-2`}>Reason</Text>
+            <TextInput
+              style={tw`w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4 text-gray-900 font-medium`}
+              placeholder="e.g. Payment issue, Poor quality"
+              value={disputeReason}
+              onChangeText={setDisputeReason}
+            />
+            
+            <Text style={tw`text-sm font-bold text-gray-700 mb-2`}>Description</Text>
+            <TextInput
+              style={tw`w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-6 text-gray-900 font-medium`}
+              placeholder="Provide more details..."
+              value={disputeDescription}
+              onChangeText={setDisputeDescription}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+            
+            <View style={tw`flex-row gap-4`}>
+              <TouchableOpacity 
+                style={tw`flex-1 py-3.5 rounded-xl border-2 border-gray-200 items-center`}
+                onPress={() => setDisputeModalVisible(false)}
+              >
+                <Text style={tw`text-gray-600 font-bold`}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={tw`flex-1 py-3.5 rounded-xl bg-red-600 items-center`}
+                onPress={submitDispute}
+                disabled={actionLoading === 'dispute'}
+              >
+                {actionLoading === 'dispute' ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={tw`text-white font-bold`}>Submit</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

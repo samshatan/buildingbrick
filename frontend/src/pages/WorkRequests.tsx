@@ -43,6 +43,13 @@ function WorkRequests() {
   const [proposedRate, setProposedRate] = useState("");
   const [proposalText, setProposalText] = useState("");
 
+  // Dispute modal state
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [disputeType, setDisputeType] = useState<"WorkRequest" | "DirectRequest">("WorkRequest");
+  const [disputeTargetId, setDisputeTargetId] = useState("");
+
   useEffect(() => {
     const endpoint = user?.userType === 'HIRER' ? `/api/v1/requests/hirer/${user?.id}` : '/api/v1/requests';
     fetch(endpoint)
@@ -197,6 +204,49 @@ function WorkRequests() {
       } else {
         toast.error(data.message || 'Failed to accept application.');
       }
+    } catch (err) {
+      console.error(err);
+      toast.error("An unexpected error occurred.");
+    }
+  };
+
+  const handleOpenDispute = (req: any, type: "WorkRequest" | "DirectRequest") => {
+    setSelectedRequest(req);
+    setDisputeType(type);
+    setDisputeReason("");
+    setDisputeDescription("");
+    setDisputeTargetId(type === "WorkRequest" ? req.workerId || "" : req.hirerId?._id || req.workerId?._id || "");
+    setDisputeModalOpen(true);
+  };
+
+  const submitDispute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRequest || !user) return;
+
+    try {
+      const response = await fetch('/api/v1/disputes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          requestType: disputeType,
+          requestId: selectedRequest.id,
+          againstUserId: disputeTargetId || undefined,
+          reason: disputeReason,
+          description: disputeDescription
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        toast.error(err.message || 'Failed to submit dispute.');
+        return;
+      }
+
+      toast.success("Dispute submitted successfully!");
+      setDisputeModalOpen(false);
     } catch (err) {
       console.error(err);
       toast.error("An unexpected error occurred.");
@@ -400,6 +450,13 @@ function WorkRequests() {
                         </button>
                       </div>
                     )}
+                    {req.status === 'ACCEPTED' && (
+                      <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3 mt-4">
+                        <button onClick={() => handleOpenDispute(req, 'DirectRequest')} className="px-6 py-2.5 bg-red-50 text-red-600 font-bold text-sm rounded-xl hover:bg-red-100 transition-colors">
+                          Report Issue
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </SwipeToDelete>
               ))
@@ -488,6 +545,14 @@ function WorkRequests() {
                           </button>
                         )
                       )}
+                      {(req.status === 'ACCEPTED' || req.status === 'CLOSED') && (
+                         <button 
+                         onClick={() => handleOpenDispute(req, 'WorkRequest')}
+                         className="ml-3 bg-red-50 text-red-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-100 transition-all border-none"
+                       >
+                         Report Issue
+                       </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -558,6 +623,65 @@ function WorkRequests() {
                   className="flex-1 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-600 shadow-md shadow-primary/20 hover:shadow-lg transition-all border-none cursor-pointer"
                 >
                   Submit Proposal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Modal */}
+      {disputeModalOpen && selectedRequest && (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div className="bg-red-50 p-5 sm:p-6 border-b border-red-100">
+              <h2 className="text-2xl font-extrabold text-red-900 mb-1">Report an Issue / Dispute</h2>
+              <p className="text-sm font-medium text-red-700">Regarding: <span className="font-bold">{selectedRequest.title || 'Direct Request'}</span></p>
+            </div>
+            
+            <form onSubmit={submitDispute} className="p-5 sm:p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Reason</label>
+                <select
+                  required
+                  value={disputeReason}
+                  onChange={(e) => setDisputeReason(e.target.value)}
+                  className="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm outline-none font-medium"
+                >
+                  <option value="" disabled>Select a reason</option>
+                  <option value="Work not completed">Work not completed</option>
+                  <option value="Poor quality of work">Poor quality of work</option>
+                  <option value="Payment issue">Payment issue</option>
+                  <option value="Unprofessional behavior">Unprofessional behavior</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Detailed Description</label>
+                <textarea
+                  required
+                  rows={5}
+                  value={disputeDescription}
+                  onChange={(e) => setDisputeDescription(e.target.value)}
+                  className="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm outline-none font-medium resize-none"
+                  placeholder="Please describe the issue in detail so admins can assist you..."
+                />
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
+                <button 
+                  type="button" 
+                  onClick={() => setDisputeModalOpen(false)}
+                  className="flex-1 py-3.5 rounded-xl border-2 border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 py-3.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-md shadow-red-500/20 hover:shadow-lg transition-all border-none cursor-pointer"
+                >
+                  Submit Dispute
                 </button>
               </div>
             </form>

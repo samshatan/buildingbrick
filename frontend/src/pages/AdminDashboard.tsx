@@ -33,12 +33,13 @@ interface WorkerData {
 
 function AdminDashboard() {
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState<"cafes" | "workers" | "users" | "analytics" | "moderation">("analytics");
+  const [activeTab, setActiveTab] = useState<"cafes" | "workers" | "users" | "analytics" | "moderation" | "disputes">("analytics");
   
   const [cafes, setCafes] = useState<CafeData[]>([]);
   const [workers, setWorkers] = useState<WorkerData[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [newCafeIdentifier, setNewCafeIdentifier] = useState("");
@@ -63,6 +64,7 @@ function AdminDashboard() {
       else if (activeTab === "users") endpoint = "/api/v1/admin/users";
       else if (activeTab === "analytics") endpoint = "/api/v1/admin/stats";
       else if (activeTab === "moderation") endpoint = "/api/v1/admin/reports";
+      else if (activeTab === "disputes") endpoint = "/api/v1/disputes";
 
       const res = await fetch(`${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -75,6 +77,7 @@ function AdminDashboard() {
         else if (activeTab === "users") setUsers(data);
         else if (activeTab === "analytics") setStats(data);
         else if (activeTab === "moderation") setReports(data);
+        else if (activeTab === "disputes") setDisputes(data);
       } else {
         toast.error("Failed to load data.");
       }
@@ -239,6 +242,14 @@ function AdminDashboard() {
                 <AlertTriangle className="w-4 h-4" /> Moderation
               </button>
               <button 
+                onClick={() => setActiveTab("disputes")}
+                className={`px-4 py-4 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
+                  activeTab === "disputes" ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" /> Disputes
+              </button>
+              <button 
                 onClick={() => setActiveTab("users")}
                 className={`px-4 py-4 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
                   activeTab === "users" ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700"
@@ -323,6 +334,77 @@ function AdminDashboard() {
                       </ResponsiveContainer>
                     </div>
                   </div>
+                </div>
+              </div>
+            ) : activeTab === "disputes" ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in duration-500">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-900">Dispute Resolution Center</h3>
+                  <button onClick={fetchData} className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
+                    <RefreshCw className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-gray-600">
+                    <thead className="bg-gray-50 text-gray-700 font-bold uppercase text-xs">
+                      <tr>
+                        <th className="px-6 py-4 border-b border-gray-100">Issue Details</th>
+                        <th className="px-6 py-4 border-b border-gray-100">Raised By</th>
+                        <th className="px-6 py-4 border-b border-gray-100">Against</th>
+                        <th className="px-6 py-4 border-b border-gray-100 text-center">Status</th>
+                        <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {disputes.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium">No open disputes! Everything is peaceful.</td>
+                        </tr>
+                      ) : (
+                        disputes.map((dispute) => (
+                          <tr key={dispute.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-gray-900">{dispute.reason}</div>
+                              <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-500 px-2 py-0.5 rounded mr-2">{dispute.requestType}</span>
+                              <p className="line-clamp-2 max-w-xs mt-1">{dispute.description}</p>
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-500">
+                              <span className="font-bold">{dispute.raisedBy?.name}</span><br/>{dispute.raisedBy?.email}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-500">
+                              {dispute.againstUser ? (
+                                <><span className="font-bold">{dispute.againstUser.name}</span><br/>{dispute.againstUser.email}</>
+                              ) : "N/A"}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {dispute.status === 'RESOLVED' ? (
+                                <span className="text-green-600 bg-green-50 px-2 py-1 rounded font-bold text-xs border border-green-200">Resolved</span>
+                              ) : dispute.status === 'CLOSED' ? (
+                                <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded font-bold text-xs">Closed</span>
+                              ) : (
+                                <span className="text-amber-600 bg-amber-50 px-2 py-1 rounded font-bold text-xs border border-amber-200">{dispute.status}</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {dispute.status !== 'RESOLVED' && dispute.status !== 'CLOSED' && (
+                                <div className="flex gap-2 justify-end">
+                                  <button onClick={() => {
+                                    const res = window.prompt("Enter resolution message for both parties:");
+                                    if (res) handleResolveDispute(dispute.id, res);
+                                  }} className="px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded transition-colors">Resolve</button>
+                                </div>
+                              )}
+                              {dispute.status === 'RESOLVED' && dispute.resolution && (
+                                <div className="text-[10px] text-gray-400 mt-1 max-w-[150px] ml-auto truncate" title={dispute.resolution}>
+                                  {dispute.resolution}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             ) : activeTab === "moderation" ? (
