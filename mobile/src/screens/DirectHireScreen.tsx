@@ -15,6 +15,7 @@ export default function DirectHireScreen({ route, navigation }: any) {
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
   const [date, setDate] = useState('');
+  const [buildingType, setBuildingType] = useState('');
   const [loading, setLoading] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: 28.6139,
@@ -64,6 +65,7 @@ export default function DirectHireScreen({ route, navigation }: any) {
         workerId: worker?._id || worker?.id,
         description,
         address,
+        buildingType,
         date
       });
 
@@ -103,6 +105,27 @@ export default function DirectHireScreen({ route, navigation }: any) {
               onChangeText={setDescription}
               placeholderTextColor={COLORS.textLight}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>BUILDING TYPE</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+              {['Corporate', 'Residential', 'High Rise'].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => setBuildingType(type)}
+                  style={[
+                    styles.input,
+                    { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.sm },
+                    buildingType === type && { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' }
+                  ]}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: buildingType === type ? '700' : '500', color: buildingType === type ? COLORS.primary : COLORS.text }}>
+                    {type}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           <View style={styles.inputGroup}>

@@ -5,6 +5,7 @@ const directRequestSchema = new mongoose.Schema({
   workerProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'WorkerProfile', required: true },
   hirerPhone: { type: String, required: true },
   hirerAddress: { type: String, required: true },
+  buildingType: { type: String, enum: ['Corporate', 'Residential', 'High Rise'] },
   message: { type: String, required: true },
   status: { type: String, enum: ['PENDING', 'ACCEPTED', 'REJECTED'], default: 'PENDING' },
   createdAt: { type: Date, default: Date.now }

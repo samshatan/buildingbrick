@@ -61,8 +61,15 @@ export default function WorkRequestsScreen() {
               <Text style={tw`text-lg font-bold text-[] mb-1`} numberOfLines={1}>{title}</Text>
               <Text style={tw`text-xs font-medium text-[]`}>From: {clientName}</Text>
             </View>
-            <View style={tw`px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100`}>
-              <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[#cc4518]`}>NEW</Text>
+            <View style={tw`flex-row items-center gap-2`}>
+              {item.buildingType && (
+                <View style={tw`px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100`}>
+                  <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-blue-700`}>{item.buildingType}</Text>
+                </View>
+              )}
+              <View style={tw`px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100`}>
+                <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[#cc4518]`}>NEW</Text>
+              </View>
             </View>
           </View>
 

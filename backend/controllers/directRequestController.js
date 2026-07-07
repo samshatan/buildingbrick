@@ -7,7 +7,7 @@ import Notification from '../models/Notification.js';
 // @access  Private (Hirer/User)
 export const createDirectRequest = async (req, res) => {
   try {
-    const { workerProfileId, hirerPhone, hirerAddress, message } = req.body;
+    const { workerProfileId, hirerPhone, hirerAddress, message, buildingType } = req.body;
     
     if (!workerProfileId || !hirerPhone || !hirerAddress || !message) {
       return res.status(400).json({ message: 'All fields are required.' });
@@ -23,6 +23,7 @@ export const createDirectRequest = async (req, res) => {
       workerProfileId,
       hirerPhone,
       hirerAddress,
+      buildingType,
       message
     });
 

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, ChevronLeft, CheckCircle2, MessageSquare, AlertCircle, Package } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
 
 type Role = 'user' | 'worker' | 'cafe_owner' | 'admin';
@@ -13,6 +14,7 @@ export default function ProfileScreen({ navigation }: any) {
   const { theme } = useTheme();
   const [role, setRole] = useState<string>('hirer');
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [workerProfile, setWorkerProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState<string | null>(null);
 
@@ -24,6 +26,15 @@ export default function ProfileScreen({ navigation }: any) {
           const parsed = JSON.parse(storedUser);
           setUserInfo(parsed);
           setRole(parsed.userType?.toLowerCase() || 'hirer');
+          
+          if (parsed.userType?.toLowerCase() === 'worker') {
+            try {
+              const res = await apiClient.get(`/workers/user/${parsed.id || parsed._id}`);
+              setWorkerProfile(res.data);
+            } catch (err) {
+              console.log('Error fetching worker profile', err);
+            }
+          }
         }
       } catch (e) {
         console.error('Failed to load user info', e);
@@ -38,6 +49,18 @@ export default function ProfileScreen({ navigation }: any) {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userInfo');
     navigation.replace('Login');
+  };
+
+  const handleOptInInsurance = async () => {
+    if (!workerProfile) return;
+    try {
+      const res = await apiClient.post(`/workers/${workerProfile._id}/insurance`);
+      setWorkerProfile(res.data);
+      Alert.alert("Success", "You have successfully opted into the insurance program!");
+    } catch (error) {
+      console.log('Error opting in:', error);
+      Alert.alert("Error", "Failed to opt into insurance. Please try again.");
+    }
   };
 
   const getRoleIcon = () => {
@@ -207,6 +230,40 @@ export default function ProfileScreen({ navigation }: any) {
             </TouchableOpacity>
           ))}
         </Animated.View>
+
+        {role === 'worker' && workerProfile && (
+          <Animated.View entering={FadeInUp.delay(250).duration(400)} style={tw`bg-[${theme.card}] rounded-[32px] p-6 shadow-sm border ${workerProfile.insuranceStatus === 'ACTIVE' ? 'border-emerald-500' : 'border-[#cc4518]'} mb-6`}>
+            <View style={tw`flex-row items-center justify-between mb-4`}>
+              <View style={tw`flex-row items-center gap-2`}>
+                <Shield size={24} color={workerProfile.insuranceStatus === 'ACTIVE' ? '#10b981' : '#cc4518'} />
+                <Text style={tw`text-lg font-bold text-[${theme.text}]`}>Insurance & Benefits</Text>
+              </View>
+              {workerProfile.insuranceStatus === 'ACTIVE' && (
+                <View style={tw`bg-emerald-100 px-3 py-1 rounded-full`}>
+                  <Text style={tw`text-emerald-700 text-xs font-bold uppercase`}>Active</Text>
+                </View>
+              )}
+            </View>
+            <Text style={tw`text-sm text-[${theme.textSecondary}] mb-6 leading-relaxed`}>
+              {workerProfile.insuranceStatus === 'ACTIVE'
+                ? "Your health and accident insurance coverage is currently active."
+                : "Protect your future with our comprehensive worker insurance covering health and accidents."}
+            </Text>
+            {(!workerProfile.insuranceStatus || workerProfile.insuranceStatus === 'NOT_ENROLLED') && (
+              <TouchableOpacity
+                onPress={handleOptInInsurance}
+                style={tw`w-full bg-[#cc4518] py-4 rounded-xl items-center shadow-sm`}
+              >
+                <Text style={tw`text-white font-bold text-sm tracking-wide`}>Opt-in Now</Text>
+              </TouchableOpacity>
+            )}
+            {workerProfile.insuranceStatus === 'PENDING' && (
+              <View style={tw`w-full bg-orange-100 py-4 rounded-xl items-center`}>
+                <Text style={tw`text-orange-700 font-bold text-sm tracking-wide`}>Approval Pending</Text>
+              </View>
+            )}
+          </Animated.View>
+        )}
 
         <Animated.View entering={FadeInUp.delay(300).duration(400)}>
           <TouchableOpacity
