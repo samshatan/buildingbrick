@@ -3,9 +3,13 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert,
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Image as ImageIcon } from 'lucide-react-native';
 import apiClient from '../api/client';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function WorkerOnboardingScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const styles = getStyles(COLORS);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -284,7 +288,7 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
 }
 
 
-const styles = StyleSheet.create({
+const getStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.surface,

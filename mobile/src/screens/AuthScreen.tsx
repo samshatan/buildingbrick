@@ -191,11 +191,11 @@ export default function AuthScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={tw`flex-1 bg-[${theme.bg}]`}
     >
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => navigation.replace('Home')}
         style={tw`absolute top-14 right-6 w-10 h-10 bg-[${theme.card}] rounded-full items-center justify-center z-10 border border-[${theme.border}]`}
       >
@@ -219,7 +219,7 @@ export default function AuthScreen({ navigation }: any) {
           ) : null}
 
           {isLogin && hasBiometricToken && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleBiometricLogin}
               style={tw`w-full py-3.5 bg-[${theme.card}] border border-[#cc4518] rounded-xl flex-row items-center justify-center gap-3 mb-2`}
             >
@@ -228,7 +228,7 @@ export default function AuthScreen({ navigation }: any) {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleGoogleLogin}
             disabled={googleLoading}
             style={tw`w-full py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
@@ -252,8 +252,8 @@ export default function AuthScreen({ navigation }: any) {
           {!isLogin && (
             <View style={tw`flex flex-col gap-1.5`}>
               <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Full Name</Text>
-              <TextInput 
-                placeholder="John Doe" 
+              <TextInput
+                placeholder="John Doe"
                 placeholderTextColor={theme.textSecondary}
                 value={fullName}
                 onChangeText={setFullName}
@@ -264,8 +264,8 @@ export default function AuthScreen({ navigation }: any) {
           
           <View style={tw`flex flex-col gap-1.5`}>
             <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Mobile Number or Email</Text>
-            <TextInput 
-              placeholder="+91234567890" 
+            <TextInput
+              placeholder="+91234567890"
               placeholderTextColor={theme.textSecondary}
               value={identifier}
               onChangeText={setIdentifier}
@@ -277,8 +277,8 @@ export default function AuthScreen({ navigation }: any) {
 
           <View style={tw`flex flex-col gap-1.5`}>
             <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Password</Text>
-            <TextInput 
-              placeholder="••••••••" 
+            <TextInput
+              placeholder="••••••••"
               placeholderTextColor={theme.textSecondary}
               value={password}
               onChangeText={setPassword}
@@ -311,7 +311,7 @@ export default function AuthScreen({ navigation }: any) {
             <View style={tw`flex flex-col gap-4 mt-2`}>
               <View style={tw`flex flex-col gap-1.5`}>
                 <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>Profile Photo *</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={pickImage}
                   style={tw`w-full h-24 border border-dashed border-[${theme.border}] bg-[${theme.card}] rounded-xl items-center justify-center`}
                 >
@@ -343,7 +343,7 @@ export default function AuthScreen({ navigation }: any) {
             </View>
           )}
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
             style={tw`w-full py-4 mt-6 bg-[#cc4518] rounded-xl flex-row items-center justify-center gap-2 ${loading ? 'opacity-70' : ''}`}

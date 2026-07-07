@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { Briefcase, Calendar, ChevronRight, Clock, CheckCircle2, XCircle } from 'lucide-react-native';
 import apiClient from '../api/client';
-import { COLORS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function JobsScreen() {
+  const { theme } = useTheme();
+  const COLORS = theme;
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,13 +57,13 @@ export default function JobsScreen() {
     
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).duration(500).springify()}>
-        <TouchableOpacity style={tw`bg-white rounded-[24px] p-5 mb-4 shadow-sm border border-zinc-100`}>
+        <TouchableOpacity style={tw`bg-[${theme.card}] rounded-[24px] p-5 mb-4 shadow-sm border border-[${theme.border}]`}>
           <View style={tw`flex-row justify-between items-start mb-4`}>
             <View style={tw`flex-1 mr-4`}>
-              <Text style={tw`text-lg font-bold text-zinc-900 mb-1`} numberOfLines={1}>{jobTitle}</Text>
+              <Text style={tw`text-lg font-bold text-[${theme.text}] mb-1`} numberOfLines={1}>{jobTitle}</Text>
               <View style={tw`flex-row items-center gap-1.5`}>
                 <Calendar size={12} color="#71717a" />
-                <Text style={tw`text-xs font-medium text-zinc-500`}>{date}</Text>
+                <Text style={tw`text-xs font-medium text-[${theme.textSecondary}]`}>{date}</Text>
               </View>
             </View>
             <View style={tw`px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${getStatusColor(status)}`}>
@@ -86,9 +88,9 @@ export default function JobsScreen() {
             <View style={tw`flex-row items-center gap-2`}>
               <View style={tw`items-end mr-1`}>
                 <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Total</Text>
-                <Text style={tw`text-base font-bold text-zinc-900`}>${item.amount || item.agreedRate || item.totalPrice || '---'}</Text>
+                <Text style={tw`text-base font-bold text-[${theme.text}]`}>${item.amount || item.agreedRate || item.totalPrice || '---'}</Text>
               </View>
-              <View style={tw`w-8 h-8 rounded-full bg-zinc-50 items-center justify-center border border-zinc-100`}>
+              <View style={tw`w-8 h-8 rounded-full bg-[${theme.bg}] items-center justify-center border border-[${theme.border}]`}>
                 <ChevronRight size={16} color="#52525b" />
               </View>
             </View>
@@ -99,10 +101,10 @@ export default function JobsScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+    <SafeAreaView style={tw`flex-1 bg-[${theme.bg}]`}>
       <View style={tw`px-6 pt-6 pb-2`}>
-        <Text style={tw`text-3xl font-bold text-zinc-900 mb-1`}>My Jobs</Text>
-        <Text style={tw`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-6`}>Manage your service requests</Text>
+        <Text style={tw`text-3xl font-bold text-[${theme.text}] mb-1`}>My Jobs</Text>
+        <Text style={tw`text-[${theme.textSecondary}] font-bold text-xs uppercase tracking-widest mb-6`}>Manage your service requests</Text>
       </View>
       
       {loading ? (
@@ -118,11 +120,11 @@ export default function JobsScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp.duration(500)} style={tw`flex-1 justify-center items-center py-20 px-6`}>
-              <View style={tw`w-20 h-20 rounded-full bg-zinc-100 items-center justify-center mb-6`}>
+              <View style={tw`w-20 h-20 rounded-full bg-[${theme.border}] items-center justify-center mb-6`}>
                 <Briefcase size={32} color="#a1a1aa" />
               </View>
-              <Text style={tw`text-xl font-bold text-zinc-900 mb-2`}>No Jobs Yet</Text>
-              <Text style={tw`text-sm text-zinc-500 text-center leading-relaxed`}>
+              <Text style={tw`text-xl font-bold text-[${theme.text}] mb-2`}>No Jobs Yet</Text>
+              <Text style={tw`text-sm text-[${theme.textSecondary}] text-center leading-relaxed`}>
                 You haven't booked any workers or services yet. Once you do, they will appear here.
               </Text>
             </Animated.View>

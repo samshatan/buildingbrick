@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 import apiClient from '../api/client';
 import { useFocusEffect } from '@react-navigation/native';
 import { ChevronLeft, Package, Clock, CheckCircle2 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrdersScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const styles = getStyles(COLORS);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -126,7 +130,7 @@ export default function OrdersScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

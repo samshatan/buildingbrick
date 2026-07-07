@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { Calendar, MapPin, CheckCircle2, XCircle, Inbox } from 'lucide-react-native';
 import apiClient from '../api/client';
-import { COLORS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function WorkRequestsScreen() {
+  const { theme } = useTheme();
+  const COLORS = theme;
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -52,26 +54,26 @@ export default function WorkRequestsScreen() {
 
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).duration(500).springify()}>
-        <View style={tw`bg-white rounded-[24px] p-5 mb-4 shadow-sm border border-zinc-100 overflow-hidden`}>
+        <View style={tw`bg-[] rounded-[24px] p-5 mb-4 shadow-sm border border-[] overflow-hidden`}>
           <View style={tw`absolute top-0 left-0 bottom-0 w-1.5 bg-[#cc4518]`} />
           <View style={tw`flex-row justify-between items-start mb-4 pl-2`}>
             <View style={tw`flex-1 mr-4`}>
-              <Text style={tw`text-lg font-bold text-zinc-900 mb-1`} numberOfLines={1}>{title}</Text>
-              <Text style={tw`text-xs font-medium text-zinc-500`}>From: {clientName}</Text>
+              <Text style={tw`text-lg font-bold text-[] mb-1`} numberOfLines={1}>{title}</Text>
+              <Text style={tw`text-xs font-medium text-[]`}>From: {clientName}</Text>
             </View>
             <View style={tw`px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100`}>
               <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[#cc4518]`}>NEW</Text>
             </View>
           </View>
 
-          <View style={tw`bg-zinc-50 rounded-xl p-3 mb-4 pl-4`}>
+          <View style={tw`bg-[] rounded-xl p-3 mb-4 pl-4`}>
             <View style={tw`flex-row items-center gap-2 mb-2`}>
               <Calendar size={14} color="#71717a" />
-              <Text style={tw`text-sm font-medium text-zinc-600`}>{date}</Text>
+              <Text style={tw`text-sm font-medium text-[]`}>{date}</Text>
             </View>
             <View style={tw`flex-row items-center gap-2`}>
               <MapPin size={14} color="#71717a" />
-              <Text style={tw`text-sm font-medium text-zinc-600`}>{location}</Text>
+              <Text style={tw`text-sm font-medium text-[]`}>{location}</Text>
             </View>
           </View>
 
@@ -108,10 +110,10 @@ export default function WorkRequestsScreen() {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+    <SafeAreaView style={tw`flex-1 bg-[]`}>
       <View style={tw`px-6 pt-6 pb-2`}>
-        <Text style={tw`text-3xl font-bold text-zinc-900 mb-1`}>Work Requests</Text>
-        <Text style={tw`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-6`}>Review incoming job offers</Text>
+        <Text style={tw`text-3xl font-bold text-[] mb-1`}>Work Requests</Text>
+        <Text style={tw`text-[] font-bold text-xs uppercase tracking-widest mb-6`}>Review incoming job offers</Text>
       </View>
       
       {loading ? (
@@ -127,11 +129,11 @@ export default function WorkRequestsScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp.duration(500)} style={tw`flex-1 justify-center items-center py-20 px-6`}>
-              <View style={tw`w-20 h-20 rounded-full bg-zinc-100 items-center justify-center mb-6`}>
+              <View style={tw`w-20 h-20 rounded-full bg-[] items-center justify-center mb-6`}>
                 <Inbox size={32} color="#a1a1aa" />
               </View>
-              <Text style={tw`text-xl font-bold text-zinc-900 mb-2`}>No New Requests</Text>
-              <Text style={tw`text-sm text-zinc-500 text-center leading-relaxed`}>
+              <Text style={tw`text-xl font-bold text-[] mb-2`}>No New Requests</Text>
+              <Text style={tw`text-sm text-[] text-center leading-relaxed`}>
                 You don't have any pending work requests right now. When a client hires you, it will show up here.
               </Text>
             </Animated.View>

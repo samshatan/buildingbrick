@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function SignUpScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const styles = getStyles(COLORS);
   const [step, setStep] = useState(1); // 1: Send OTP, 2: Verify & Details
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState(''); // Email or Phone
@@ -155,7 +159,7 @@ export default function SignUpScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primary,

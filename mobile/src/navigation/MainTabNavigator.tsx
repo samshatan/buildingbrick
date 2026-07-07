@@ -8,10 +8,15 @@ import MaterialsScreen from '../screens/MaterialsScreen';
 import WorkersScreen from '../screens/WorkersScreen';
 import ProjectsScreen from '../screens/ProjectsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { useTheme } from '../context/ThemeProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
 const TabIcon = ({ name, focused, color }: { name: string, focused: boolean, color: string }) => {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const styles = getStyles(COLORS, 0); // TabIcon doesn't need insets for its local styles
   let IconComponent = Home;
   
   switch(name) {
@@ -37,6 +42,10 @@ const TabIcon = ({ name, focused, color }: { name: string, focused: boolean, col
 };
 
 export default function MainTabNavigator() {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(COLORS, insets.bottom);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -80,9 +89,9 @@ export default function MainTabNavigator() {
           tabBarIcon: ({ focused, color }) => <TabIcon name="Projects" focused={focused} color={color} />
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
-        component={ProfileScreen} 
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused, color }) => <TabIcon name="Profile" focused={focused} color={color} />
         }}
@@ -91,17 +100,13 @@ export default function MainTabNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (COLORS: any, bottomInset: number) => StyleSheet.create({
   tabBar: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: '#f4f4f5',
-    height: 90,
-    paddingBottom: 16,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    borderTopColor: COLORS.border,
+    height: 70 + (bottomInset > 0 ? bottomInset : 10),
+    paddingBottom: bottomInset > 0 ? bottomInset : 10,
     elevation: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   iconCircleActive: {
-    backgroundColor: '#ffedd5',
+    backgroundColor: COLORS.primaryLight + '30',
   },
   label: {
     fontSize: 8,

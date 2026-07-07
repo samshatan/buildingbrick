@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 import apiClient from '../api/client';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function CartScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const COLORS = theme;
+  const styles = getStyles(COLORS);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -115,7 +119,7 @@ export default function CartScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

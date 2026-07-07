@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { CreditCard, Lock, ShieldCheck, ChevronRight } from 'lucide-react-native';
 import apiClient from '../api/client';
-import { COLORS } from '../theme/theme';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function PaymentScreen({ route, navigation }: any) {
+  const { theme } = useTheme();
+  const COLORS = theme;
   const { amount, items } = route.params || { amount: 0, items: [] };
   const [loading, setLoading] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
@@ -49,12 +51,12 @@ export default function PaymentScreen({ route, navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
+    <SafeAreaView style={tw`flex-1 bg-[${theme.bg}]`}>
       <ScrollView contentContainerStyle={tw`p-6`} showsVerticalScrollIndicator={false}>
         
         {/* Header Summary */}
         <Animated.View entering={FadeInDown.duration(400)} style={tw`items-center mb-8`}>
-          <Text style={tw`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-2`}>Total to pay</Text>
+          <Text style={tw`text-[${theme.textSecondary}] font-bold text-xs uppercase tracking-widest mb-2`}>Total to pay</Text>
           <Text style={tw`text-5xl font-extrabold text-[${COLORS.primary}]`}>
             ${amount.toFixed(2)}
           </Text>
@@ -62,17 +64,17 @@ export default function PaymentScreen({ route, navigation }: any) {
 
         {/* Card Entry Form */}
         <Animated.View entering={FadeInUp.delay(200).duration(500).springify()}>
-          <View style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 mb-6`}>
+          <View style={tw`bg-[${theme.card}] rounded-[32px] p-6 shadow-sm border border-[${theme.border}] mb-6`}>
             <View style={tw`flex-row items-center gap-2 mb-6`}>
               <View style={tw`w-10 h-10 rounded-full bg-orange-50 items-center justify-center`}>
                 <CreditCard size={20} color={COLORS.primary} />
               </View>
-              <Text style={tw`text-lg font-bold text-zinc-900`}>Card Details</Text>
+              <Text style={tw`text-lg font-bold text-[${theme.text}]`}>Card Details</Text>
             </View>
 
             <View style={tw`mb-4`}>
-              <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1`}>Card Number</Text>
-              <View style={tw`bg-zinc-50 rounded-2xl border border-zinc-200 flex-row items-center px-4 h-14`}>
+              <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest mb-2 ml-1`}>Card Number</Text>
+              <View style={tw`bg-[${theme.bg}] rounded-2xl border border-[${theme.border}] flex-row items-center px-4 h-14`}>
                 <TextInput
                   style={tw`flex-1 font-bold text-zinc-800 text-base`}
                   placeholder="XXXX XXXX XXXX XXXX"
@@ -88,8 +90,8 @@ export default function PaymentScreen({ route, navigation }: any) {
 
             <View style={tw`flex-row gap-4 mb-2`}>
               <View style={tw`flex-1`}>
-                <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1`}>Expiry</Text>
-                <View style={tw`bg-zinc-50 rounded-2xl border border-zinc-200 flex-row items-center px-4 h-14`}>
+                <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest mb-2 ml-1`}>Expiry</Text>
+                <View style={tw`bg-[${theme.bg}] rounded-2xl border border-[${theme.border}] flex-row items-center px-4 h-14`}>
                   <TextInput
                     style={tw`flex-1 font-bold text-zinc-800 text-base`}
                     placeholder="MM/YY"
@@ -102,8 +104,8 @@ export default function PaymentScreen({ route, navigation }: any) {
                 </View>
               </View>
               <View style={tw`flex-1`}>
-                <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1`}>CVV</Text>
-                <View style={tw`bg-zinc-50 rounded-2xl border border-zinc-200 flex-row items-center px-4 h-14`}>
+                <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest mb-2 ml-1`}>CVV</Text>
+                <View style={tw`bg-[${theme.bg}] rounded-2xl border border-[${theme.border}] flex-row items-center px-4 h-14`}>
                   <TextInput
                     style={tw`flex-1 font-bold text-zinc-800 text-base`}
                     placeholder="123"
@@ -142,7 +144,7 @@ export default function PaymentScreen({ route, navigation }: any) {
         {/* Security Note */}
         <Animated.View entering={FadeInUp.delay(500).duration(500)} style={tw`flex-row justify-center items-center gap-2 mt-8`}>
           <ShieldCheck size={16} color="#52525b" />
-          <Text style={tw`text-xs font-bold text-zinc-500 uppercase tracking-widest`}>
+          <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest`}>
             Payments are secure and encrypted
           </Text>
         </Animated.View>
