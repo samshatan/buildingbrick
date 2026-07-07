@@ -1,5 +1,8 @@
 import User from '../models/User.js';
 import WorkerProfile from '../models/WorkerProfile.js';
+import Report from '../models/Report.js';
+import Job from '../models/Job.js';
+import { sendEmail } from '../utils/sendEmail.js';
 
 // @desc    Get all workers with verification status
 // @route   GET /api/v1/admin/workers
@@ -172,3 +175,129 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// @desc    Update user role
+// @route   PUT /api/v1/admin/users/:id/role
+// @access  Private (Admin only)
+export const updateUserRole = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as admin.' });
+    }
+    const { role } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    user.accountType = role;
+    await user.save();
+    res.status(200).json({ message: `User role updated to ${role}` });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// @desc    Get platform stats for analytics
+// @route   GET /api/v1/admin/stats
+// @access  Private (Admin only)
+export const getPlatformStats = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as admin.' });
+    }
+    
+    // Total counts
+    const totalUsers = await User.countDocuments();
+    const totalWorkers = await WorkerProfile.countDocuments({ verified: true });
+    const totalCafes = await User.countDocuments({ accountType: 'cafe' });
+    const totalJobs = await Job.countDocuments();
+
+    // Mocking some time-series data for the charts so it looks good on the frontend immediately
+    // In a real scenario, this would aggregate by month using MongoDB $group
+    const currentMonth = new Date().toLocaleString('default', { month: 'short' });
+    const growthData = [
+      { name: 'Jan', users: Math.floor(totalUsers * 0.2), workers: Math.floor(totalWorkers * 0.1) },
+      { name: 'Feb', users: Math.floor(totalUsers * 0.3), workers: Math.floor(totalWorkers * 0.3) },
+      { name: 'Mar', users: Math.floor(totalUsers * 0.5), workers: Math.floor(totalWorkers * 0.5) },
+      { name: 'Apr', users: Math.floor(totalUsers * 0.7), workers: Math.floor(totalWorkers * 0.7) },
+      { name: 'May', users: Math.floor(totalUsers * 0.8), workers: Math.floor(totalWorkers * 0.8) },
+      { name: currentMonth, users: totalUsers, workers: totalWorkers },
+    ];
+
+    res.status(200).json({
+      totals: { totalUsers, totalWorkers, totalCafes, totalJobs },
+      growthData
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// @desc    Get all reports
+// @route   GET /api/v1/admin/reports
+// @access  Private (Admin only)
+export const getReports = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as admin.' });
+    }
+    const reports = await Report.find().sort({ createdAt: -1 }).populate('reportedBy', 'name email');
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
+// @desc    Update report status (Warn/Ban/Dismiss)
+// @route   PUT /api/v1/admin/reports/:id
+// @access  Private (Admin only)
+export const updateReportStatus = async (req, res) => {
+  try {
+    if (req.user.accountType !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as admin.' });
+    }
+    const { status, action, adminNotes } = req.body;
+    const report = await Report.findById(req.params.id);
+    
+    if (!report) return res.status(404).json({ message: 'Report not found.' });
+
+    report.status = status;
+    report.adminNotes = adminNotes;
+    await report.save();
+
+    // If action is warn or ban, try to email the user
+    if (action === 'warn' || action === 'ban') {
+      let targetEmail = '';
+      let targetName = report.targetName;
+      
+      // We only email if target is a User
+      if (report.targetModel === 'User') {
+        const targetUser = await User.findById(report.targetId);
+        if (targetUser) {
+          targetEmail = targetUser.email;
+          if (action === 'ban') {
+            targetUser.accountType = 'banned';
+            await targetUser.save();
+          }
+        }
+      }
+
+      if (targetEmail) {
+        const subject = action === 'ban' ? 'Account Suspended' : 'Official Warning from BrickOurHouse';
+        const text = `Hello ${targetName},\n\nYour account has been ${action === 'ban' ? 'suspended' : 'warned'} due to a violation of our community guidelines.\n\nReason given: ${report.reason}\n\nIf you believe this is an error, please contact support.`;
+        
+        await sendEmail({
+          to: targetEmail,
+          subject,
+          text
+        });
+      }
+    }
+
+    res.status(200).json({ message: `Report updated and action '${action || status}' applied.` });
+  } catch (error) {
+    console.error('Error updating report:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};

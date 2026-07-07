@@ -19,6 +19,8 @@ export interface WorkerProfileResponse {
   jobsCompleted: number;
   photo?: string;
   distance?: number;
+  insuranceStatus?: 'NOT_ENROLLED' | 'PENDING' | 'ACTIVE';
+  insuranceOptInDate?: string;
 }
 
 function WorkerCard({ worker }: { worker: WorkerProfileResponse }) {

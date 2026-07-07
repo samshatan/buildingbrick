@@ -137,6 +137,29 @@ function Profile() {
     }
   };
 
+  const handleOptInInsurance = async () => {
+    if (!workerProfile || !token) return;
+    const toastId = toast.loading("Processing your request...");
+    try {
+      const res = await fetch(`/api/v1/workers/${workerProfile.id}/insurance`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setWorkerProfile({ ...workerProfile, insuranceStatus: 'PENDING' });
+        toast.update(toastId, { render: "Successfully opted into insurance!", type: "success", isLoading: false, autoClose: 3000 });
+      } else {
+        toast.update(toastId, { render: data.message || "Failed to opt in.", type: "error", isLoading: false, autoClose: 3000 });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.update(toastId, { render: "An error occurred.", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
   const handleAccountUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accountForm.email && !accountForm.phone) {
@@ -446,6 +469,39 @@ function Profile() {
                     <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-xl transition-colors">
                       Manage Subscription
                     </button>
+                  </div>
+
+                  {/* Insurance & Benefits Card */}
+                  <div className="md:col-span-2 bg-gradient-to-br from-blue-50 to-primary/10 rounded-3xl p-8 border border-primary/20 shadow-sm relative overflow-hidden">
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                          <BadgeCheck className="w-6 h-6 text-primary" /> Worker Insurance & Benefits
+                        </h3>
+                        <p className="text-gray-600 font-medium max-w-xl">
+                          Secure your future! Get health and accidental insurance coverage exclusively for verified workers on our platform.
+                        </p>
+                      </div>
+                      <div className="shrink-0">
+                        {workerProfile.insuranceStatus === 'ACTIVE' ? (
+                          <div className="px-6 py-3 bg-green-100 text-green-700 font-bold rounded-xl flex items-center gap-2 border border-green-200">
+                            <BadgeCheck className="w-5 h-5" /> Active Coverage
+                          </div>
+                        ) : workerProfile.insuranceStatus === 'PENDING' ? (
+                          <div className="px-6 py-3 bg-amber-100 text-amber-700 font-bold rounded-xl flex items-center gap-2 border border-amber-200">
+                            <Clock className="w-5 h-5" /> Enrollment Pending
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={handleOptInInsurance}
+                            className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-md shadow-primary/20 hover:bg-primary-600 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                          >
+                            Opt-in Now (Free)
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (

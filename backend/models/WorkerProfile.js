@@ -43,7 +43,9 @@ const workerProfileSchema = new mongoose.Schema({
   onboardingFeePaid: { type: Boolean, default: false },
   paymentPreference: { type: String, enum: ['ONLINE', 'OFFLINE'], default: 'ONLINE' },
   cafePaymentReceipt: { type: String, default: "" },
-  verificationStatus: { type: String, enum: ['INCOMPLETE', 'PENDING', 'VERIFIED', 'REJECTED'], default: 'INCOMPLETE' }
+  verificationStatus: { type: String, enum: ['INCOMPLETE', 'PENDING', 'VERIFIED', 'REJECTED'], default: 'INCOMPLETE' },
+  insuranceStatus: { type: String, enum: ['NOT_ENROLLED', 'PENDING', 'ACTIVE'], default: 'NOT_ENROLLED' },
+  insuranceOptInDate: { type: Date, default: null }
 }, {
   toJSON: {
     virtuals: true,

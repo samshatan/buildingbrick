@@ -236,3 +236,32 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error updating profile.' });
   }
 };
+
+// @desc    Opt into insurance
+// @route   POST /api/v1/workers/:id/insurance
+// @access  Private
+export const optInInsurance = async (req, res) => {
+  try {
+    const worker = await WorkerProfile.findById(req.params.id);
+    if (!worker) {
+      return res.status(404).json({ message: 'Worker profile not found.' });
+    }
+
+    if (worker.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+
+    if (worker.insuranceStatus !== 'NOT_ENROLLED') {
+      return res.status(400).json({ message: 'Already enrolled or pending.' });
+    }
+
+    worker.insuranceStatus = 'PENDING';
+    worker.insuranceOptInDate = new Date();
+    await worker.save();
+
+    res.status(200).json({ message: 'Successfully opted into insurance. Status is pending.', worker });
+  } catch (error) {
+    console.error('Error opting into insurance:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};

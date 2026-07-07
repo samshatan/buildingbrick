@@ -5,6 +5,7 @@ const workRequestSchema = new mongoose.Schema({
   title: { type: String, required: true },
   categoryId: { type: String, required: true },
   workerType: { type: String, required: true },
+  buildingType: { type: String, enum: ['Corporate', 'Residential', 'High Rise'], required: true },
   location: { type: String, default: "Not specified" },
   startDate: { type: String, default: "" },
   endDate: { type: String, default: "" },

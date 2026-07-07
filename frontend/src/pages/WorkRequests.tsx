@@ -10,6 +10,7 @@ interface WorkRequest {
   hirerUserId: string;
   categoryId: string;
   workerType: string;
+  buildingType?: string;
   title: string;
   description: string;
   location: string;
@@ -428,9 +429,16 @@ function WorkRequests() {
                             {req.status}
                           </span>
                         </div>
-                        <span className="inline-block text-xs font-bold px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full">
-                          {req.workerType}
-                        </span>
+                        <div className="flex gap-2">
+                          <span className="inline-block text-xs font-bold px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full">
+                            {req.workerType}
+                          </span>
+                          {req.buildingType && (
+                            <span className="inline-block text-xs font-bold px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
+                              {req.buildingType}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 sm:text-right shrink-0">
                         <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Budget</p>

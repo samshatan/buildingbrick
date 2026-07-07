@@ -18,7 +18,9 @@ const Login = lazy(() => import('./pages/Login'))
 const Workers = lazy(() => import('./pages/Workers'))
 const WorkerProfile = lazy(() => import('./pages/WorkerProfile'))
 const Contact = lazy(() => import('./pages/Contact'))
+const HireRequest = lazy(() => import('./pages/HireRequest'))
 const Cart = lazy(() => import('./pages/Cart'))
+const Checkout = lazy(() => import('./pages/Checkout'))
 const Orders = lazy(() => import('./pages/Orders'))
 const SignUp = lazy(() => import('./pages/SignUp'))
 const About = lazy(() => import('./pages/About'))
@@ -77,7 +79,9 @@ function App() {
           <Route path='/workers' element={<Workers />} />
           <Route path='/worker/:workerId' element={<WorkerProfile />} />
           <Route path='/direct-hire/:workerId' element={<DirectHire />} />
-          <Route path='/hire-request' element={<Cart />} />
+          <Route path='/hire-request' element={<HireRequest />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/checkout' element={<Checkout />} />
           <Route path='/materials' element={<Materials />} />
           <Route path='/materials/:id' element={<MaterialDetails />} />
           <Route path='/material-orders' element={<MaterialOrders />} />

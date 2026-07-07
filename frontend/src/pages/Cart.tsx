@@ -1,263 +1,178 @@
-import { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ClipboardList, MapPin, CalendarDays, DollarSign, Send, Info } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { workerCategories } from "@/data/marketplaceData";
-import { toast } from "react-toastify";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import { Trash2, ShoppingCart, ArrowRight } from 'lucide-react';
+import Title from "@/components/Title";
+
+interface CartItem {
+  _id: string;
+  materialId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  retailer?: {
+    name: string;
+  };
+}
 
 function Cart() {
+  const { token, user } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user, token } = useAuth();
-  
-  const [request, setRequest] = useState({
-    title: "",
-    categoryId: searchParams.get('categoryId') || "",
-    workerType: searchParams.get('workerType') || "",
-    location: "",
-    startDate: "",
-    endDate: "",
-    budgetMin: "",
-    budgetMax: "",
-    details: "",
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPrice, setTotalPrice] = useState(0);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setRequest({ ...request, [event.target.name]: event.target.value });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast.error("Please login to post a work request.");
-      navigate("/login");
+  const fetchCart = async () => {
+    if (!token) {
+      setLoading(false);
       return;
     }
-
-    const payload = {
-      hirerUserId: user.id,
-      title: request.title,
-      categoryId: request.categoryId,
-      workerType: request.workerType,
-      location: request.location,
-      startDate: request.startDate || null,
-      endDate: request.endDate || null,
-      budgetMin: request.budgetMin ? parseInt(request.budgetMin) : 0,
-      budgetMax: request.budgetMax ? parseInt(request.budgetMax) : 0,
-      description: request.details
-    };
-
-    const loadingToast = toast.loading("Posting your request...");
-
     try {
-      const response = await fetch('/api/v1/requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload),
+      const response = await fetch('/api/v1/cart', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        toast.update(loadingToast, { render: err.message || 'Failed to post work request.', type: "error", isLoading: false, autoClose: 3000 });
-        return;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setCartItems(data.data.items || []);
+          setTotalPrice(data.data.totalPrice || 0);
+        }
       }
-
-      toast.update(loadingToast, { render: "Work request posted successfully!", type: "success", isLoading: false, autoClose: 3000 });
-      navigate('/requests');
-    } catch (err) {
-      console.error(err);
-      toast.update(loadingToast, { render: "An unexpected error occurred.", type: "error", isLoading: false, autoClose: 3000 });
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchCart();
+  }, [token]);
+
+  const handleRemoveItem = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/v1/cart/remove/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        fetchCart();
+        toast.success("Item removed from cart");
+      } else {
+        toast.error("Failed to remove item");
+      }
+    } catch (error) {
+      console.error('Remove error:', error);
+      toast.error("An error occurred");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-gray-50/30">
+        <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Cart is Empty</h2>
+        <p className="text-gray-500 mb-6">Please login to view your cart items.</p>
+        <Link to="/login" className="px-8 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-colors">
+          Login
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-gray-50/30">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50/30 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6 shadow-sm">
-            <ClipboardList className="w-8 h-8" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">Post a Work Request</h1>
-          <p className="text-lg text-gray-600 font-medium max-w-2xl mx-auto">
-            Describe what you need done, set your budget, and let qualified professionals in your area apply to help.
-          </p>
+        <div className="mb-8">
+          <Title text1="Shopping" text2="CART" />
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-          
-          <div className="bg-blue-50/50 border-b border-blue-100 p-6 flex items-start gap-4">
-            <Info className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />
-            <div>
-               <h3 className="text-blue-900 font-bold mb-1">Make your post stand out</h3>
-               <p className="text-sm text-blue-800/80 font-medium leading-relaxed">
-                 The more detailed your description and accurate your budget, the faster you'll receive high-quality proposals from top-rated workers.
-               </p>
+        {cartItems.length === 0 ? (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 mb-4">
+              <ShoppingCart className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h3>
+            <p className="text-gray-500 mb-6">Looks like you haven't added any materials yet.</p>
+            <Link to="/materials" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-colors">
+              Continue Shopping <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Cart Items */}
+            <div className="flex-1 space-y-4">
+              {cartItems.map((item) => (
+                <div key={item._id} className="bg-white rounded-2xl p-4 flex gap-4 items-center shadow-sm border border-gray-100">
+                  <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-lg font-bold text-gray-900 truncate">{item.name}</h4>
+                    {item.retailer && (
+                      <p className="text-sm text-gray-500 mb-1">Sold by {item.retailer.name}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-4">
+                        <span className="font-semibold text-gray-900">₹{item.price.toLocaleString()}</span>
+                        <span className="text-sm text-gray-500">Qty: {item.quantity}</span>
+                      </div>
+                      <button 
+                        onClick={() => handleRemoveItem(item._id)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        title="Remove Item"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:w-80">
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h3>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal ({cartItems.reduce((acc, item) => acc + item.quantity, 0)} items)</span>
+                    <span className="font-medium text-gray-900">₹{totalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Delivery Fee</span>
+                    <span className="font-medium text-green-600">Calculated at checkout</span>
+                  </div>
+                  <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="text-xl font-extrabold text-primary">₹{totalPrice.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => navigate('/checkout', { state: { amount: totalPrice, items: cartItems } })}
+                  className="w-full py-3.5 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2"
+                >
+                  Proceed to Checkout <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className="p-8 sm:p-10 space-y-8">
-            
-            {/* Basic Info */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Basic Information</h3>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Job Title <span className="text-red-500">*</span></label>
-                <input
-                  name="title"
-                  required
-                  value={request.title}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                  placeholder="e.g. Need a professional plumber for bathroom renovation"
-                />
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Category <span className="text-red-500">*</span></label>
-                  <select
-                    name="categoryId"
-                    required
-                    value={request.categoryId}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="" disabled>Select a main category</option>
-                    {workerCategories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Specific Profession <span className="text-red-500">*</span></label>
-                  <input
-                    name="workerType"
-                    required
-                    value={request.workerType}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                    placeholder="e.g. Plumber, Electrician"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Logistics */}
-            <div className="space-y-6 pt-4">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Location & Schedule</h3>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400" /> Location
-                </label>
-                <input
-                  name="location"
-                  value={request.location}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                  placeholder="e.g. Downtown Area, City"
-                />
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4 text-gray-400" /> Start Date
-                  </label>
-                  <input
-                    type="date"
-                    name="startDate"
-                    value={request.startDate}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4 text-gray-400" /> End Date
-                  </label>
-                  <input
-                    type="date"
-                    name="endDate"
-                    value={request.endDate}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Budget & Details */}
-            <div className="space-y-6 pt-4">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Budget & Details</h3>
-              
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" /> Min Daily Budget (Rs)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    name="budgetMin"
-                    value={request.budgetMin}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                    placeholder="e.g. 1000"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" /> Max Daily Budget (Rs)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    name="budgetMax"
-                    value={request.budgetMax}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                    placeholder="e.g. 2000"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Detailed Description <span className="text-red-500">*</span></label>
-                <textarea
-                  name="details"
-                  required
-                  value={request.details}
-                  onChange={handleChange}
-                  rows={6}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"
-                  placeholder="Describe the scope of work, any materials provided, specific requirements..."
-                />
-              </div>
-            </div>
-
-          </div>
-
-          <div className="bg-gray-50 p-6 sm:px-10 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500 font-medium text-center sm:text-left">
-              Your request will be publicly visible to all registered workers.
-            </p>
-            <button 
-              type="submit" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 border border-transparent text-sm font-bold rounded-xl text-white bg-primary hover:bg-primary-600 shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200"
-            >
-              Post Job Now
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-
-        </form>
+        )}
       </div>
     </div>
   );

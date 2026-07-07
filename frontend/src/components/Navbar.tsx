@@ -103,6 +103,9 @@ function Navbar() {
             <Link to="/messages" className="relative p-2 text-gray-600 hover:text-primary transition-colors rounded-full hover:bg-gray-100 focus:outline-none hidden sm:block">
               <HiOutlineChatBubbleLeftEllipsis className="w-6 h-6" />
             </Link>
+            <Link to="/cart" className="relative p-2 text-gray-600 hover:text-primary transition-colors rounded-full hover:bg-gray-100 focus:outline-none hidden sm:block">
+              <HiOutlineShoppingCart className="w-6 h-6" />
+            </Link>
             <NotificationBell />
             <Link to="/profile" className="relative transition-all hover:scale-105 duration-200">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary bg-primary-50 flex items-center justify-center shadow-sm">
