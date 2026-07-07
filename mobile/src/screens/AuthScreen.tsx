@@ -45,9 +45,9 @@ export default function AuthScreen({ navigation }: any) {
   }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
-    iosClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
-    androidClientId: '202330709483-pkfo88k3ftoe5sdsv817dieh9mr88fel.apps.googleusercontent.com',
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '',
   });
 
   useEffect(() => {
