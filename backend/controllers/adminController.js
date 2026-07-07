@@ -211,17 +211,54 @@ export const getPlatformStats = async (req, res) => {
     const totalCafes = await User.countDocuments({ accountType: 'cafe' });
     const totalJobs = await Job.countDocuments();
 
-    // Mocking some time-series data for the charts so it looks good on the frontend immediately
-    // In a real scenario, this would aggregate by month using MongoDB $group
-    const currentMonth = new Date().toLocaleString('default', { month: 'short' });
-    const growthData = [
-      { name: 'Jan', users: Math.floor(totalUsers * 0.2), workers: Math.floor(totalWorkers * 0.1) },
-      { name: 'Feb', users: Math.floor(totalUsers * 0.3), workers: Math.floor(totalWorkers * 0.3) },
-      { name: 'Mar', users: Math.floor(totalUsers * 0.5), workers: Math.floor(totalWorkers * 0.5) },
-      { name: 'Apr', users: Math.floor(totalUsers * 0.7), workers: Math.floor(totalWorkers * 0.7) },
-      { name: 'May', users: Math.floor(totalUsers * 0.8), workers: Math.floor(totalWorkers * 0.8) },
-      { name: currentMonth, users: totalUsers, workers: totalWorkers },
-    ];
+    // Aggregate user signups by month for the last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1); // Start of that month
+
+    const userGrowth = await User.aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const workerGrowth = await WorkerProfile.aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo }, verified: true } },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Build array for the last 6 months
+    const growthData = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    let currentTotalUsers = 0;
+    let currentTotalWorkers = 0;
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const monthIndex = d.getMonth();
+      const monthLabel = monthNames[monthIndex];
+
+      const uCount = userGrowth.find(g => g._id === monthIndex + 1)?.count || 0;
+      const wCount = workerGrowth.find(g => g._id === monthIndex + 1)?.count || 0;
+      
+      // Cumulative or absolute? The charts usually show cumulative or monthly. Let's do monthly growth.
+      growthData.push({
+        name: monthLabel,
+        users: uCount,
+        workers: wCount
+      });
+    }
 
     res.status(200).json({
       totals: { totalUsers, totalWorkers, totalCafes, totalJobs },

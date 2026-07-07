@@ -81,34 +81,8 @@ const ThemeContext = createContext<ThemeContextType>({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const systemColorScheme = useColorScheme();
-  const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
-
-  useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem('userInfo');
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          if (parsed.preferences?.darkMode !== undefined) {
-            setIsDarkMode(parsed.preferences.darkMode);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load theme preference', e);
-      }
-    };
-    loadTheme();
-  }, []);
-
-  const setDarkMode = (value: boolean) => {
-    setIsDarkMode(value);
-  };
-
-  const theme = isDarkMode ? darkTheme : lightTheme;
-
   return (
-    <ThemeContext.Provider value={{ isDarkMode, setDarkMode, theme }}>
+    <ThemeContext.Provider value={{ isDarkMode: false, setDarkMode: () => {}, theme: lightTheme }}>
       {children}
     </ThemeContext.Provider>
   );

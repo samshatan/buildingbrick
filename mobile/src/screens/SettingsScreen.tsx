@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { ChevronLeft, Bell, Lock, Moon, Shield, Info } from 'lucide-react-native';
+import { ChevronLeft, Bell, Lock, Shield, Info } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function SettingsScreen({ navigation }: any) {
-  const { theme, isDarkMode, setDarkMode } = useTheme();
+  const { theme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
@@ -47,11 +47,6 @@ export default function SettingsScreen({ navigation }: any) {
     } catch (e) {
       console.error('Failed to save preference', e);
     }
-  };
-
-  const handleToggleDarkMode = async (value: boolean) => {
-    setDarkMode(value);
-    await savePreference('darkMode', value);
   };
 
   const handleToggleNotifications = async (value: boolean) => {
@@ -136,13 +131,6 @@ export default function SettingsScreen({ navigation }: any) {
             description="Receive project alerts and messages." 
             value={notificationsEnabled} 
             onValueChange={handleToggleNotifications} 
-          />
-          <SettingRow 
-            icon={Moon} 
-            title="Dark Mode" 
-            description="Use dark theme across the app." 
-            value={isDarkMode} 
-            onValueChange={handleToggleDarkMode} 
           />
         </View>
 

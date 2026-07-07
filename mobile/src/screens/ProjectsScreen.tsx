@@ -1,19 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { Clock, MapPin, CheckCircle2, ChevronLeft, Calendar, FileText, Camera, Briefcase } from 'lucide-react-native';
+import { Clock, MapPin, CheckCircle2, ChevronLeft, Calendar, FileText, Camera, Briefcase, Star } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function ProjectsScreen() {
-  const { theme, isDarkMode } = useTheme();
+  const { theme } = useTheme();
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Review Modal State
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const submitReview = async () => {
+    if (!selectedProject) return;
+    setIsSubmittingReview(true);
+    try {
+      await apiClient.post('/reviews', {
+        jobId: selectedProject.id,
+        workerId: selectedProject.workerId,
+        rating,
+        comment
+      });
+      Alert.alert("Success", "Review submitted successfully!");
+      setReviewModalVisible(false);
+      // Optimistically update project state
+      setProjects((prev: any[]) => prev.map(p => p.id === selectedProject.id ? { ...p, isReviewed: true } : p));
+      setSelectedProject((prev: any) => ({ ...prev, isReviewed: true }));
+    } catch (error) {
+      console.log('Error submitting review', error);
+      Alert.alert("Error", "Failed to submit review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -79,7 +108,9 @@ export default function ProjectsScreen() {
             location: job.requestId?.location || "Remote / Unspecified",
             completion: isCompleted ? 100 : (job.status === 'ONGOING' ? 50 : 10),
             description: `Agreed Rate: Rs ${job.agreedRate}\n\n${job.requestId?.description || 'No description provided.'}`,
-            timeline: timeline
+            timeline: timeline,
+            isReviewed: job.isReviewed,
+            workerId: job.workerId?._id || job.workerId
           };
         });
 
@@ -135,8 +166,23 @@ export default function ProjectsScreen() {
                   <Text style={tw`text-xs font-bold text-[#cc4518] uppercase tracking-widest`}>{project.completion}%</Text>
               </View>
               <View style={tw`w-full h-2 bg-[${theme.border}] rounded-full overflow-hidden`}>
-                  <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? (isDarkMode ? '#fafafa' : '#18181b') : '#cc4518' }]} />
+                  <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? '#18181b' : '#cc4518' }]} />
               </View>
+              {project.status === "Completed" && !project.isReviewed && (
+                <TouchableOpacity 
+                  onPress={() => setReviewModalVisible(true)}
+                  style={tw`mt-4 bg-[#cc4518] py-3 rounded-xl items-center flex-row justify-center gap-2`}
+                >
+                  <Star size={18} color="white" fill="white" />
+                  <Text style={tw`text-white font-bold text-sm tracking-wide`}>Leave a Review</Text>
+                </TouchableOpacity>
+              )}
+              {project.status === "Completed" && project.isReviewed && (
+                <View style={tw`mt-4 bg-emerald-50 py-3 rounded-xl items-center border border-emerald-100 flex-row justify-center gap-2`}>
+                  <CheckCircle2 size={16} color="#10b981" />
+                  <Text style={tw`text-emerald-700 font-bold text-sm tracking-wide`}>Reviewed</Text>
+                </View>
+              )}
             </View>
 
              {/* Description & Docs */}
@@ -181,6 +227,53 @@ export default function ProjectsScreen() {
             )}
           </View>
         </ScrollView>
+
+        {/* Review Modal */}
+        <Modal visible={reviewModalVisible} transparent animationType="slide">
+          <View style={tw`flex-1 bg-black/60 justify-end`}>
+            <View style={tw`bg-[${theme.bg}] rounded-t-3xl p-6 pb-12`}>
+              <View style={tw`flex-row justify-between items-center mb-6`}>
+                <Text style={tw`text-xl font-bold text-[${theme.text}]`}>Rate Worker</Text>
+                <TouchableOpacity onPress={() => setReviewModalVisible(false)} style={tw`p-2 bg-[${theme.border}] rounded-full`}>
+                  <Text style={tw`text-[${theme.text}] font-bold`}>X</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={tw`text-center text-[${theme.textSecondary}] mb-4`}>How was your experience working on {project.title}?</Text>
+              
+              <View style={tw`flex-row justify-center gap-2 mb-6`}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                    <Star size={36} color={star <= rating ? "#fbbf24" : theme.border} fill={star <= rating ? "#fbbf24" : "transparent"} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TextInput
+                style={tw`bg-[${theme.card}] text-[${theme.text}] p-4 rounded-xl border border-[${theme.border}] mb-6 h-32`}
+                placeholder="Share your experience (optional)"
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                textAlignVertical="top"
+                value={comment}
+                onChangeText={setComment}
+              />
+
+              <TouchableOpacity 
+                disabled={isSubmittingReview}
+                onPress={submitReview}
+                style={tw`bg-[#cc4518] py-4 rounded-xl items-center shadow-md ${isSubmittingReview ? 'opacity-70' : ''}`}
+              >
+                {isSubmittingReview ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={tw`text-white font-bold text-lg`}>Submit Review</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
       </View>
     );
   }
@@ -242,7 +335,7 @@ export default function ProjectsScreen() {
                         <Text style={tw`text-xs font-bold uppercase tracking-widest text-[${theme.textSecondary}]`}>{project.completion}%</Text>
                     </View>
                     <View style={tw`w-full h-1.5 bg-[${theme.border}] rounded-full overflow-hidden`}>
-                        <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? (isDarkMode ? '#fafafa' : '#18181b') : '#cc4518' }]} />
+                        <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? '#18181b' : '#cc4518' }]} />
                     </View>
                     </View>
                   </View>

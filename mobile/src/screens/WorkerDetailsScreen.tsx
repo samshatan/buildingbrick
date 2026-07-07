@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Dimensions, Alert } from 'react-native';
 import tw from 'twrnc';
 import { Star, ChevronLeft, BadgeCheck } from 'lucide-react-native';
@@ -12,6 +12,24 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
   const { worker } = route.params;
   const [requestText, setRequestText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await apiClient.get(`/reviews/worker/${worker._id || worker.id}`);
+        if (res.data) {
+          setReviews(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews", error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchReviews();
+  }, [worker._id, worker.id]);
 
   const handleHire = async () => {
     if (!requestText.trim()) {
@@ -44,23 +62,23 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
 
   const getWorkerImage = (w: any) => w.photo || w.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80";
 
-  const ratingHistoryData = [
-    { value: 4.8, label: 'Jan' },
-    { value: 4.8, label: 'Feb' },
-    { value: 4.9, label: 'Mar' },
-    { value: 4.9, label: 'Apr' },
-    { value: 4.8, label: 'May' },
-    { value: 4.9, label: 'Jun' }
-  ];
+  // Generate last 6 months
+  const last6Months = Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (5 - i));
+    return d.toLocaleString('default', { month: 'short' });
+  });
 
-  const projectHistoryData = [
-    { value: 4, label: 'Jan' },
-    { value: 3, label: 'Feb' },
-    { value: 6, label: 'Mar' },
-    { value: 5, label: 'Apr' },
-    { value: 7, label: 'May' },
-    { value: 5, label: 'Jun' }
-  ];
+  const ratingHistoryData = last6Months.map(month => {
+    const monthReviews = reviews.filter(r => new Date(r.createdAt).toLocaleString('default', { month: 'short' }) === month);
+    const avg = monthReviews.length > 0 ? (monthReviews.reduce((sum, r) => sum + r.rating, 0) / monthReviews.length) : 0;
+    return { value: avg, label: month };
+  });
+
+  const projectHistoryData = last6Months.map(month => {
+    const monthReviews = reviews.filter(r => new Date(r.createdAt).toLocaleString('default', { month: 'short' }) === month);
+    return { value: monthReviews.length, label: month };
+  });
 
   return (
     <View style={tw`flex-1 bg-zinc-50 relative`}>
@@ -111,8 +129,8 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
               <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Rating</Text>
             </View>
             <View style={tw`items-center flex-1`}>
-              <Text style={tw`text-xl font-bold text-zinc-900`}>{worker.reviews || worker.reviewCount || 12}</Text>
-              <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Reviews</Text>
+              <Text style={tw`text-xl font-bold text-zinc-900`}>{worker.jobsCompleted || reviews.length || 0}</Text>
+              <Text style={tw`text-[10px] font-bold text-zinc-400 uppercase tracking-widest`}>Jobs</Text>
             </View>
           </View>
 
@@ -164,6 +182,42 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
               barWidth={20}
               xAxisLabelTextStyle={{ color: '#71717a', fontSize: 10 }}
             />
+          </View>
+
+          {/* Reviews List */}
+          <Text style={tw`text-sm font-bold text-zinc-900 tracking-wide mb-3`}>Recent Reviews</Text>
+          <View style={tw`w-full bg-white p-4 rounded-2xl border border-zinc-200 mb-6`}>
+            {loadingReviews ? (
+              <Text style={tw`text-zinc-400 text-sm`}>Loading reviews...</Text>
+            ) : reviews.length === 0 ? (
+              <Text style={tw`text-zinc-400 text-sm`}>No reviews yet.</Text>
+            ) : (
+              <View style={tw`flex-col gap-4`}>
+                {reviews.map((r, i) => (
+                  <View key={i} style={tw`${i !== reviews.length - 1 ? 'border-b border-zinc-100 pb-4' : ''}`}>
+                    <View style={tw`flex-row items-center justify-between mb-2`}>
+                      <View style={tw`flex-row items-center gap-2`}>
+                        <View style={tw`w-6 h-6 rounded-full bg-zinc-200 items-center justify-center overflow-hidden`}>
+                           {r.hirerId?.avatarUrl ? (
+                             <Image source={{ uri: r.hirerId.avatarUrl }} style={tw`w-full h-full`} />
+                           ) : (
+                             <Text style={tw`text-xs font-bold text-zinc-500`}>{r.hirerId?.name?.[0] || '?'}</Text>
+                           )}
+                        </View>
+                        <Text style={tw`text-xs font-bold text-zinc-700`}>{r.hirerId?.name || 'Anonymous'}</Text>
+                      </View>
+                      <View style={tw`flex-row items-center gap-0.5`}>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} size={10} color={star <= r.rating ? "#eab308" : "#e4e4e7"} fill={star <= r.rating ? "#eab308" : "transparent"} />
+                        ))}
+                      </View>
+                    </View>
+                    {r.comment ? <Text style={tw`text-xs text-zinc-600 leading-relaxed`}>{r.comment}</Text> : null}
+                    <Text style={tw`text-[10px] text-zinc-400 mt-1`}>{new Date(r.createdAt).toLocaleDateString()}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Booking Form */}
