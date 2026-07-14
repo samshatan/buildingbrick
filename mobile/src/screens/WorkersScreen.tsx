@@ -218,7 +218,7 @@ export default function WorkersScreen({ navigation, route }: any) {
             keyExtractor={(item, index) => item._id || item.id?.toString() || index.toString()}
             renderItem={renderWorker}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={tw`pb-24 pt-2`}
+            contentContainerStyle={tw`pb-8 pt-2`}
             ListEmptyComponent={
               <View style={tw`items-center py-12`}>
                 <Text style={tw`text-zinc-500 text-sm font-medium`}>

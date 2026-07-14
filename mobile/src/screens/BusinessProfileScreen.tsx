@@ -28,7 +28,7 @@ export default function BusinessProfileScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-24`}>
+        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-8`}>
           {/* Cover Image Area */}
           <View style={tw`relative h-48 bg-zinc-200`}>
             <Image 

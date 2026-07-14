@@ -82,7 +82,7 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
 
   return (
     <View style={tw`flex-1 bg-zinc-50 relative`}>
-      <ScrollView contentContainerStyle={tw`pb-24`} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={tw`pb-8`} showsVerticalScrollIndicator={false}>
         {/* Hero Header */}
         <View style={[tw`relative bg-zinc-200`, { height: 300 }]}>
           <Image source={{ uri: getWorkerImage(worker) }} style={tw`w-full h-full`} />

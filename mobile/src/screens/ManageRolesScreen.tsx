@@ -70,7 +70,7 @@ export default function ManageRolesScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24 gap-4`}>
+      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {filteredUsers.map((user) => (
           <View key={user.id} style={tw`bg-white rounded-2xl p-4 border border-zinc-100 shadow-sm flex-row items-center gap-4`}>
             <Image source={{ uri: user.avatar }} style={tw`w-14 h-14 rounded-full bg-zinc-200`} />

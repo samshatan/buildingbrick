@@ -194,7 +194,7 @@ export default function WorkRequestsScreen() {
           data={requests}
           keyExtractor={(item, index) => item._id || item.id || index.toString()}
           renderItem={renderRequestCard}
-          contentContainerStyle={tw`px-6 pb-24 pt-2`}
+          contentContainerStyle={tw`px-6 pb-8 pt-2`}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp.duration(500)} style={tw`flex-1 justify-center items-center py-20 px-6`}>

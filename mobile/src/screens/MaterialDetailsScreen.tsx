@@ -36,7 +36,7 @@ export default function MaterialDetailsScreen({ route, navigation }: any) {
 
   return (
     <View style={tw`flex-1 bg-white`}>
-      <ScrollView contentContainerStyle={tw`pb-32`} showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView contentContainerStyle={tw`pb-8`} showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header Image */}
         <View style={tw`relative w-full h-80 bg-zinc-100`}>
           <Image source={{ uri: material.image }} style={tw`w-full h-full object-cover`} />

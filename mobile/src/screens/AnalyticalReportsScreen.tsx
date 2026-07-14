@@ -36,7 +36,7 @@ export default function AnalyticalReportsScreen({ navigation }: any) {
         <Text style={tw`text-xl font-bold text-zinc-800`}>Analytical Reports</Text>
       </View>
 
-      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24 gap-6`}>
+      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-6`}>
         {/* KPI Cards */}
         <View style={tw`flex-row gap-4`}>
           <View style={tw`flex-1 bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm`}>

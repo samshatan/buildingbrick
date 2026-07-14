@@ -39,7 +39,7 @@ export default function HelpSupportScreen({ navigation }: any) {
           <Text style={tw`text-2xl font-bold text-zinc-800`}>Help & Support</Text>
         </View>
 
-        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24`}>
+        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8`}>
           <Text style={tw`text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4`}>Frequently Asked Questions</Text>
           
           <View style={tw`bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden mb-8`}>

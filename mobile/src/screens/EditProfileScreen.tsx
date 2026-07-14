@@ -128,7 +128,7 @@ export default function EditProfileScreen({ navigation }: any) {
           <View style={tw`w-10 h-10`} />
         </View>
 
-        <ScrollView contentContainerStyle={tw`p-6 pb-32`}>
+        <ScrollView contentContainerStyle={tw`p-6 pb-8`}>
           {/* Avatar Section */}
           <View style={tw`items-center mb-8`}>
             <TouchableOpacity onPress={pickImage} style={tw`relative`}>

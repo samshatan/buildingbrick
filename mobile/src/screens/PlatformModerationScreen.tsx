@@ -37,7 +37,7 @@ export default function PlatformModerationScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24 gap-4`}>
+      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {reports.map((report) => (
           <View key={report.id} style={tw`bg-white rounded-2xl p-5 border ${report.status === 'Pending' ? 'border-orange-200 bg-orange-50/30' : 'border-zinc-200'} shadow-sm`}>
             <View style={tw`flex-row justify-between items-start mb-3`}>

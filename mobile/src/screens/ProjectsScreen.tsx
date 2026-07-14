@@ -129,7 +129,7 @@ export default function ProjectsScreen() {
     const project = selectedProject;
     return (
       <View style={tw`flex-1 bg-[${theme.bg}] relative`}>
-        <ScrollView contentContainerStyle={tw`pb-24`} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={tw`pb-8`} showsVerticalScrollIndicator={false}>
           {/* Header Image */}
           <View style={[tw`relative bg-zinc-800 items-center justify-center`, { height: 224 }]}>
             {project.image ? (
@@ -280,7 +280,7 @@ export default function ProjectsScreen() {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-[${theme.bg}]`}>
-      <ScrollView contentContainerStyle={tw`px-6 pt-6 pb-24`}>
+      <ScrollView contentContainerStyle={tw`px-6 pt-6 pb-8`}>
         <Animated.View entering={FadeInUp.duration(600).springify()} style={tw`mb-8`}>
           <Text style={tw`text-4xl font-bold text-[${theme.text}] mb-2`}>Projects</Text>
           <Text style={tw`text-[${theme.textSecondary}] font-bold text-xs uppercase tracking-widest`}>Track your active jobs & contracts</Text>

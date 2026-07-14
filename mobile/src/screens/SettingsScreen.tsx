@@ -121,7 +121,7 @@ export default function SettingsScreen({ navigation }: any) {
         <View style={tw`w-10 h-10`} />
       </View>
 
-      <ScrollView contentContainerStyle={tw`p-6 pb-32`}>
+      <ScrollView contentContainerStyle={tw`p-6 pb-8`}>
         
         <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest mb-3 ml-2`}>Preferences</Text>
         <View style={tw`bg-[${theme.card}] rounded-[24px] px-5 shadow-sm border border-[${theme.border}] mb-8`}>

@@ -52,7 +52,7 @@ export default function UsersManagementScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24 gap-4`}>
+      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {filteredUsers.map((user) => (
           <View key={user.id} style={tw`bg-white rounded-2xl p-5 border border-zinc-100 shadow-sm`}>
             <View style={tw`flex-row justify-between items-start mb-4`}>

@@ -33,6 +33,7 @@
     },
     "plugins": [
       "expo-web-browser",
+      "@react-native-google-signin/google-signin",
       [
         "expo-splash-screen",
         {

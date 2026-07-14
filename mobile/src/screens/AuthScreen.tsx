@@ -5,12 +5,17 @@ import { Cuboid, ArrowRight, Camera, Fingerprint } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
 
 WebBrowser.maybeCompleteAuthSession();
+
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
+});
 
 export default function AuthScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -45,42 +50,26 @@ export default function AuthScreen({ navigation }: any) {
     checkBiometrics();
   }, []);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '',
-  });
-
-  useEffect(() => {
-    const handleGoogleResponse = async () => {
-      if (response?.type === 'success') {
-        setGoogleLoading(true);
-        const { authentication } = response;
-        try {
-          const res = await apiClient.post('/auth/google', { token: authentication?.accessToken });
-          if (res.data?.token) {
-            await AsyncStorage.setItem('userToken', res.data.token);
-            await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
-            navigation.replace('Home');
-          }
-        } catch (err: any) {
-          console.log('Google Auth error', err);
-          setError(err.response?.data?.message || 'Google authentication failed.');
-        } finally {
-          setGoogleLoading(false);
-        }
-      } else if (response?.type === 'error' || response?.type === 'dismiss') {
-        setGoogleLoading(false);
-      }
-    };
-
-    handleGoogleResponse();
-  }, [response]);
-
   const handleGoogleLogin = async () => {
     setError('');
     setGoogleLoading(true);
-    await promptAsync();
+    try {
+      await GoogleSignin.hasPlayServices();
+      await GoogleSignin.signIn();
+      const { accessToken } = await GoogleSignin.getTokens();
+      
+      const res = await apiClient.post('/auth/google', { token: accessToken });
+      if (res.data?.token) {
+        await AsyncStorage.setItem('userToken', res.data.token);
+        await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
+        navigation.replace('Home');
+      }
+    } catch (err: any) {
+      console.log('Google Auth error', err);
+      setError(err.response?.data?.message || err.message || 'Google authentication failed.');
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   const pickImage = async () => {

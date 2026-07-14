@@ -37,7 +37,7 @@ export default function WorkerVerificationScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-24 gap-4`}>
+      <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {apps.length === 0 ? (
           <Text style={tw`text-center text-zinc-500 mt-10`}>No pending applications right now.</Text>
         ) : apps.map((app) => (

@@ -40,7 +40,7 @@ export default function MaterialsScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-zinc-50`}>
-      <View style={tw`px-6 pt-6 pb-24 flex-1`}>
+      <View style={tw`px-6 pt-6 pb-8 flex-1`}>
         {/* Header */}
         <Animated.View entering={FadeInUp.duration(400)} style={tw`flex-row items-center justify-between mb-8`}>
           <Text style={tw`text-3xl font-bold text-zinc-700`}>Materials</Text>

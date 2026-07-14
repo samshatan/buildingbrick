@@ -165,7 +165,7 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-[${theme.bg}]`}>
-      <ScrollView contentContainerStyle={tw`px-6 pt-6 pb-32`}>
+      <ScrollView contentContainerStyle={tw`px-6 pt-6 pb-8`}>
         <Animated.View entering={FadeInUp.duration(400)} style={tw`flex-row justify-between items-end mb-8`}>
           <Text style={tw`text-4xl font-bold text-[${theme.text}]`}>Profile</Text>
         </Animated.View>

@@ -22,6 +22,16 @@ function Workers() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [sortType, setSortType] = useState("recommended");
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+
+  const toggleCategoryExpand = (categoryId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId) 
+        : [...prev, categoryId]
+    );
+  };
 
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [maxDistance, setMaxDistance] = useState<number>(50); // km
@@ -71,11 +81,6 @@ function Workers() {
       setLocationLoading(false);
     }
   };
-
-  const allWorkerTypes = useMemo(
-    () => workerCategories.flatMap((category) => category.types),
-    []
-  );
 
   const filteredWorkers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -249,53 +254,61 @@ function Workers() {
 
               <div className="h-px bg-gray-100 w-full"></div>
 
-              {/* Categories Filter */}
+              {/* Categories & Subcategories Filter */}
               <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Categories</h3>
-                <div className="space-y-3">
-                  {workerCategories.map((category) => (
-                    <label key={category.id} className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          className="peer sr-only"
-                          checked={selectedCategories.includes(category.id)}
-                          onChange={() => toggleSelection(category.id, selectedCategories, setSelectedCategories)}
-                        />
-                        <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-hover:border-primary/50 transition-all"></div>
-                        <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" strokeWidth={3} />
-                      </div>
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
-                        {category.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Categories & Professions</h3>
+                <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-2 custom-scrollbar">
+                  {workerCategories.map((category) => {
+                    const isExpanded = expandedCategories.includes(category.id);
+                    return (
+                      <div key={category.id} className="space-y-3">
+                        <div className="flex items-center justify-between group">
+                          <label className="flex items-center gap-3 cursor-pointer flex-1">
+                            <div className="relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                className="peer sr-only"
+                                checked={selectedCategories.includes(category.id)}
+                                onChange={() => toggleSelection(category.id, selectedCategories, setSelectedCategories)}
+                              />
+                              <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-primary peer-checked:border-primary peer-hover:border-primary/50 transition-all"></div>
+                              <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" strokeWidth={3} />
+                            </div>
+                            <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">
+                              {category.name}
+                            </span>
+                          </label>
+                          <button 
+                            onClick={(e) => toggleCategoryExpand(category.id, e)}
+                            className="p-1 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/5"
+                          >
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        </div>
 
-              <div className="h-px bg-gray-100 w-full"></div>
-
-              {/* Worker Types Filter */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Professions</h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                  {allWorkerTypes.map((type) => (
-                    <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                       <div className="relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          className="peer sr-only"
-                          checked={selectedTypes.includes(type)}
-                          onChange={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
-                        />
-                        <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-secondary peer-checked:border-secondary peer-hover:border-secondary/50 transition-all"></div>
-                        <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" strokeWidth={3} />
+                        {/* Subcategories */}
+                        <div className={`pl-8 space-y-3 border-l-2 border-gray-100 ml-2.5 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'}`}>
+                          {category.types.map((type) => (
+                            <label key={type} className="flex items-center gap-3 cursor-pointer group">
+                              <div className="relative flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  className="peer sr-only"
+                                  checked={selectedTypes.includes(type)}
+                                  onChange={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
+                                />
+                                <div className="w-4 h-4 border-2 border-gray-300 rounded peer-checked:bg-secondary peer-checked:border-secondary peer-hover:border-secondary/50 transition-all"></div>
+                                <Check className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" strokeWidth={3} />
+                              </div>
+                              <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+                                {type}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
-                        {type}
-                      </span>
-                    </label>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
