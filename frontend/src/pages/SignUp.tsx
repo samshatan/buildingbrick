@@ -221,6 +221,8 @@ function SignUp() {
               <button
                 type="button"
                 onClick={() => setAccountType('worker')}
+                aria-label="Sign up as worker"
+                title="Sign up as worker"
                 className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
                   accountType === 'worker' 
                   ? 'border-primary bg-primary/5 text-primary' 
@@ -235,6 +237,8 @@ function SignUp() {
               <button
                 type="button"
                 onClick={() => setAccountType('hirer')}
+                aria-label="Sign up as hirer"
+                title="Sign up as hirer"
                 className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 ${
                   accountType === 'hirer' 
                   ? 'border-primary bg-primary/5 text-primary' 
@@ -260,7 +264,7 @@ function SignUp() {
                   {workerTypes.map(type => (
                     <div key={type} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-bold shadow-sm">
                       {type}
-                      <button type="button" onClick={() => setWorkerTypes(workerTypes.filter(t => t !== type))} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
+                      <button type="button" onClick={() => setWorkerTypes(workerTypes.filter(t => t !== type))} aria-label={`Remove ${type}`} title={`Remove ${type}`} className="hover:bg-primary/20 rounded-full p-0.5 transition-colors">
                         <X className="h-3 w-3" />
                       </button>
                     </div>
@@ -331,6 +335,8 @@ function SignUp() {
                     <input
                       type="file"
                       accept="image/*"
+                      title="Upload profile photo"
+                      aria-label="Upload profile photo"
                       onChange={handleImageChange}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer"
                     />
@@ -357,6 +363,7 @@ function SignUp() {
                   name="fullName"
                   type="text"
                   required
+                  aria-label="Full Name"
                   value={data.fullName}
                   onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
@@ -422,6 +429,7 @@ function SignUp() {
                   name="email"
                   type="text"
                   required
+                  aria-label="Email or Mobile Number"
                   value={data.email}
                   onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
@@ -446,6 +454,7 @@ function SignUp() {
                   type="password"
                   autoComplete="new-password"
                   required
+                  aria-label="Password"
                   value={data.password}
                   onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"
@@ -468,6 +477,7 @@ function SignUp() {
                   type="password"
                   autoComplete="new-password"
                   required
+                  aria-label="Confirm Password"
                   value={data.confirmPassword}
                   onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none text-gray-900 placeholder:text-gray-400"

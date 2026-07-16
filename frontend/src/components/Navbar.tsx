@@ -150,6 +150,8 @@ function Navbar() {
             </Link>
             <button 
               onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close menu"
+              title="Close menu"
               className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 cursor-pointer"
             >
               <HiXMark className="w-6 h-6" />

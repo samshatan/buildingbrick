@@ -1,28 +1,67 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Search, UserMinus, Mail } from 'lucide-react-native';
 import tw from 'twrnc';
+import apiClient from '../api/client';
 
-const dummyUsersList = [
-  { id: '1', name: 'Alice Smith', email: 'alice@example.com', joinDate: 'Jan 15, 2026', status: 'Active' },
-  { id: '2', name: 'Bob Johnson', email: 'bob@example.com', joinDate: 'Feb 02, 2026', status: 'Active' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', joinDate: 'Mar 10, 2026', status: 'Banned' },
-  { id: '4', name: 'Diana Prince', email: 'diana@example.com', joinDate: 'Apr 22, 2026', status: 'Active' },
-];
+type ManagedUser = {
+  id: string;
+  name: string;
+  email: string;
+  joinDate: string;
+  status: 'Active' | 'Banned';
+  previousRole?: string;
+};
 
 export default function UsersManagementScreen({ navigation }: any) {
   const [search, setSearch] = useState('');
-  const [users, setUsers] = useState(dummyUsersList);
+  const [users, setUsers] = useState<ManagedUser[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleStatus = (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'Active' ? 'Banned' : 'Active';
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await apiClient.get('/admin/users');
+        const data = Array.isArray(response.data) ? response.data : response.data?.users || [];
+        const normalized = data.map((user: any) => ({
+          id: String(user.id || user._id || ''),
+          name: user.name || 'Unknown User',
+          email: user.email || user.phone || 'No contact info',
+          joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString([], { month: 'short', day: '2-digit', year: 'numeric' }) : 'Unknown',
+          status: user.accountType === 'banned' ? 'Banned' : 'Active',
+          previousRole: user.accountType === 'banned' ? 'hirer' : user.accountType,
+        }));
+        setUsers(normalized);
+      } catch (error: any) {
+        Alert.alert('Error', error.response?.data?.message || 'Failed to load users.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  const toggleStatus = (user: ManagedUser) => {
+    const newStatus = user.status === 'Active' ? 'Banned' : 'Active';
     Alert.alert(`Confirm Action`, `Are you sure you want to change user status to ${newStatus}?`, [
       { text: "Cancel", style: "cancel" },
       { 
         text: "Confirm", 
-        onPress: () => {
-          setUsers(users.map(u => u.id === id ? { ...u, status: newStatus } : u));
+        onPress: async () => {
+          try {
+            if (user.status === 'Active') {
+              await apiClient.put(`/admin/users/${user.id}/role`, { role: 'banned' });
+              setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: 'Banned' } : u));
+            } else {
+              const restoreRole = user.previousRole || 'hirer';
+              await apiClient.put(`/admin/users/${user.id}/role`, { role: restoreRole });
+              setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: 'Active' } : u));
+            }
+          } catch (error: any) {
+            Alert.alert('Error', error.response?.data?.message || 'Failed to update user status.');
+          }
         }
       }
     ]);
@@ -52,6 +91,11 @@ export default function UsersManagementScreen({ navigation }: any) {
         </View>
       </View>
 
+      {loading ? (
+        <View style={tw`flex-1 items-center justify-center`}>
+          <ActivityIndicator size="large" color="#cc4518" />
+        </View>
+      ) : (
       <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {filteredUsers.map((user) => (
           <View key={user.id} style={tw`bg-white rounded-2xl p-5 border border-zinc-100 shadow-sm`}>
@@ -71,7 +115,7 @@ export default function UsersManagementScreen({ navigation }: any) {
                 <Mail size={16} color="#52525b" />
                 <Text style={tw`text-zinc-700 font-bold text-xs uppercase tracking-wide`}>Contact</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => toggleStatus(user.id, user.status)} style={tw`flex-1 flex-row items-center justify-center gap-2 ${user.status === 'Active' ? 'bg-red-50' : 'bg-green-50'} py-2.5 rounded-xl`}>
+              <TouchableOpacity onPress={() => toggleStatus(user)} style={tw`flex-1 flex-row items-center justify-center gap-2 ${user.status === 'Active' ? 'bg-red-50' : 'bg-green-50'} py-2.5 rounded-xl`}>
                 <UserMinus size={16} color={user.status === 'Active' ? "#dc2626" : "#16a34a"} />
                 <Text style={tw`font-bold text-xs uppercase tracking-wide ${user.status === 'Active' ? 'text-red-600' : 'text-green-600'}`}>
                   {user.status === 'Active' ? 'Ban User' : 'Unban'}
@@ -81,6 +125,7 @@ export default function UsersManagementScreen({ navigation }: any) {
           </View>
         ))}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

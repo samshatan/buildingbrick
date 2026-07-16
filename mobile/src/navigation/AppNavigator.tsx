@@ -41,14 +41,20 @@ import BulkOrdersScreen from '../screens/BulkOrdersScreen';
 import ExpertInspectionScreen from '../screens/ExpertInspectionScreen';
 import InsuranceScreen from '../screens/InsuranceScreen';
 import LoanScreen from '../screens/LoanScreen';
+import SignUpScreen from '../screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigator() {
+type AppNavigatorProps = {
+  initialRouteName: string;
+};
+
+export default function AppNavigator({ initialRouteName }: AppNavigatorProps) {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName={initialRouteName}>
         <Stack.Screen name="Login" component={AuthScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Create Account' }} />
         <Stack.Screen name="Verification" component={VerificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
         <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />

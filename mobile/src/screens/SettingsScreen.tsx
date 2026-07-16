@@ -143,7 +143,7 @@ export default function SettingsScreen({ navigation }: any) {
             value={biometricsEnabled} 
             onValueChange={handleToggleBiometrics} 
           />
-          <TouchableOpacity onPress={() => Alert.alert("Coming Soon", "Change Password flow will be here.")} style={tw`flex-row items-center justify-between py-4`}>
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={tw`flex-row items-center justify-between py-4`}>
             <View style={tw`flex-row items-center gap-4 flex-1 pr-4`}>
               <View style={tw`w-10 h-10 rounded-full bg-[${theme.bg}] border border-[${theme.border}] items-center justify-center`}>
                 <Shield size={18} color={theme.textSecondary} />

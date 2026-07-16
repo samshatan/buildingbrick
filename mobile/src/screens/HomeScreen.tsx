@@ -51,7 +51,7 @@ export default function HomeScreen({ navigation }: any) {
     { title: "Workers", icon: Building, action: () => navigation.navigate('Workers') },
     { title: "Construction", icon: Home, action: () => navigation.navigate('FullHouseConstruction') },
     { title: "Estimates", icon: Sparkles, action: () => navigation.navigate('Studio') },
-    { title: "Materials", icon: ShoppingCart, action: () => navigation.navigate('Cart') },
+    { title: "Materials", icon: ShoppingCart, action: () => navigation.navigate('Materials') },
     { title: "Bulk Orders", icon: Truck, action: () => navigation.navigate('BulkOrders') },
     { title: "Inspection", icon: SearchCheck, action: () => navigation.navigate('ExpertInspection') },
     { title: "Posted Works", icon: Briefcase, action: () => navigation.navigate('Jobs') },

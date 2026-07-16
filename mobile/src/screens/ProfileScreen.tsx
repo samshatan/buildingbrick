@@ -242,7 +242,7 @@ export default function ProfileScreen({ navigation }: any) {
                 } else if (item.label === 'Settings') {
                   navigation.navigate('Settings');
                 } else {
-                  Alert.alert("Coming Soon", "This feature is currently under development.");
+                  Alert.alert('Unavailable', 'This feature is not enabled in this build yet.');
                 }
               }}
               style={tw`flex-row items-center justify-between p-4 ${index !== menuItems.length - 1 ? `border-b border-[${theme.border}]` : ''}`}

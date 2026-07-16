@@ -282,6 +282,8 @@ export default function Messages() {
             <div className="h-[72px] px-4 md:px-6 border-b border-gray-200 bg-white flex items-center gap-4 shadow-sm shrink-0 z-10">
               <button 
                 onClick={() => setActiveChat(null)}
+                aria-label="Back to conversations"
+                title="Back to conversations"
                 className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -353,6 +355,8 @@ export default function Messages() {
                 <button 
                   type="submit"
                   disabled={!newMessage.trim()}
+                  aria-label="Send message"
+                  title="Send message"
                   className="shrink-0 p-3.5 bg-primary text-white rounded-full hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 >
                   <Send className="w-5 h-5 ml-0.5" />

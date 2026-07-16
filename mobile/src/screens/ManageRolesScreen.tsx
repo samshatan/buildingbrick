@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Search, Shield, User, Store, Briefcase } from 'lucide-react-native';
 import tw from 'twrnc';
+import apiClient from '../api/client';
 
 type UserRole = 'user' | 'worker' | 'cafe_owner' | 'admin';
 
@@ -14,16 +15,46 @@ interface UserData {
   avatar: string;
 }
 
-const dummyUsers: UserData[] = [
-  { id: '1', name: 'Alice Smith', email: 'alice@example.com', role: 'admin', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
-  { id: '2', name: 'Bob Johnson', email: 'bob@example.com', role: 'cafe_owner', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=150&q=80' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'worker', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=150&q=80' },
-  { id: '4', name: 'Diana Prince', email: 'diana@example.com', role: 'user', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80' },
-];
-
 export default function ManageRolesScreen({ navigation }: any) {
   const [search, setSearch] = useState('');
-  const [users, setUsers] = useState<UserData[]>(dummyUsers);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const normalizeUser = (user: any): UserData => {
+    const id = String(user.id || user._id || '');
+    const displayName = user.name || user.fullName || 'Unknown User';
+    const avatarName = encodeURIComponent(displayName);
+    const role: UserRole = user.accountType === 'cafe'
+      ? 'cafe_owner'
+      : user.accountType === 'hirer'
+        ? 'user'
+        : user.accountType || 'user';
+
+    return {
+      id,
+      name: displayName,
+      email: user.email || user.phone || 'No contact info',
+      role,
+      avatar: user.avatarUrl || `https://ui-avatars.com/api/?name=${avatarName}&background=cc4518&color=fff`,
+    };
+  };
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await apiClient.get('/admin/users');
+        const data = Array.isArray(response.data) ? response.data : response.data?.users || [];
+        setUsers(data.map(normalizeUser));
+      } catch (error: any) {
+        Alert.alert('Error', error.response?.data?.message || 'Failed to load users.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, []);
 
   const getRoleIcon = (role: UserRole) => {
     switch(role) {
@@ -39,8 +70,17 @@ export default function ManageRolesScreen({ navigation }: any) {
       { text: "Cancel", style: "cancel" },
       { 
         text: "Confirm", 
-        onPress: () => {
-          setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        onPress: async () => {
+          try {
+            setSavingId(userId);
+            const apiRole = newRole === 'cafe_owner' ? 'cafe' : newRole === 'user' ? 'hirer' : newRole;
+            await apiClient.put(`/admin/users/${userId}/role`, { role: apiRole });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+          } catch (error: any) {
+            Alert.alert('Error', error.response?.data?.message || 'Failed to update role.');
+          } finally {
+            setSavingId(null);
+          }
         }
       }
     ]);
@@ -70,6 +110,11 @@ export default function ManageRolesScreen({ navigation }: any) {
         </View>
       </View>
 
+      {loading ? (
+        <View style={tw`flex-1 items-center justify-center`}>
+          <ActivityIndicator size="large" color="#cc4518" />
+        </View>
+      ) : (
       <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {filteredUsers.map((user) => (
           <View key={user.id} style={tw`bg-white rounded-2xl p-4 border border-zinc-100 shadow-sm flex-row items-center gap-4`}>
@@ -82,13 +127,14 @@ export default function ManageRolesScreen({ navigation }: any) {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={tw`flex-row`}>
                 {(['user', 'worker', 'cafe_owner', 'admin'] as UserRole[]).map(role => (
                   <TouchableOpacity
+                    disabled={savingId === user.id}
                     key={role}
                     onPress={() => handleRoleChange(user.id, role)}
                     style={tw`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full mr-2 border ${user.role === role ? 'border-orange-200 bg-orange-50' : 'border-zinc-200 bg-white'}`}
                   >
                     {user.role === role && getRoleIcon(role)}
                     <Text style={tw`text-[10px] font-bold uppercase tracking-wider ${user.role === role ? 'text-[#cc4518]' : 'text-zinc-500'}`}>
-                      {role.replace('_', ' ')}
+                      {role === 'user' ? 'hirer' : role.replace('_', ' ')}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -100,6 +146,7 @@ export default function ManageRolesScreen({ navigation }: any) {
           <Text style={tw`text-center text-zinc-500 mt-10`}>No users found.</Text>
         )}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

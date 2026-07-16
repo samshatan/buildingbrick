@@ -182,6 +182,7 @@ function HireRequest() {
                     <select
                       name="categoryId"
                       required
+                      aria-label="Trade Category"
                       value={request.categoryId}
                       onChange={handleChange}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none appearance-none cursor-pointer"
@@ -201,6 +202,7 @@ function HireRequest() {
                   <input
                     name="workerType"
                     required
+                    title="Specific profession"
                     value={request.workerType}
                     onChange={handleChange}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
@@ -225,6 +227,7 @@ function HireRequest() {
                   name="location"
                   value={request.location}
                   onChange={handleChange}
+                  title="Project location"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
                   placeholder="e.g. Downtown Area, City"
                 />
@@ -238,6 +241,7 @@ function HireRequest() {
                   <input
                     type="date"
                     name="startDate"
+                    title="Start date"
                     value={request.startDate}
                     onChange={handleChange}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
@@ -250,6 +254,7 @@ function HireRequest() {
                   <input
                     type="date"
                     name="endDate"
+                    title="End date"
                     value={request.endDate}
                     onChange={handleChange}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"

@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import * as Notifications from 'expo-notifications';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/context/ThemeProvider';
@@ -15,31 +17,35 @@ import { ThemeProvider } from './src/context/ThemeProvider';
 // });
 
 export default function App() {
+  const [initialRouteName, setInitialRouteName] = useState<'Login' | 'Home' | null>(null);
+
   useEffect(() => {
-    // const requestPermissions = async () => {
-    //   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    //   let finalStatus = existingStatus;
-    //   if (existingStatus !== 'granted') {
-    //     const { status } = await Notifications.requestPermissionsAsync();
-    //     finalStatus = status;
-    //   }
-    //   if (finalStatus !== 'granted') {
-    //     console.log('Failed to get push token for push notification!');
-    //     return;
-    //   }
-      
-    //   // In a real app, you would fetch the token here and send it to your backend
-    //   // const token = (await Notifications.getExpoPushTokenAsync()).data;
-    //   // console.log("Push Token:", token);
-    // };
-    
-    // requestPermissions();
+    const bootstrap = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        setInitialRouteName(token ? 'Home' : 'Login');
+      } catch (error) {
+        setInitialRouteName('Login');
+      }
+    };
+
+    bootstrap();
   }, []);
+
+  if (!initialRouteName) {
+    return (
+      <SafeAreaProvider>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF9F6' }}>
+          <ActivityIndicator size="large" color="#cc4518" />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppNavigator />
+        <AppNavigator initialRouteName={initialRouteName} />
       </ThemeProvider>
     </SafeAreaProvider>
   );

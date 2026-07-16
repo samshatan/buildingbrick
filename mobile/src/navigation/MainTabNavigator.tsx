@@ -105,7 +105,7 @@ const getStyles = (COLORS: any, bottomInset: number) => StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    height: 70 + (bottomInset > 0 ? bottomInset : 10),
+    height: 78 + (bottomInset > 0 ? bottomInset : 10),
     paddingBottom: bottomInset > 0 ? bottomInset : 10,
     elevation: 20,
     shadowColor: '#000',
@@ -127,7 +127,7 @@ const getStyles = (COLORS: any, bottomInset: number) => StyleSheet.create({
     backgroundColor: COLORS.primaryLight + '30',
   },
   label: {
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: '800',
     marginTop: 4,
     letterSpacing: 0.5,

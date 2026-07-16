@@ -1,25 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, AlertOctagon, CheckCircle2, ShieldAlert } from 'lucide-react-native';
 import tw from 'twrnc';
+import apiClient from '../api/client';
 
-const dummyReports = [
-  { id: 1, type: 'User', targetName: 'John Doe', reason: 'Inappropriate behavior in chat', status: 'Pending', reportedBy: 'Jane Smith' },
-  { id: 2, type: 'Job', targetName: 'Plumbing Repair', reason: 'Fraudulent listing', status: 'Pending', reportedBy: 'Mike Johnson' },
-  { id: 3, type: 'Review', targetName: '5-star Review', reason: 'Spam / Fake review', status: 'Resolved', reportedBy: 'System Auto-flag' }
-];
+type ReportItem = {
+  id: string;
+  type: string;
+  targetName: string;
+  reason: string;
+  status: string;
+  reportedBy: string;
+};
 
 export default function PlatformModerationScreen({ navigation }: any) {
-  const [reports, setReports] = useState(dummyReports);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAction = (id: number, action: 'ban' | 'warn' | 'dismiss') => {
+  useEffect(() => {
+    const loadReports = async () => {
+      try {
+        const response = await apiClient.get('/admin/reports');
+        const data = Array.isArray(response.data) ? response.data : response.data?.reports || [];
+        setReports(data.map((report: any) => ({
+          id: String(report.id || report._id || ''),
+          type: report.type || report.targetModel || 'Other',
+          targetName: report.targetName || 'Unknown target',
+          reason: report.reason || 'No reason provided',
+          status: report.status || 'Pending',
+          reportedBy: report.reportedBy?.name || report.reporterName || 'Unknown reporter',
+        })));
+      } catch (error: any) {
+        Alert.alert('Error', error.response?.data?.message || 'Failed to load reports.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReports();
+  }, []);
+
+  const handleAction = (id: string, action: 'ban' | 'warn' | 'dismiss') => {
     Alert.alert(`Confirm ${action}`, `Are you sure you want to ${action} this report?`, [
       { text: "Cancel", style: "cancel" },
       { 
         text: "Confirm", 
-        onPress: () => {
-          setReports(reports.map(r => r.id === id ? { ...r, status: action === 'dismiss' ? 'Dismissed' : 'Resolved' } : r));
+        onPress: async () => {
+          try {
+            const nextStatus = action === 'dismiss' ? 'Dismissed' : 'Resolved';
+            await apiClient.put(`/admin/reports/${id}`, {
+              status: nextStatus,
+              action,
+              adminNotes: `${action} applied from mobile moderation screen`
+            });
+            setReports(prev => prev.map(r => r.id === id ? { ...r, status: nextStatus } : r));
+          } catch (error: any) {
+            Alert.alert('Error', error.response?.data?.message || 'Failed to update report.');
+          }
         }
       }
     ]);
@@ -37,6 +75,11 @@ export default function PlatformModerationScreen({ navigation }: any) {
         </View>
       </View>
 
+      {loading ? (
+        <View style={tw`flex-1 items-center justify-center`}>
+          <ActivityIndicator size="large" color="#cc4518" />
+        </View>
+      ) : (
       <ScrollView style={tw`flex-1`} contentContainerStyle={tw`p-6 pb-8 gap-4`}>
         {reports.map((report) => (
           <View key={report.id} style={tw`bg-white rounded-2xl p-5 border ${report.status === 'Pending' ? 'border-orange-200 bg-orange-50/30' : 'border-zinc-200'} shadow-sm`}>
@@ -72,6 +115,7 @@ export default function PlatformModerationScreen({ navigation }: any) {
           </View>
         ))}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

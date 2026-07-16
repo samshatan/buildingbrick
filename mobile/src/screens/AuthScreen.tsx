@@ -187,7 +187,11 @@ export default function AuthScreen({ navigation }: any) {
       style={tw`flex-1 bg-[${theme.bg}]`}
     >
       <TouchableOpacity
-        onPress={() => navigation.replace('Home')}
+        onPress={() => {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          }
+        }}
         style={tw`absolute top-14 right-6 w-10 h-10 bg-[${theme.card}] rounded-full items-center justify-center z-10 border border-[${theme.border}]`}
       >
         <Text style={tw`text-[${theme.textSecondary}] font-bold text-lg`}>✕</Text>
