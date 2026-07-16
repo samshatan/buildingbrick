@@ -6,16 +6,23 @@ import tw from 'twrnc';
 import { Search, Star, MapPin, Briefcase, Filter, BadgeCheck, Map as MapIcon, List as ListIcon } from 'lucide-react-native';
 import MapView, { Marker } from 'react-native-maps';
 import apiClient from '../api/client';
+import { workerCategories, WorkerCategory } from '../data/marketplaceData';
 
 export default function WorkersScreen({ navigation, route }: any) {
   const categoryId = route.params?.categoryId;
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [activeSubCategory, setActiveSubCategory] = useState<string>("All");
   const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
-  const categories = ["All", "Masons", "Contractors", "Cafe Staff", "Laborers"];
+  // Categories list including "All"
+  const displayCategories = [{ id: "All", name: "All", icon: "🌐", types: [] }, ...workerCategories];
+  
+  // Find currently selected category
+  const currentCategoryObj = workerCategories.find(c => c.id === activeCategory);
+  const subCategories = currentCategoryObj ? ["All", ...currentCategoryObj.types] : [];
 
   useEffect(() => {
     const fetchWorkers = async () => {
@@ -41,13 +48,23 @@ export default function WorkersScreen({ navigation, route }: any) {
                           role.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           skills.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    if (activeCategory === "All") return matchesSearch;
-    if (activeCategory === "Masons") return matchesSearch && role.toLowerCase().includes("mason");
-    if (activeCategory === "Contractors") return matchesSearch && role.toLowerCase().includes("contractor");
-    if (activeCategory === "Cafe Staff") return matchesSearch && role.toLowerCase().includes("cafe");
-    if (activeCategory === "Laborers") return matchesSearch && role.toLowerCase().includes("labor");
-    
-    return matchesSearch;
+    let matchesCategory = true;
+    if (activeCategory !== "All") {
+      // If the worker has a categoryId, match on that. Otherwise, match on role.
+      if (worker.categoryId) {
+        matchesCategory = worker.categoryId === activeCategory;
+      } else {
+         const catTypes = currentCategoryObj?.types.map(t => t.toLowerCase()) || [];
+         matchesCategory = catTypes.some(t => role.toLowerCase().includes(t));
+      }
+    }
+
+    let matchesSub = true;
+    if (activeSubCategory !== "All") {
+      matchesSub = role.toLowerCase().includes(activeSubCategory.toLowerCase());
+    }
+
+    return matchesSearch && matchesCategory && matchesSub;
   });
 
   const getWorkerImage = (w: any) => w.photo || w.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80";
@@ -158,22 +175,50 @@ export default function WorkersScreen({ navigation, route }: any) {
           </View>
         </Animated.View>
 
-        {/* Categories */}
-        <Animated.View entering={FadeInUp.delay(300).duration(500)} style={tw`mb-4`}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-2 pb-2`}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                onPress={() => setActiveCategory(category)}
-                style={tw`px-4 py-2 rounded-full border ${activeCategory === category ? 'bg-zinc-800 border-zinc-800' : 'bg-white border-zinc-200'}`}
-              >
-                <Text style={tw`text-[10px] font-bold uppercase tracking-widest ${activeCategory === category ? 'text-white' : 'text-zinc-500'}`}>
-                  {category}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        {/* Categories (Grid/Card style like Flipkart) */}
+        <Animated.View entering={FadeInUp.delay(300).duration(500)} style={tw`mb-2`}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-4 pb-2 px-1`}>
+            {displayCategories.map((category) => {
+              const isActive = activeCategory === category.id;
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  onPress={() => {
+                    setActiveCategory(category.id);
+                    setActiveSubCategory("All");
+                  }}
+                  style={tw`items-center`}
+                >
+                  <View style={tw`w-14 h-14 rounded-2xl flex items-center justify-center mb-1 ${isActive ? 'bg-orange-100 border-2 border-[#cc4518]' : 'bg-white border border-zinc-200 shadow-sm'}`}>
+                    <Text style={tw`text-2xl`}>{category.icon}</Text>
+                  </View>
+                  <Text style={tw`text-[10px] font-bold text-center ${isActive ? 'text-[#cc4518]' : 'text-zinc-600'}`} numberOfLines={1}>
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </Animated.View>
+
+        {/* Subcategories (Pills) */}
+        {activeCategory !== "All" && subCategories.length > 0 && (
+          <Animated.View entering={FadeInUp.duration(300)} style={tw`mb-4`}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`gap-2 pb-2`}>
+              {subCategories.map((sub) => (
+                <TouchableOpacity
+                  key={sub}
+                  onPress={() => setActiveSubCategory(sub)}
+                  style={tw`px-3 py-1.5 rounded-full border ${activeSubCategory === sub ? 'bg-zinc-800 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                >
+                  <Text style={tw`text-[10px] font-bold uppercase tracking-widest ${activeSubCategory === sub ? 'text-white' : 'text-zinc-500'}`}>
+                    {sub}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
       </View>
 
       {/* Workers List / Map */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import tw from 'twrnc';
-import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, MapPin } from 'lucide-react-native';
+import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, MapPin, Truck, Home, SearchCheck, Briefcase, Landmark, ShieldCheck } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,7 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState('Builder');
+  const [isWorker, setIsWorker] = useState(false);
   const [workers, setWorkers] = useState<any[]>([]);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
 
@@ -22,6 +23,7 @@ export default function HomeScreen({ navigation }: any) {
         if (userStr) {
           const user = JSON.parse(userStr);
           if (user.name) setUserName(user.name.split(' ')[0]);
+          if (user.role === 'worker' || user.isWorker) setIsWorker(true);
         }
       } catch (e) {
         console.log('Error parsing user info', e);
@@ -47,9 +49,18 @@ export default function HomeScreen({ navigation }: any) {
 
   const services = [
     { title: "Workers", icon: Building, action: () => navigation.navigate('Workers') },
-    { title: "Projects", icon: PaintRoller, action: () => navigation.navigate('Projects') },
+    { title: "Construction", icon: Home, action: () => navigation.navigate('FullHouseConstruction') },
     { title: "Estimates", icon: Sparkles, action: () => navigation.navigate('Studio') },
-    { title: "Materials", icon: ShoppingCart, action: () => navigation.navigate('Cart') }
+    { title: "Materials", icon: ShoppingCart, action: () => navigation.navigate('Cart') },
+    { title: "Bulk Orders", icon: Truck, action: () => navigation.navigate('BulkOrders') },
+    { title: "Inspection", icon: SearchCheck, action: () => navigation.navigate('ExpertInspection') },
+    { title: "Posted Works", icon: Briefcase, action: () => navigation.navigate('Jobs') },
+    { title: "Projects", icon: PaintRoller, action: () => navigation.navigate('Projects') },
+  ];
+
+  const workerPerks = [
+    { title: "Loans", icon: Landmark, action: () => navigation.navigate('Loans') },
+    { title: "Insurance", icon: ShieldCheck, action: () => navigation.navigate('Insurance') },
   ];
 
   return (
@@ -118,6 +129,27 @@ export default function HomeScreen({ navigation }: any) {
           ))}
         </View>
       </Animated.View>
+
+      {/* Worker Perks Section */}
+      {isWorker && (
+        <Animated.View entering={FadeInUp.delay(500).duration(600).springify()} style={tw`px-6 mt-6`}>
+          <Text style={tw`text-xl font-bold text-zinc-700 mb-4`}>Worker Perks</Text>
+          <View style={tw`flex-row flex-wrap justify-between`}>
+            {workerPerks.map((perk) => (
+              <TouchableOpacity 
+                key={perk.title}
+                onPress={perk.action}
+                style={[tw`bg-purple-50 rounded-[24px] p-5 shadow-sm border border-purple-100 flex-col gap-4 mb-4`, { width: (width - 48 - 16) / 2 }]}
+              >
+                <View style={tw`w-12 h-12 rounded-full flex items-center justify-center bg-white border border-purple-100 shadow-sm`}>
+                  <perk.icon size={22} color="#9333ea" />
+                </View>
+                <Text style={tw`font-bold text-purple-900 text-sm tracking-wide`}>{perk.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
+      )}
 
       {/* Featured Experts Section */}
       <Animated.View entering={FadeInUp.delay(600).duration(600).springify()} style={tw`px-6 mt-6`}>

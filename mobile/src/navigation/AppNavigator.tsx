@@ -36,6 +36,11 @@ import WorkerVerificationScreen from '../screens/WorkerVerificationScreen';
 import AnalyticalReportsScreen from '../screens/AnalyticalReportsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import FullHouseConstructionScreen from '../screens/FullHouseConstructionScreen';
+import BulkOrdersScreen from '../screens/BulkOrdersScreen';
+import ExpertInspectionScreen from '../screens/ExpertInspectionScreen';
+import InsuranceScreen from '../screens/InsuranceScreen';
+import LoanScreen from '../screens/LoanScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +82,11 @@ export default function AppNavigator() {
         <Stack.Screen name="AnalyticalReports" component={AnalyticalReportsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="FullHouseConstruction" component={FullHouseConstructionScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BulkOrders" component={BulkOrdersScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ExpertInspection" component={ExpertInspectionScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Insurance" component={InsuranceScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Loans" component={LoanScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

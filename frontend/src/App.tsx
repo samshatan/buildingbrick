@@ -41,6 +41,11 @@ const Terms = lazy(() => import('./pages/Terms'))
 const RefundPolicy = lazy(() => import('./pages/RefundPolicy'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const Messages = lazy(() => import('./pages/Messages'))
+const Insurance = lazy(() => import('./pages/Insurance'))
+const Loans = lazy(() => import('./pages/Loans'))
+const BulkOrders = lazy(() => import('./pages/BulkOrders'))
+const ExpertInspection = lazy(() => import('./pages/ExpertInspection'))
+const FullHouseConstruction = lazy(() => import('./pages/FullHouseConstruction'))
 
 
 const Loader = () => (
@@ -100,6 +105,11 @@ function App() {
           <Route path='/privacy-policy' element={<PrivacyPolicy />} />
           <Route path='/refund-policy' element={<RefundPolicy />} />
           <Route path='/messages' element={<Messages />} />
+          <Route path='/insurance' element={<Insurance />} />
+          <Route path='/loans' element={<Loans />} />
+          <Route path='/bulk-orders' element={<BulkOrders />} />
+          <Route path='/expert-inspection' element={<ExpertInspection />} />
+          <Route path='/full-house-construction' element={<FullHouseConstruction />} />
         </Routes>
       </Suspense>
       <div className="print:hidden">
