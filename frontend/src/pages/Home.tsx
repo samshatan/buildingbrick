@@ -6,12 +6,9 @@ import OurPolicy from "@/components/OurPolicy";
 import PlatformServices from "@/components/PlatformServices";
 import WorkerPerks from "@/components/WorkerPerks";
 
-import HorizontalCategoryNav from "@/components/HorizontalCategoryNav";
-
 function Home(){
   return(
     <div className="px-4 sm:px-6 lg:px-8 py-4">
-      <HorizontalCategoryNav />
       <HeroSection/>
       <WorkerCategories/>
       <PlatformServices/>
