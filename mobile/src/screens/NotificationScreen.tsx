@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'lucide-react-native';
 import apiClient from '../api/client';
 import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function NotificationScreen() {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const COLORS = theme;
   const styles = getStyles(COLORS);
   const [notifications, setNotifications] = useState([]);
@@ -81,7 +84,12 @@ export default function NotificationScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 12 }}>
+            <ChevronLeft size={28} color={COLORS.primary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Notifications</Text>
+        </View>
         {notifications.some((n: any) => !n.isRead) && (
           <TouchableOpacity onPress={markAllRead} style={styles.markAllBtn}>
             <Text style={styles.markAll}>MARK ALL READ</Text>

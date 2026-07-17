@@ -295,10 +295,10 @@ export default function ProfileScreen({ navigation }: any) {
         <Animated.View entering={FadeInUp.delay(300).duration(400)}>
           <TouchableOpacity
             onPress={handleLogout}
-            style={tw`mt-4 flex-row items-center justify-center gap-2 bg-transparent border-2 border-[#cc4518]/20 rounded-full py-4 shadow-sm`}
+            style={tw`mt-4 flex-row items-center justify-center gap-2 bg-[#cc4518] border-2 border-[#cc4518] rounded-full py-4 shadow-sm`}
           >
-            <LogOut size={16} color="#cc4518" />
-            <Text style={tw`text-[#cc4518] font-bold text-xs uppercase tracking-widest`}>Log Out</Text>
+            <LogOut size={16} color="white" />
+            <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>Log Out</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>

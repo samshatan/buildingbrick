@@ -71,7 +71,7 @@ export default function AppNavigator({ initialRouteName }: AppNavigatorProps) {
         <Stack.Screen name="MaterialDetails" component={MaterialDetailsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart' }} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Checkout' }} />
-        <Stack.Screen name="Notifications" component={NotificationScreen} options={{ title: 'Notifications' }} />
+        <Stack.Screen name="Notifications" component={NotificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Studio" component={StudioScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Projects" component={ProjectsScreen} options={{ title: 'My Projects' }} />
         <Stack.Screen name="WorkerOnboarding" component={WorkerOnboardingScreen} options={{ title: 'Apply as Worker' }} />
