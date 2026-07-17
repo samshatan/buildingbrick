@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import * as Notifications from 'expo-notifications';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/context/ThemeProvider';
+import { StatusBar } from 'expo-status-bar';
 
 // Notifications.setNotificationHandler({
 //   handleNotification: async () => ({
@@ -35,6 +36,7 @@ export default function App() {
   if (!initialRouteName) {
     return (
       <SafeAreaProvider>
+        <StatusBar style="dark" />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF9F6' }}>
           <ActivityIndicator size="large" color="#cc4518" />
         </View>
@@ -44,6 +46,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="dark" />
       <ThemeProvider>
         <AppNavigator initialRouteName={initialRouteName} />
       </ThemeProvider>
