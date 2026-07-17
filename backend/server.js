@@ -51,12 +51,12 @@ app.disable('x-powered-by');
 app.use(helmet()); // Security headers
 app.use(compression()); // Gzip/Brotli compression for responses
 
-// Secure CORS setup
 const allowedOrigins = [
   'http://localhost:5173', // Vite local
   'http://localhost:8081', // Expo local
   'https://www.brickourhouse.com', 
   'https://brickourhouse.com', 
+  'https://buildingbrick.onrender.com', // Render domain
 ];
 app.use(cors({
   origin: function (origin, callback) {

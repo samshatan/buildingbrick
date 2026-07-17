@@ -301,42 +301,45 @@ export default function ProjectsScreen() {
               <Animated.View key={project.id} entering={FadeInUp.delay(200 + index * 100).duration(600).springify()}>
                 <TouchableOpacity
                   onPress={() => setSelectedProject(project)}
-                  style={tw`bg-[${theme.card}] rounded-[32px] p-6 shadow-sm border border-[${theme.border}] flex-col gap-5`}
+                  style={tw`bg-[${theme.card}] rounded-3xl overflow-hidden shadow-sm border border-[${theme.border}] mb-2`}
+                  activeOpacity={0.8}
                 >
-                  {/* Project Image */}
-                <View style={[tw`w-full bg-zinc-800 rounded-[24px] overflow-hidden relative items-center justify-center`, { height: 160 }]}>
-                {project.image ? (
-                  <Image source={{ uri: project.image }} style={tw`w-full h-full opacity-80`} />
-                ) : (
-                  <Briefcase size={32} color="#52525b" />
-                )}
-                  <View style={tw`absolute top-4 left-4 bg-white/90 px-4 py-2 rounded-full flex-row items-center gap-2`}>
-                    {project.status === "Completed" ? (
-                      <CheckCircle2 size={14} color="#18181b"/>
+                  {/* Edge-to-Edge Project Image */}
+                  <View style={[tw`w-full bg-zinc-800 relative items-center justify-center`, { height: 160 }]}>
+                    {project.image ? (
+                      <Image source={{ uri: project.image }} style={tw`w-full h-full opacity-90`} />
                     ) : (
-                      <Clock size={14} color="#cc4518"/>
+                      <Briefcase size={32} color="#52525b" />
                     )}
-                    <Text style={tw`text-xs font-bold uppercase tracking-widest text-zinc-900`}>{project.status}</Text>
-                  </View>
-                </View>
-
-                {/* Project Details */}
-                <View>
-                  <Text style={tw`text-xl font-bold text-[${theme.text}] mb-2`}>{project.title}</Text>
-                  <View style={tw`flex-row items-center gap-1.5 mb-6`}>
-                    <MapPin size={14} color={theme.textSecondary} />
-                    <Text style={tw`text-sm font-medium text-[${theme.textSecondary}]`}>{project.location}</Text>
-                  </View>
-
-                  {/* Progress Bar */}
-                  <View style={tw`flex-col gap-3`}>
-                    <View style={tw`flex-row justify-between items-center`}>
-                        <Text style={tw`text-xs font-bold uppercase tracking-widest text-[${theme.textSecondary}]`}>Progress</Text>
-                        <Text style={tw`text-xs font-bold uppercase tracking-widest text-[${theme.textSecondary}]`}>{project.completion}%</Text>
+                    
+                    {/* Status Badge */}
+                    <View style={tw`absolute top-4 left-4 bg-white/95 px-3 py-1.5 rounded-full flex-row items-center gap-1.5 shadow-sm`}>
+                      {project.status === "Completed" ? (
+                        <CheckCircle2 size={12} color="#10b981"/>
+                      ) : (
+                        <Clock size={12} color="#cc4518"/>
+                      )}
+                      <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-zinc-800`}>{project.status}</Text>
                     </View>
-                    <View style={tw`w-full h-1.5 bg-[${theme.border}] rounded-full overflow-hidden`}>
-                        <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? '#18181b' : '#cc4518' }]} />
+                  </View>
+
+                  {/* Project Details */}
+                  <View style={tw`p-5`}>
+                    <Text style={tw`text-lg font-bold text-[${theme.text}] mb-1`} numberOfLines={1}>{project.title}</Text>
+                    <View style={tw`flex-row items-center gap-1.5 mb-5`}>
+                      <MapPin size={12} color={theme.textSecondary} />
+                      <Text style={tw`text-xs font-medium text-[${theme.textSecondary}]`} numberOfLines={1}>{project.location}</Text>
                     </View>
+
+                    {/* Progress Bar */}
+                    <View style={tw`flex-col gap-2`}>
+                      <View style={tw`flex-row justify-between items-center`}>
+                          <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[${theme.textSecondary}]`}>Progress</Text>
+                          <Text style={tw`text-[10px] font-bold uppercase tracking-widest text-[${theme.textSecondary}]`}>{project.completion}%</Text>
+                      </View>
+                      <View style={tw`w-full h-1.5 bg-[${theme.border}] rounded-full overflow-hidden`}>
+                          <View style={[tw`h-full rounded-full`, { width: `${project.completion}%`, backgroundColor: project.completion === 100 ? '#10b981' : '#cc4518' }]} />
+                      </View>
                     </View>
                   </View>
                 </TouchableOpacity>
