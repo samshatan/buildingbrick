@@ -29,6 +29,8 @@ import materialRoutes from './routes/materialRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import bulkOrderRoutes from './routes/bulkOrderRoutes.js';
+import expertRequestRoutes from './routes/expertRequestRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -122,6 +124,8 @@ app.use('/api/v1/materials', materialRoutes);
 app.use('/api/v1/messages', messageRoutes);
 app.use('/api/v1/disputes', disputeRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/bulk-orders', bulkOrderRoutes);
+app.use('/api/v1/expert-requests', expertRequestRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {

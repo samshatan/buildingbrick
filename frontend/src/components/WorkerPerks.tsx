@@ -3,8 +3,8 @@ import Title from "./Title";
 
 export default function WorkerPerks() {
   const perks = [
-    { title: "Worker Insurance", path: "/insurance", icon: "🛡️", desc: "Health & accident coverage up to $50,000" },
-    { title: "Micro-Loans", path: "/loans", icon: "💰", desc: "Low-interest financial support up to $5,000" },
+    { title: "Worker Insurance", path: "/insurance", icon: "🛡️", desc: "Health & accident coverage up to Rs5,00,000" },
+    { title: "Micro-Loans", path: "/loans", icon: "💰", desc: "Low-interest financial support up to Rs50,000" },
   ];
 
   return (

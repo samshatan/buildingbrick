@@ -19,7 +19,7 @@ export default function JobsScreen() {
 
   const fetchJobs = async () => {
     try {
-      const response = await apiClient.get('/jobs');
+      const response = await apiClient.get('/jobs/my-jobs');
       if (response.data) {
         const jobData = response.data.data || response.data.jobs || response.data;
         setJobs(Array.isArray(jobData) ? jobData : []);
