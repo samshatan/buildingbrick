@@ -55,7 +55,7 @@ app.use(compression()); // Gzip/Brotli compression for responses
 const allowedOrigins = [
   'http://localhost:5173', // Vite local
   'http://localhost:8081', // Expo local
-  'https://buildingbrick.onrender.com', // Your deployed frontend domain (replace if you get a custom domain)
+  'https://www.brickourhouse.com', // Your deployed frontend domain (replace if you get a custom domain)
 ];
 app.use(cors({
   origin: function (origin, callback) {
