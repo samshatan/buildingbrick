@@ -33,17 +33,46 @@ import reviewRoutes from './routes/reviewRoutes.js';
 // Load Env
 dotenv.config();
 
+// Ensure critical environment variables exist
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+  process.exit(1);
+}
+
 // Connect to Database
 connectDB();
 
 const app = express();
 
+// Disable express version header
+app.disable('x-powered-by');
+
 // Middlewares
 app.use(helmet()); // Security headers
 app.use(compression()); // Gzip/Brotli compression for responses
-app.use(cors({ origin: '*' })); // Consider restricting this in production later
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Secure CORS setup
+const allowedOrigins = [
+  'http://localhost:5173', // Vite local
+  'http://localhost:8081', // Expo local
+  'https://buildingbrick.onrender.com', // Your deployed frontend domain (replace if you get a custom domain)
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    // Or allow if it's in the allowedOrigins list, or if we are in development
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+// Reduced payload limits to prevent DOS attacks
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());

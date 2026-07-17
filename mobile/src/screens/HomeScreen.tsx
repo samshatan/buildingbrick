@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, MapPin
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { LinearGradient } from 'expo-linear-gradient';
+import HorizontalCategoryNav from '../components/HorizontalCategoryNav';
 
 const { width } = Dimensions.get('window');
 
@@ -112,7 +113,11 @@ export default function HomeScreen({ navigation }: any) {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(400).duration(600).springify()} style={tw`px-6 mt-8`}>
+      <Animated.View entering={FadeInUp.delay(300).duration(600).springify()}>
+        <HorizontalCategoryNav />
+      </Animated.View>
+
+      <Animated.View entering={FadeInUp.delay(400).duration(600).springify()} style={tw`px-6 mt-4`}>
         <Text style={tw`text-xl font-bold text-zinc-700 mb-4`}>Our Services</Text>
         <View style={tw`flex-row flex-wrap justify-between`}>
           {services.map((service) => (
