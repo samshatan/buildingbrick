@@ -12,7 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 const originalFetch = window.fetch;
 window.fetch = async (input, init) => {
   if (typeof input === 'string' && input.startsWith('/api/')) {
-    const baseUrl = import.meta.env.VITE_API_URL || 'https://brickourhouse-backend.onrender.com';
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'; // Default to localhost for local dev if .env is missing
     input = baseUrl + input;
   }
   return originalFetch(input, init);

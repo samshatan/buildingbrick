@@ -3,8 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Platform } from 'react-native';
 
-// Production Render backend
-export const SOCKET_URL = 'https://brickourhouse-backend.onrender.com';
+// Read from .env (fallback to localhost for local dev if .env is missing)
+export const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 const API_URL = `${SOCKET_URL}/api/v1`;
 
