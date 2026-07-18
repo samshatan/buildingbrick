@@ -60,3 +60,24 @@ export const getMyJobs = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching your jobs.' });
   }
 };
+
+// @desc    Mark a job as completed
+// @route   PATCH /api/v1/jobs/:id/complete
+// @access  Private
+export const completeJob = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found.' });
+    }
+    
+    // Authorization check could go here
+    job.status = 'COMPLETED';
+    await job.save();
+    
+    res.status(200).json(job);
+  } catch (error) {
+    console.error('Error completing job:', error);
+    res.status(500).json({ message: 'Server error completing job.' });
+  }
+};

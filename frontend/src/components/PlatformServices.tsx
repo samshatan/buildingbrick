@@ -6,7 +6,7 @@ export default function PlatformServices() {
     { title: "Full House Construction", path: "/full-house-construction", icon: "🏗️", desc: "End-to-end building services" },
     { title: "Bulk Orders", path: "/bulk-orders", icon: "🚚", desc: "Wholesale materials at discounts" },
     { title: "Expert Inspection", path: "/expert-inspection", icon: "🔎", desc: "Quality & product checks" },
-    { title: "Posted Works", path: "/jobs", icon: "💼", desc: "Find or post job requirements" },
+    { title: "Posted Works", path: "/requests", icon: "💼", desc: "Find or post job requirements" },
   ];
 
   return (

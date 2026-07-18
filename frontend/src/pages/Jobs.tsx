@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Title from "@/components/Title";
 import { Briefcase, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 function Jobs() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -32,6 +33,26 @@ function Jobs() {
       setLoading(false);
     }
   }, [token]);
+
+  const handleCompleteJob = async (id: string) => {
+    try {
+      const response = await fetch(`/api/v1/jobs/${id}/complete`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        setJobs(jobs.map(job => job.id === id || job._id === id ? { ...job, status: 'COMPLETED' } : job));
+        toast.success("Job marked as complete!");
+      } else {
+        toast.error("Failed to complete job.");
+      }
+    } catch (error) {
+      console.error("Error completing job", error);
+      toast.error("Error completing job.");
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -94,11 +115,17 @@ function Jobs() {
                     
                     <div className="flex gap-2 w-full sm:w-auto">
                       {status?.toLowerCase() === 'ongoing' && (
-                        <button className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                        <button 
+                          onClick={() => handleCompleteJob(job._id || job.id)}
+                          className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+                        >
                           Complete Job
                         </button>
                       )}
-                      <button className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                      <button 
+                        onClick={() => toast.info('Detailed job view coming soon!')}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                      >
                         View Details
                       </button>
                     </div>

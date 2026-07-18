@@ -1,4 +1,5 @@
 import Title from "@/components/Title";
+import { toast } from "react-toastify";
 
 export default function FullHouseConstruction() {
   return (
@@ -27,7 +28,10 @@ export default function FullHouseConstruction() {
             </ul>
           </div>
 
-          <button className="bg-primary text-white font-bold py-4 px-8 rounded-full hover:bg-primary/90 transition-colors">
+          <button 
+            onClick={() => toast.success("Request received! Our team will contact you shortly with an estimate.")}
+            className="bg-primary text-white font-bold py-4 px-8 rounded-full hover:bg-primary/90 transition-colors"
+          >
             Get Free Estimate
           </button>
         </div>
