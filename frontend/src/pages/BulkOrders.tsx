@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 export default function BulkOrders() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [materials, setMaterials] = useState("");
   const [quantity, setQuantity] = useState("");
   const [address, setAddress] = useState("");

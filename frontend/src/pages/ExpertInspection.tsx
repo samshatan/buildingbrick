@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 export default function ExpertInspection() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [details, setDetails] = useState("");
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
