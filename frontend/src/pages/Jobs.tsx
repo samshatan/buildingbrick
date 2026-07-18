@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Title from "@/components/Title";
 import { Briefcase, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
 
 function Jobs() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchJobs = async () => {

@@ -95,6 +95,8 @@ export default function ProfileScreen({ navigation }: any) {
         ];
       case 'worker':
         return [
+          { icon: Briefcase, label: "My Job Applications" },
+          { icon: Briefcase, label: "Incoming Job Offers" },
           { icon: Briefcase, label: "My Jobs & Earnings" },
           { icon: Package, label: "My Material Orders" },
           ...common
@@ -223,7 +225,11 @@ export default function ProfileScreen({ navigation }: any) {
             <TouchableOpacity
               key={item.label}
               onPress={() => {
-                if (item.label === 'My Jobs & Earnings' || item.label === 'My Job Postings') {
+                if (item.label === 'My Job Applications') {
+                  navigation.navigate('MyApplications');
+                } else if (item.label === 'Incoming Job Offers') {
+                  navigation.navigate('WorkRequests');
+                } else if (item.label === 'My Jobs & Earnings' || item.label === 'My Job Postings') {
                   navigation.navigate('Projects');
                 } else if (item.label === 'Notifications') {
                   navigation.navigate('Notifications');

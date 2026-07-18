@@ -27,7 +27,7 @@ export default function WorkRequestsScreen() {
 
   const fetchRequests = async () => {
     try {
-      const response = await apiClient.get('/requests');
+      const response = await apiClient.get('/direct-requests/worker');
       if (response.data) {
         setRequests(response.data.data || response.data);
       }
@@ -53,7 +53,7 @@ export default function WorkRequestsScreen() {
       }
 
       setActionLoading(id);
-      await apiClient.post(`/requests/${id}/${action}`);
+      await apiClient.patch(`/direct-requests/${id}/status`, { status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' });
       Alert.alert('Success', `You have ${action}ed the request.`);
       fetchRequests();
     } catch (error) {

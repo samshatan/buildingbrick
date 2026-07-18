@@ -10,6 +10,7 @@ import DirectHireScreen from '../screens/DirectHireScreen';
 import JobsScreen from '../screens/JobsScreen';
 import WorkersScreen from '../screens/WorkersScreen';
 import WorkRequestsScreen from '../screens/WorkRequestsScreen';
+import MyApplicationsScreen from '../screens/MyApplicationsScreen';
 import AboutScreen from '../screens/AboutScreen';
 import ContactScreen from '../screens/ContactScreen';
 import TermsScreen from '../screens/TermsScreen';
@@ -63,6 +64,7 @@ export default function AppNavigator({ initialRouteName }: AppNavigatorProps) {
         <Stack.Screen name="Workers" component={WorkersScreen} options={{ title: 'Saved Workers' }} />
         <Stack.Screen name="Jobs" component={JobsScreen} options={{ title: 'My Jobs' }} />
         <Stack.Screen name="WorkRequests" component={WorkRequestsScreen} options={{ title: 'Incoming Requests' }} />
+        <Stack.Screen name="MyApplications" component={MyApplicationsScreen} options={{ title: 'My Applications' }} />
         <Stack.Screen name="About" component={AboutScreen} options={{ title: 'About Us' }} />
         <Stack.Screen name="Contact" component={ContactScreen} options={{ title: 'Contact Us' }} />
         <Stack.Screen name="Terms" component={TermsScreen} options={{ title: 'Terms of Service' }} />
