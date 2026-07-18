@@ -19,10 +19,9 @@ export const createBulkOrder = async (req, res) => {
 
     // Notify admins
     const adminNotification = new Notification({
-      userId: req.user._id, // Ideally should be admin IDs, but for now we'll just log it. If they have a dedicated admin account we could query it.
-      title: 'New Bulk Order Request',
+      userId: req.user._id,
       message: `User ${req.user.name} has requested a bulk order.`,
-      type: 'system',
+      type: 'INFO',
       isRead: false
     });
     await adminNotification.save();

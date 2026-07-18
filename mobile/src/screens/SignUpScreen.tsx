@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
 import { useTheme } from '../context/ThemeProvider';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 export default function SignUpScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -62,6 +63,39 @@ export default function SignUpScreen({ navigation }: any) {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response.data?.idToken;
+
+      if (idToken) {
+        setLoading(true);
+        const serverResponse = await apiClient.post('/auth/google-mobile', { idToken });
+        
+        if (serverResponse.data.token) {
+          await AsyncStorage.setItem('userToken', serverResponse.data.token);
+          await AsyncStorage.setItem('userInfo', JSON.stringify(serverResponse.data.user));
+          navigation.replace('Home');
+        } else {
+          Alert.alert('Registration Failed', 'Unable to register with Google');
+        }
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        Alert.alert('Wait', 'Sign in is in progress');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('Error', 'Google Play Services not available or outdated');
+      } else {
+        Alert.alert('Google Sign-In Error', error.response?.data?.message || error.message || 'Something went wrong');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -86,6 +120,14 @@ export default function SignUpScreen({ navigation }: any) {
               </View>
               <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Verification Code</Text>}
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.googleButton, loading && styles.disabledBtn]}
+                onPress={handleGoogleSignUp}
+                disabled={loading}
+              >
+                <Text style={styles.googleButtonText}>Sign Up with Google</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -241,6 +283,24 @@ const getStyles = (COLORS: any) => StyleSheet.create({
     color: COLORS.surface,
     fontSize: 16,
     fontWeight: '800',
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    padding: SPACING.lg,
+    borderRadius: RADIUS.md,
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  disabledBtn: {
+    opacity: 0.6,
   },
   changeContact: {
     textAlign: 'center',

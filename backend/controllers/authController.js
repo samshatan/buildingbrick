@@ -359,6 +359,56 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+// @desc    Authenticate with Google (Mobile)
+// @route   POST /api/v1/auth/google-mobile
+// @access  Public
+export const googleAuthMobile = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: 'No Google idToken provided.' });
+    }
+
+    // Verify token using google-auth-library
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Hirer only login
+      if (user.accountType === 'worker') {
+        return res.status(403).json({ message: 'Google Login is not available for worker accounts.' });
+      }
+    } else {
+      // Create new user as a Hirer
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+      user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        accountType: 'hirer',
+        avatarUrl: picture || "",
+      });
+    }
+
+    res.status(200).json({
+      token: generateToken(user._id),
+      user: mapUserResponse(user),
+    });
+  } catch (error) {
+    console.error('Google Auth Mobile Error:', error);
+    res.status(401).json({ message: 'Invalid Google Token.' });
+  }
+};
+
 // @desc    Get current logged in user
 // @route   GET /api/v1/auth/me
 // @access  Private
