@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ClipboardList, MapPin, CalendarDays, Search, Briefcase, CheckCircle2, Activity, Clock, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import SwipeToDelete from "../components/SwipeToDelete";
@@ -27,7 +27,8 @@ function WorkRequests() {
   const [requests, setRequests] = useState<WorkRequest[]>([]);
   const [directRequests, setDirectRequests] = useState<any[]>([]);
   const [myApplications, setMyApplications] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'public' | 'direct'>('public');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<'public' | 'direct' | 'applications'>(location.state?.activeTab || 'public');
   const [loading, setLoading] = useState(true);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<WorkRequest | null>(null);
@@ -353,6 +354,12 @@ function WorkRequests() {
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{directRequests.filter(r => r.status === 'PENDING').length}</span>
               )}
             </button>
+            <button 
+              onClick={() => setActiveTab('applications')}
+              className={`pb-4 text-sm font-bold transition-all ${activeTab === 'applications' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              My Applications
+            </button>
           </div>
         )}
 
@@ -460,6 +467,36 @@ function WorkRequests() {
                   </div>
                 </SwipeToDelete>
               ))
+              )
+            ) : activeTab === 'applications' ? (
+              myApplications.length === 0 ? (
+                <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No applications yet</h3>
+                  <p className="text-sm text-gray-500 font-medium">You haven't applied to any jobs.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myApplications.map((app: any) => (
+                    <div key={app._id || app.id} className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-sm">
+                      <div className="flex justify-between gap-4 mb-4">
+                        <div>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${app.status === 'PENDING' ? 'bg-orange-100 text-orange-700' : app.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {app.status}
+                          </span>
+                          <h3 className="text-xl font-bold text-gray-900">Applied for: {app.requestId?.title || 'Job Request'}</h3>
+                        </div>
+                        <div className="text-right text-sm font-bold text-gray-900 mb-1">
+                          {new Date(app.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2 font-medium">Your Proposal: {app.proposalText}</p>
+                      <p className="text-sm font-bold text-primary">Proposed Rate: ₹{app.proposedRate}</p>
+                    </div>
+                  ))}
+                </div>
               )
             ) : (
               loading ? (

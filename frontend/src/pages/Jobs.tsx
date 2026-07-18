@@ -14,7 +14,11 @@ function Jobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch('/api/v1/jobs');
+        const response = await fetch('/api/v1/jobs/my-jobs', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           setJobs(data.data || data.jobs || data || []);
@@ -25,21 +29,12 @@ function Jobs() {
         setLoading(false);
       }
     };
-    fetchJobs();
-  }, []);
-
-  const handleApply = () => {
-    if (!token) {
-      toast.error('Please login to apply for jobs.');
-      navigate('/login');
-      return;
+    if (token) {
+      fetchJobs();
+    } else {
+      setLoading(false);
     }
-    
-    // In a real app, you would check if user has a worker profile
-    // Here we simulate the check
-    toast.error('Only verified workers can apply for jobs. Please complete worker onboarding first.');
-    navigate('/worker-onboarding');
-  };
+  }, [token]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -54,9 +49,9 @@ function Jobs() {
     <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <Title text1={"Available"} text2={"JOBS"} />
+          <Title text1={"Active"} text2={"CONTRACTS"} />
           <p className="text-sm text-gray-500 font-medium mt-2">
-            Browse and apply for construction and maintenance jobs in your area.
+            Manage your active contracts and completed jobs.
           </p>
         </div>
 
@@ -67,8 +62,8 @@ function Jobs() {
         ) : jobs.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
             <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Jobs Available</h3>
-            <p className="text-gray-500 font-medium">Check back later for new opportunities.</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Contracts</h3>
+            <p className="text-gray-500 font-medium">You don't have any active jobs yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -100,12 +95,16 @@ function Jobs() {
                       </div>
                     </div>
                     
-                    <button 
-                      onClick={() => handleApply()}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
-                    >
-                      Apply Now
-                    </button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      {status?.toLowerCase() === 'ongoing' && (
+                        <button className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                          Complete Job
+                        </button>
+                      )}
+                      <button className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                        View Details
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

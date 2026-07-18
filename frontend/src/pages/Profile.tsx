@@ -365,7 +365,7 @@ function Profile() {
               )}
               {["WORKER", "HIRER", "ADMIN"].includes(user.userType) && (
                 <>
-                  <Link to="/requests" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                  <Link to="/requests" state={{ activeTab: user.userType === "WORKER" ? "applications" : undefined }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <LayoutDashboard className="w-5 h-5" />
                     {user.userType === "WORKER" ? "My Job Applications" : "My Work Requests"}
                   </Link>
