@@ -3,11 +3,11 @@ import Title from "./Title";
 
 export default function PlatformServices() {
   const services = [
-    { title: "Full House Construction", path: "/full-house-construction", icon: "🏗️", desc: "End-to-end building services" },
-    { title: "Bulk Orders", path: "/bulk-orders", icon: "🚚", desc: "Wholesale materials at discounts" },
     { title: "Construction Materials", path: "/materials", icon: "🧱", desc: "Cement, steel, bricks & more" },
-    { title: "Expert Inspection", path: "/expert-inspection", icon: "🔎", desc: "Quality & product checks" },
+    { title: "Full House Construction", path: "/full-house-construction", icon: "🏗️", desc: "End-to-end building services" },
     { title: "Posted Works", path: "/requests", icon: "💼", desc: "Find or post job requirements" },
+    { title: "Expert Inspection", path: "/expert-inspection", icon: "🔎", desc: "Quality & product checks" },
+    { title: "Bulk Orders", path: "/bulk-orders", icon: "🚚", desc: "Wholesale materials at discounts" },
   ];
 
 
