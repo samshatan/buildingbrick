@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { Building2, CheckCircle2, XCircle, Clock, ChevronRight, Landmark } from "lucide-react";
@@ -204,7 +204,7 @@ export default function VBankAccount() {
                 <Building2 size={40} className="mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500 font-medium">Please log in as a worker to apply.</p>
               </div>
-            ) : user.accountType !== "worker" ? (
+            ) : user.userType !== "WORKER" ? (
               <div className="text-center py-8">
                 <Building2 size={40} className="mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500 font-medium">Only workers can apply for a vBank account.</p>
