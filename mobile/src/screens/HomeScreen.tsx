@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import tw from 'twrnc';
-import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, MapPin, Truck, Home, SearchCheck, Briefcase, Landmark, ShieldCheck } from 'lucide-react-native';
+import { ArrowRight, Sparkles, Building, PaintRoller, ShoppingCart, Star, Truck, Home, SearchCheck, Briefcase, Landmark, ShieldCheck } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { LinearGradient } from 'expo-linear-gradient';
-import HorizontalCategoryNav from '../components/HorizontalCategoryNav';
+
 
 const { width } = Dimensions.get('window');
 
@@ -111,10 +111,6 @@ export default function HomeScreen({ navigation }: any) {
             <ArrowRight size={18} color="white" />
           </TouchableOpacity>
         </View>
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.delay(300).duration(600).springify()}>
-        <HorizontalCategoryNav />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(400).duration(600).springify()} style={tw`px-6 mt-4`}>
