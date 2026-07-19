@@ -90,7 +90,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
           setIsDarkMode(storedValue === 'true');
         }
       } catch (error) {
-        console.log('Failed to load theme preference', error);
+        // Failed to load theme preference — silently fallback to light mode
       }
     };
 
@@ -102,7 +102,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await AsyncStorage.setItem('darkModeEnabled', String(value));
     } catch (error) {
-      console.log('Failed to persist theme preference', error);
+      // Failed to persist theme preference — state is already updated in memory
     }
   };
 
