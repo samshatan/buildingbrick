@@ -4,10 +4,10 @@ import tw from 'twrnc';
 import { useNavigation } from '@react-navigation/native';
 
 const categories = [
-  { id: "construction", name: "Construction", image: require('../../assets/construction_worker.png'), bgColor: 'bg-pink-100' },
-  { id: "domestic", name: "Domestic", image: require('../../assets/domestic_worker.png'), bgColor: 'bg-blue-100' },
-  { id: "utilities", name: "Utilities", image: require('../../assets/utilities_worker.png'), bgColor: 'bg-green-100' },
-  { id: "interior", name: "Interior", image: require('../../assets/interior_worker.png'), bgColor: 'bg-purple-100' },
+  { id: "construction", name: "Construction", image: require('../../assets/construction_worker.jpg'), bgColor: 'bg-pink-100' },
+  { id: "domestic", name: "Domestic", image: require('../../assets/domestic_worker.jpg'), bgColor: 'bg-blue-100' },
+  { id: "utilities", name: "Utilities", image: require('../../assets/utilities_worker.jpg'), bgColor: 'bg-green-100' },
+  { id: "interior", name: "Interior", image: require('../../assets/interior_worker.jpg'), bgColor: 'bg-purple-100' },
 ];
 
 export default function HorizontalCategoryNav() {
