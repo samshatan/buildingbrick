@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { ShieldCheck, Store, Users, CheckCircle2, User, FileText, BarChart2, AlertTriangle, RefreshCw } from "lucide-react";
+import { ShieldCheck, Store, Users, CheckCircle2, User, FileText, BarChart2, AlertTriangle, RefreshCw, Landmark } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface CafeData {
@@ -33,7 +33,7 @@ interface WorkerData {
 
 function AdminDashboard() {
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState<"cafes" | "workers" | "users" | "analytics" | "moderation" | "disputes">("analytics");
+  const [activeTab, setActiveTab] = useState<"cafes" | "workers" | "users" | "analytics" | "moderation" | "disputes" | "vbank">("analytics");
   
   const [cafes, setCafes] = useState<CafeData[]>([]);
   const [workers, setWorkers] = useState<WorkerData[]>([]);
@@ -41,6 +41,7 @@ function AdminDashboard() {
   const [reports, setReports] = useState<any[]>([]);
   const [disputes, setDisputes] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [vbankRequests, setVbankRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCafeIdentifier, setNewCafeIdentifier] = useState("");
   const [promoting, setPromoting] = useState(false);
@@ -65,6 +66,7 @@ function AdminDashboard() {
       else if (activeTab === "analytics") endpoint = "/api/v1/admin/stats";
       else if (activeTab === "moderation") endpoint = "/api/v1/admin/reports";
       else if (activeTab === "disputes") endpoint = "/api/v1/disputes";
+      else if (activeTab === "vbank") endpoint = "/api/v1/vbank/all";
 
       const res = await fetch(`${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -78,6 +80,7 @@ function AdminDashboard() {
         else if (activeTab === "analytics") setStats(data);
         else if (activeTab === "moderation") setReports(data);
         else if (activeTab === "disputes") setDisputes(data);
+        else if (activeTab === "vbank") setVbankRequests(data);
       } else {
         toast.error("Failed to load data.");
       }
@@ -226,6 +229,27 @@ function AdminDashboard() {
     }
   };
 
+  const handleVBankAction = async (id: string, status: "approved" | "rejected", adminNotes: string) => {
+    const toastId = toast.loading("Processing vBank request...");
+    try {
+      const res = await fetch(`/api/v1/vbank/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status, adminNotes })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.update(toastId, { render: `Request ${status}!`, type: "success", isLoading: false, autoClose: 3000 });
+        fetchData();
+      } else {
+        toast.update(toastId, { render: data.message || "Failed", type: "error", isLoading: false, autoClose: 3000 });
+      }
+    } catch (err) {
+      toast.update(toastId, { render: "An error occurred", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-50/30 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -291,6 +315,14 @@ function AdminDashboard() {
                 }`}
               >
                 <Users className="w-4 h-4" /> All Workers
+              </button>
+              <button
+                onClick={() => setActiveTab("vbank")}
+                className={`px-4 py-4 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${
+                  activeTab === "vbank" ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <Landmark className="w-4 h-4" /> vBank Requests
               </button>
             </div>
 
@@ -679,6 +711,71 @@ function AdminDashboard() {
                    <div className="py-12 text-center text-gray-500 font-medium">No workers registered yet.</div>
                  )}
               </div>
+            ) : activeTab === "vbank" ? (
+              <div className="space-y-4 animate-in fade-in duration-300">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <Landmark className="w-5 h-5 text-purple-500" /> vBank Account Requests
+                </h2>
+                {vbankRequests.length === 0 ? (
+                  <div className="text-center py-16 text-gray-400">
+                    <Landmark className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium">No vBank requests yet.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        <tr>
+                          <th className="text-left px-5 py-3">Worker</th>
+                          <th className="text-left px-5 py-3">Aadhaar</th>
+                          <th className="text-left px-5 py-3">PAN</th>
+                          <th className="text-left px-5 py-3">Bank Preference</th>
+                          <th className="text-left px-5 py-3">Applied</th>
+                          <th className="text-left px-5 py-3">Status</th>
+                          <th className="text-left px-5 py-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 bg-white">
+                        {vbankRequests.map((req: any) => (
+                          <tr key={req.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-5 py-4">
+                              <p className="font-bold text-gray-800">{req.workerName}</p>
+                              <p className="text-xs text-gray-400">{req.workerPhone || req.workerEmail}</p>
+                            </td>
+                            <td className="px-5 py-4 font-mono text-gray-700">&bull;&bull;&bull;&bull;&nbsp;{req.aadhaarNumber?.slice(-4)}</td>
+                            <td className="px-5 py-4 text-gray-600">{req.panNumber || "—"}</td>
+                            <td className="px-5 py-4 text-gray-600">{req.bankPreference}</td>
+                            <td className="px-5 py-4 text-gray-400 text-xs">{new Date(req.createdAt).toLocaleDateString("en-IN")}</td>
+                            <td className="px-5 py-4">
+                              {req.status === "approved" ? (
+                                <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full"><CheckCircle2 className="w-3 h-3" /> Approved</span>
+                              ) : req.status === "rejected" ? (
+                                <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">Rejected</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">Pending</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-4">
+                              {req.status === "pending" && (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleVBankAction(req.id, "approved", "")}
+                                    className="text-xs bg-green-500 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition"
+                                  >Approve</button>
+                                  <button
+                                    onClick={() => { const note = prompt("Rejection reason (optional):") || ""; handleVBankAction(req.id, "rejected", note); }}
+                                    className="text-xs bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg hover:bg-red-200 transition"
+                                  >Reject</button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             ) : null}
           </div>
         </div>
@@ -790,7 +887,6 @@ function AdminDashboard() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

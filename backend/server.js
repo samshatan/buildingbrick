@@ -31,6 +31,7 @@ import disputeRoutes from './routes/disputeRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import bulkOrderRoutes from './routes/bulkOrderRoutes.js';
 import expertRequestRoutes from './routes/expertRequestRoutes.js';
+import vbankRoutes from './routes/vbankRoutes.js';
 
 // Load Env
 dotenv.config();
@@ -126,6 +127,7 @@ app.use('/api/v1/disputes', disputeRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/bulk-orders', bulkOrderRoutes);
 app.use('/api/v1/expert-requests', expertRequestRoutes);
+app.use('/api/v1/vbank', vbankRoutes);
 
 // Handle API 404s specifically
 app.use('/api/*', (req, res) => {

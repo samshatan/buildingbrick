@@ -5,7 +5,9 @@ export default function WorkerPerks() {
   const perks = [
     { title: "Worker Insurance", path: "/insurance", icon: "🛡️", desc: "Health & accident coverage up to Rs5,00,000" },
     { title: "Micro-Loans", path: "/loans", icon: "💰", desc: "Low-interest financial support up to Rs50,000" },
+    { title: "Open for Work / vBank", path: "/vbank-account", icon: "🏦", desc: "Apply for a free virtual bank account" },
   ];
+
 
   return (
     <div className="my-16 bg-purple-50 rounded-3xl p-8 border border-purple-100">
@@ -14,7 +16,7 @@ export default function WorkerPerks() {
         <p className="text-gray-600 mt-2">Exclusive benefits for our platform professionals</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {perks.map((perk, index) => (
           <Link 
             key={index}

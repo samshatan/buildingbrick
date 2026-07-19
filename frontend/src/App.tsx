@@ -46,6 +46,7 @@ const Loans = lazy(() => import('./pages/Loans'))
 const BulkOrders = lazy(() => import('./pages/BulkOrders'))
 const ExpertInspection = lazy(() => import('./pages/ExpertInspection'))
 const FullHouseConstruction = lazy(() => import('./pages/FullHouseConstruction'))
+const VBankAccount = lazy(() => import('./pages/VBankAccount'))
 
 
 const Loader = () => (
@@ -110,6 +111,7 @@ function App() {
           <Route path='/bulk-orders' element={<BulkOrders />} />
           <Route path='/expert-inspection' element={<ExpertInspection />} />
           <Route path='/full-house-construction' element={<FullHouseConstruction />} />
+          <Route path='/vbank-account' element={<VBankAccount />} />
         </Routes>
       </Suspense>
       <div className="print:hidden">

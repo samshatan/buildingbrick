@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity, MapPin, UploadCloud } from "lucide-react";
+import { Search, UserCheck, Printer, CheckCircle2, Store, Clock, Activity, MapPin, UploadCloud, Landmark } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -42,7 +42,7 @@ interface WorkerProfile {
 function CafeDashboard() {
   const { user, token } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"pending" | "verified" | "settings">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "verified" | "settings" | "vbank">("pending");
   const [printWorker, setPrintWorker] = useState<WorkerProfile | null>(null);
   const [searchResults, setSearchResults] = useState<WorkerProfile[]>([]);
   const [profileForm, setProfileForm] = useState({
@@ -65,11 +65,15 @@ function CafeDashboard() {
 
   // Review Application state
   const [reviewingWorker, setReviewingWorker] = useState<WorkerProfile | null>(null);
+  const [vbankRequests, setVbankRequests] = useState<any[]>([]);
+  const [vbankLoading, setVbankLoading] = useState(false);
 
   useEffect(() => {
     setSelectedWorkers([]);
     if (activeTab === "pending") {
       fetchUnverifiedQueue();
+    } else if (activeTab === "vbank") {
+      fetchVBankRequests();
     } else {
       fetchVerifiedHistory();
     }
@@ -116,6 +120,22 @@ function CafeDashboard() {
       console.error(err);
     } finally {
       setQueueLoading(false);
+    }
+  };
+
+  const fetchVBankRequests = async () => {
+    setVbankLoading(true);
+    try {
+      const res = await fetch(`/api/v1/vbank/all`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setVbankRequests(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setVbankLoading(false);
     }
   };
 
@@ -574,6 +594,19 @@ function CafeDashboard() {
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-t-full"></div>
                 )}
               </button>
+              <button
+                onClick={() => setActiveTab("vbank")}
+                className={`pb-4 px-2 font-bold text-sm transition-colors relative ${activeTab === "vbank" ? "text-primary" : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-4 h-4" />
+                  vBank Requests
+                </div>
+                {activeTab === "vbank" && (
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-t-full"></div>
+                )}
+              </button>
             </div>
 
             {activeTab === "pending" ? (
@@ -836,6 +869,58 @@ function CafeDashboard() {
                   </button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {activeTab === "vbank" && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-primary" /> vBank Account Requests
+              </h2>
+              <p className="text-sm text-gray-500">Workers who have applied for a virtual bank account. Contact them to help complete the process.</p>
+              {vbankLoading ? (
+                <div className="py-12 flex justify-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary/20 border-t-primary" />
+                </div>
+              ) : vbankRequests.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                  <Landmark className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-400 font-medium">No vBank requests yet.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                  <table className="w-full text-sm bg-white">
+                    <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                      <tr>
+                        <th className="text-left px-5 py-3">Worker</th>
+                        <th className="text-left px-5 py-3">Contact</th>
+                        <th className="text-left px-5 py-3">Bank Preference</th>
+                        <th className="text-left px-5 py-3">Applied On</th>
+                        <th className="text-left px-5 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {vbankRequests.map((req: any) => (
+                        <tr key={req.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-4 font-bold text-gray-800">{req.workerName}</td>
+                          <td className="px-5 py-4 text-gray-500 text-xs">{req.workerPhone || req.workerEmail || "—"}</td>
+                          <td className="px-5 py-4 text-gray-600">{req.bankPreference}</td>
+                          <td className="px-5 py-4 text-gray-400 text-xs">{new Date(req.createdAt).toLocaleDateString("en-IN")}</td>
+                          <td className="px-5 py-4">
+                            {req.status === "approved" ? (
+                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">Approved</span>
+                            ) : req.status === "rejected" ? (
+                              <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">Rejected</span>
+                            ) : (
+                              <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">Pending</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

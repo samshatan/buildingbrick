@@ -5,9 +5,11 @@ export default function PlatformServices() {
   const services = [
     { title: "Full House Construction", path: "/full-house-construction", icon: "🏗️", desc: "End-to-end building services" },
     { title: "Bulk Orders", path: "/bulk-orders", icon: "🚚", desc: "Wholesale materials at discounts" },
+    { title: "Construction Materials", path: "/materials", icon: "🧱", desc: "Cement, steel, bricks & more" },
     { title: "Expert Inspection", path: "/expert-inspection", icon: "🔎", desc: "Quality & product checks" },
     { title: "Posted Works", path: "/requests", icon: "💼", desc: "Find or post job requirements" },
   ];
+
 
   return (
     <div className="my-16">
@@ -16,7 +18,7 @@ export default function PlatformServices() {
         <p className="text-gray-500 mt-2">Everything you need for your construction projects</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {services.map((service, index) => (
           <Link 
             key={index}
