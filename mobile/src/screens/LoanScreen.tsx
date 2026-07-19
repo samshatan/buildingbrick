@@ -33,9 +33,7 @@ export default function LoanScreen({ navigation }: any) {
         <TouchableOpacity
           onPress={() => Alert.alert(
             'Check Eligibility',
-            'Eligibility is determined by your work history and ratings on the platform. Workers with 3+ completed jobs and a rating of 3.5 or higher are eligible.
-
-Feature coming soon — our team will contact you within 48 hours after you apply.',
+            'Eligibility is determined by your work history and ratings on the platform. Workers with 3+ completed jobs and a rating of 3.5 or higher are eligible.\n\nFeature coming soon — our team will contact you within 48 hours after you apply.',
             [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Apply', onPress: () => Alert.alert('Application Received', 'Our team will review your profile and contact you shortly.') }

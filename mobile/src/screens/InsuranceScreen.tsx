@@ -33,9 +33,7 @@ export default function InsuranceScreen({ navigation }: any) {
         <TouchableOpacity
           onPress={() => Alert.alert(
             'Apply for Insurance',
-            'You are about to apply for the Health Cover Plus plan. This provides up to $50,000 in medical and accident coverage exclusively for verified platform workers.
-
-Our team will contact you within 24 hours to complete the enrollment.',
+            'You are about to apply for the Health Cover Plus plan. This provides up to $50,000 in medical and accident coverage exclusively for verified platform workers.\n\nOur team will contact you within 24 hours to complete the enrollment.',
             [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Apply Now', onPress: () => Alert.alert('Application Submitted!', 'Thank you! Our team will review your profile and reach out to you shortly.') }
