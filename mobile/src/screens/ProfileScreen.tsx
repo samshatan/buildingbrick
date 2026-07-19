@@ -175,7 +175,7 @@ export default function ProfileScreen({ navigation }: any) {
             )}
           </View>
           <View style={tw`flex-1`}>
-            <Text style={tw`text-xl font-bold text-[${theme.text}] tracking-wide`} numberOfLines={1}>{userInfo?.fullName || 'Loading...'}</Text>
+            <Text style={tw`text-xl font-bold text-[${theme.text}] tracking-wide`} numberOfLines={1}>{userInfo?.name || userInfo?.fullName || 'User'}</Text>
             <Text style={tw`text-sm font-medium text-[${theme.textSecondary}] mt-0.5`} numberOfLines={1}>{userInfo?.email || userInfo?.phone || '...'}</Text>
             <View style={tw`flex-row items-center gap-1.5 px-2.5 py-1 rounded-md bg-[${theme.border}] self-start mt-2`}>
               {getRoleIcon()}
@@ -257,6 +257,25 @@ export default function ProfileScreen({ navigation }: any) {
             </TouchableOpacity>
           ))}
         </Animated.View>
+
+        {/* Worker Onboarding Prompt — shown for workers who haven't created their profile */}
+        {role === 'worker' && !workerProfile && (
+          <Animated.View entering={FadeInUp.delay(220).duration(400)} style={tw`bg-orange-50 rounded-[32px] p-5 shadow-sm border border-orange-200 mb-6 flex-row items-center gap-4`}>
+            <View style={tw`w-12 h-12 rounded-full bg-orange-100 items-center justify-center`}>
+              <Briefcase size={22} color="#cc4518" />
+            </View>
+            <View style={tw`flex-1`}>
+              <Text style={tw`text-sm font-bold text-zinc-900 mb-0.5`}>Complete Your Worker Profile</Text>
+              <Text style={tw`text-xs text-zinc-500 leading-tight`}>Add your skills and documents to start receiving job offers.</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('WorkerOnboarding')}
+              style={tw`bg-[#cc4518] px-3 py-2 rounded-xl`}
+            >
+              <Text style={tw`text-white font-bold text-xs uppercase tracking-wide`}>Start</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         {role === 'worker' && workerProfile && (
           <Animated.View entering={FadeInUp.delay(250).duration(400)} style={tw`bg-[${theme.card}] rounded-[32px] p-6 shadow-sm border ${workerProfile.insuranceStatus === 'ACTIVE' ? 'border-emerald-500' : 'border-[#cc4518]'} mb-6`}>

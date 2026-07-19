@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { ChevronLeft, Bell, Lock, Shield, Info } from 'lucide-react-native';
+import { ChevronLeft, Bell, Lock, Shield, Info, Moon } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function SettingsScreen({ navigation }: any) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode, setDarkMode } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
@@ -127,6 +127,13 @@ export default function SettingsScreen({ navigation }: any) {
             description="Receive project alerts and messages." 
             value={notificationsEnabled} 
             onValueChange={handleToggleNotifications} 
+          />
+          <SettingRow
+            icon={Moon}
+            title="Dark Mode"
+            description="Switch between light and dark appearance."
+            value={isDarkMode}
+            onValueChange={(val: boolean) => setDarkMode(val)}
           />
         </View>
 

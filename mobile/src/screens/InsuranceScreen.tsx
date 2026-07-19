@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { ArrowLeft, ShieldCheck, HeartPulse } from 'lucide-react-native';
@@ -30,7 +30,19 @@ export default function InsuranceScreen({ navigation }: any) {
           </View>
         </View>
 
-        <TouchableOpacity style={tw`bg-[#10b981] py-4 rounded-full flex-row items-center justify-center shadow-lg mt-2`}>
+        <TouchableOpacity
+          onPress={() => Alert.alert(
+            'Apply for Insurance',
+            'You are about to apply for the Health Cover Plus plan. This provides up to $50,000 in medical and accident coverage exclusively for verified platform workers.
+
+Our team will contact you within 24 hours to complete the enrollment.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Apply Now', onPress: () => Alert.alert('Application Submitted!', 'Thank you! Our team will review your profile and reach out to you shortly.') }
+            ]
+          )}
+          style={tw`bg-[#10b981] py-4 rounded-full flex-row items-center justify-center shadow-lg mt-2`}
+        >
           <Text style={tw`text-white font-bold uppercase tracking-widest text-sm`}>Apply Now</Text>
         </TouchableOpacity>
       </ScrollView>

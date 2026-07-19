@@ -40,7 +40,13 @@ export default function WorkersScreen({ navigation, route }: any) {
   const filteredWorkers = workers.filter(worker => {
     const name = worker.name || worker.displayName || '';
     const role = worker.jobTitle || worker.workerType || '';
-    const skills = worker.skills || [];
+    // Normalize skills — backend may return string OR array
+    const skillsRaw = worker.skills || [];
+    const skills: string[] = Array.isArray(skillsRaw)
+      ? skillsRaw
+      : typeof skillsRaw === 'string'
+      ? skillsRaw.split(',').map((s: string) => s.trim())
+      : [];
     
     const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           role.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,15 +115,23 @@ export default function WorkersScreen({ navigation, route }: any) {
           </View>
         </View>
 
-        {worker.skills && worker.skills.trim() !== '' && (
-          <View style={tw`flex-row flex-wrap gap-2 pt-3 border-t border-zinc-50`}>
-            {worker.skills.split(',').map((skill: string, idx: number) => (
-              <View key={idx} style={tw`px-2.5 py-1 bg-zinc-50 rounded-md border border-zinc-100`}>
-                <Text style={tw`text-zinc-600 text-[10px] font-bold uppercase tracking-wider`}>{skill.trim()}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        {(() => {
+          const skillsRaw = worker.skills;
+          const skillsArr: string[] = Array.isArray(skillsRaw)
+            ? skillsRaw
+            : typeof skillsRaw === 'string' && skillsRaw.trim()
+            ? skillsRaw.split(',').map((s: string) => s.trim())
+            : [];
+          return skillsArr.length > 0 ? (
+            <View style={tw`flex-row flex-wrap gap-2 pt-3 border-t border-zinc-50`}>
+              {skillsArr.map((skill: string, idx: number) => (
+                <View key={idx} style={tw`px-2.5 py-1 bg-zinc-50 rounded-md border border-zinc-100`}>
+                  <Text style={tw`text-zinc-600 text-[10px] font-bold uppercase tracking-wider`}>{skill.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null;
+        })()}
 
         <View style={tw`flex-row items-center justify-between pt-2`}>
           <View style={tw`flex-row items-end`}>

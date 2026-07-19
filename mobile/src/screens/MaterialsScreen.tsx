@@ -12,20 +12,26 @@ export default function MaterialsScreen({ navigation }: any) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const categories = ["All", "Bricks", "Cement", "Sand", "Lumber"];
 
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const response = await apiClient.get('/materials');
-        if (response.data?.data) {
-          setMaterials(response.data.data);
-        }
-      } catch (error) {      } finally {
-        setLoading(false);
+  const fetchMaterials = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const response = await apiClient.get('/materials');
+      if (response.data?.data) {
+        setMaterials(response.data.data);
       }
-    };
+    } catch (err) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchMaterials();
   }, []);
 
@@ -89,6 +95,18 @@ export default function MaterialsScreen({ navigation }: any) {
         {loading ? (
           <View style={tw`flex-1 items-center justify-center`}>
             <ActivityIndicator size="large" color="#cc4518" />
+          </View>
+        ) : error ? (
+          <View style={tw`flex-1 items-center justify-center py-16`}>
+            <Text style={tw`text-zinc-400 text-4xl mb-4`}>⚠️</Text>
+            <Text style={tw`text-zinc-700 font-bold text-base mb-2`}>Couldn't load materials</Text>
+            <Text style={tw`text-zinc-400 text-sm mb-6 text-center`}>Check your connection and try again.</Text>
+            <TouchableOpacity
+              onPress={fetchMaterials}
+              style={tw`bg-[#cc4518] px-6 py-3 rounded-full`}
+            >
+              <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={tw`flex-col gap-4 pb-12`}>

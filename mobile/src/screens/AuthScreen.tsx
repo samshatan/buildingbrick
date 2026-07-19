@@ -12,11 +12,6 @@ import { useTheme } from '../context/ThemeProvider';
 
 WebBrowser.maybeCompleteAuthSession();
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
-});
-
 export default function AuthScreen({ navigation }: any) {
   const { theme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
@@ -72,7 +67,7 @@ export default function AuthScreen({ navigation }: any) {
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.5,

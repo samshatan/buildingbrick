@@ -12,19 +12,28 @@
       "bundleIdentifier": "com.brickourhouse.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow BrickOurHouse to access your camera to upload profile pictures and documents.",
-        "NSPhotoLibraryUsageDescription": "Allow BrickOurHouse to access your photos to upload documents."
+        "NSPhotoLibraryUsageDescription": "Allow BrickOurHouse to access your photos to upload documents.",
+        "NSLocationWhenInUseUsageDescription": "Allow BrickOurHouse to access your location to show nearby workers on the map.",
+        "NSLocationAlwaysUsageDescription": "Allow BrickOurHouse to access your location to show nearby workers on the map."
       }
     },
     "android": {
       "package": "com.brickourhouse.app",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff",
-        "foregroundImage": "./assets/icon.png"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
       },
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -33,6 +42,28 @@
     },
     "plugins": [
       "expo-web-browser",
+      "expo-local-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow BrickOurHouse to access your photos to upload documents and profile pictures.",
+          "cameraPermission": "Allow BrickOurHouse to use your camera."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow BrickOurHouse to access your location to show nearby workers on the map."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#cc4518",
+          "sounds": []
+        }
+      ],
       "@react-native-google-signin/google-signin",
       [
         "expo-splash-screen",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { ArrowLeft, HandCoins, Landmark } from 'lucide-react-native';
@@ -30,7 +30,19 @@ export default function LoanScreen({ navigation }: any) {
           </View>
         </View>
 
-        <TouchableOpacity style={tw`bg-[#9333ea] py-4 rounded-full flex-row items-center justify-center shadow-lg mt-2`}>
+        <TouchableOpacity
+          onPress={() => Alert.alert(
+            'Check Eligibility',
+            'Eligibility is determined by your work history and ratings on the platform. Workers with 3+ completed jobs and a rating of 3.5 or higher are eligible.
+
+Feature coming soon — our team will contact you within 48 hours after you apply.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Apply', onPress: () => Alert.alert('Application Received', 'Our team will review your profile and contact you shortly.') }
+            ]
+          )}
+          style={tw`bg-[#9333ea] py-4 rounded-full flex-row items-center justify-center shadow-lg mt-2`}
+        >
           <Text style={tw`text-white font-bold uppercase tracking-widest text-sm`}>Check Eligibility</Text>
         </TouchableOpacity>
       </ScrollView>

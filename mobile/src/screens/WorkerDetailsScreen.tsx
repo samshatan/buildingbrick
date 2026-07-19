@@ -133,11 +133,19 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
           {/* Skills */}
           <Text style={tw`text-sm font-bold text-zinc-900 tracking-wide mb-3`}>Skills</Text>
           <View style={tw`flex-row flex-wrap gap-2 mb-6`}>
-            {(worker.skills || ['General Labor', 'Site Cleanup', 'Transport']).map((skill: string) => (
-              <View key={skill} style={tw`px-3 py-1.5 bg-white rounded-lg border border-zinc-200`}>
-                <Text style={tw`text-zinc-700 text-xs font-bold uppercase tracking-wider`}>{skill}</Text>
-              </View>
-            ))}
+            {(() => {
+              const skillsRaw = worker.skills;
+              const skillsArr: string[] = Array.isArray(skillsRaw)
+                ? skillsRaw
+                : typeof skillsRaw === 'string' && skillsRaw.trim()
+                ? skillsRaw.split(',').map((s: string) => s.trim())
+                : ['General Labor', 'Site Cleanup', 'Transport'];
+              return skillsArr.map((skill: string) => (
+                <View key={skill} style={tw`px-3 py-1.5 bg-white rounded-lg border border-zinc-200`}>
+                  <Text style={tw`text-zinc-700 text-xs font-bold uppercase tracking-wider`}>{skill}</Text>
+                </View>
+              ));
+            })()}
           </View>
 
           {/* Charts */}

@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import tw from 'twrnc';
+import { Mail, ArrowRight, ChevronLeft, ShieldCheck } from 'lucide-react-native';
 import apiClient from '../api/client';
+import { useTheme } from '../context/ThemeProvider';
 
 export default function ForgotPasswordScreen({ navigation }: any) {
-  const [email, setEmail] = useState('');
+  const { theme } = useTheme();
+  const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleReset = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+    if (!identifier) {
+      Alert.alert('Required', 'Please enter your email or phone number.');
       return;
     }
 
     setLoading(true);
     try {
-      // Endpoint depends on backend
-      const response = await apiClient.post('/auth/forgot-password', { email });
-      if (response.data) {
-        Alert.alert('Success', 'If an account with that email exists, we have sent a reset link.');
-        navigation.goBack();
-      }
+      await apiClient.post('/auth/forgot-password', { email: identifier });
+      setSent(true);
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
@@ -28,95 +29,94 @@ export default function ForgotPasswordScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Reset Password</Text>
-      <Text style={styles.subtext}>Enter your email address and we'll send you a link to reset your password.</Text>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email Address</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. user@example.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleReset}
-        disabled={loading}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={tw`flex-1 bg-[${theme.bg}]`}
+    >
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={tw`absolute top-14 left-6 w-10 h-10 bg-[${theme.card}] rounded-full items-center justify-center z-10 border border-[${theme.border}]`}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Send Reset Link</Text>
-        )}
+        <ChevronLeft size={20} color={theme.textSecondary} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>Back to Login</Text>
-      </TouchableOpacity>
-    </View>
+      <ScrollView contentContainerStyle={tw`flex-grow justify-center px-8 py-12`}>
+        <View style={tw`mb-10 items-center`}>
+          <View style={tw`w-16 h-16 bg-[#cc4518]/15 border border-[#cc4518]/30 rounded-[20px] items-center justify-center mb-6`}>
+            <ShieldCheck size={32} color="#cc4518" />
+          </View>
+          <Text style={tw`text-3xl font-bold text-[${theme.text}] mb-2 tracking-tight text-center`}>
+            Reset Password
+          </Text>
+          <Text style={tw`text-[${theme.textSecondary}] text-sm font-medium text-center px-4 leading-relaxed`}>
+            Enter your email or phone number and we'll send you a reset link.
+          </Text>
+        </View>
+
+        <View style={tw`flex flex-col gap-4`}>
+          {sent ? (
+            <View style={tw`bg-emerald-500/10 border border-emerald-500/20 px-6 py-5 rounded-2xl items-center gap-3`}>
+              <Text style={tw`text-emerald-400 text-2xl`}>✓</Text>
+              <Text style={tw`text-emerald-400 text-sm font-bold text-center`}>
+                Reset link sent! Check your email or SMS inbox.
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Login')}
+                style={tw`mt-2 w-full py-3 bg-[#cc4518] rounded-xl items-center`}
+              >
+                <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>Back to Login</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <View style={tw`flex flex-col gap-1.5`}>
+                <Text style={tw`text-xs font-bold text-[${theme.textSecondary}] uppercase tracking-widest ml-1`}>
+                  Email or Phone Number
+                </Text>
+                <View style={tw`flex-row items-center bg-[${theme.card}] border border-[${theme.border}] rounded-xl px-4 gap-3`}>
+                  <Mail size={18} color={theme.textSecondary} />
+                  <TextInput
+                    placeholder="e.g. user@example.com or +91..."
+                    placeholderTextColor={theme.textSecondary}
+                    value={identifier}
+                    onChangeText={setIdentifier}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={tw`flex-1 py-3.5 text-sm font-medium text-[${theme.text}]`}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleReset}
+                disabled={loading}
+                style={tw`w-full py-4 mt-2 bg-[#cc4518] rounded-xl flex-row items-center justify-center gap-2 ${loading ? 'opacity-70' : ''}`}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <>
+                    <Text style={tw`text-white font-bold text-xs uppercase tracking-widest`}>
+                      Send Reset Link
+                    </Text>
+                    <ArrowRight size={16} color="white" />
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        {!sent && (
+          <View style={tw`mt-8 items-center`}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Text style={tw`text-xs font-bold text-[${theme.textSecondary}]`}>
+                Remember your password? Sign in
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
-    justifyContent: 'center',
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  subtext: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  inputContainer: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#1f2937',
-  },
-  button: {
-    backgroundColor: '#2563eb',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: '#4b5563',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

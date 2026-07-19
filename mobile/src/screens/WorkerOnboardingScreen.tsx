@@ -75,7 +75,7 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
           text: "Gallery",
           onPress: async () => {
             let result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              mediaTypes: ['images'],
               base64: true,
               quality: 0.5,
             });

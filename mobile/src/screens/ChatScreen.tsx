@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import tw from 'twrnc';
 import { ChevronLeft, Send, Camera, Image as ImageIcon } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ export default function ChatScreen({ route, navigation }: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const socketRef = useRef<Socket | null>(null);
 
@@ -22,7 +23,12 @@ export default function ChatScreen({ route, navigation }: any) {
         const userInfo = await AsyncStorage.getItem('userInfo');
         if (userInfo) {
           const parsed = JSON.parse(userInfo);
-          setCurrentUserId(parsed._id || parsed.id);
+          const uid = parsed._id || parsed.id;
+          setCurrentUserId(uid);
+          // Join socket room as soon as we have the userId
+          if (socketRef.current?.connected && uid) {
+            socketRef.current.emit('join', uid);
+          }
         }
       } catch (e) {}
     };
@@ -39,7 +45,9 @@ export default function ChatScreen({ route, navigation }: any) {
       if (res.data?.success) {
         setMessages(res.data.data);
       }
-    } catch (error) {    }
+    } catch (error) {    } finally {
+      setLoadingMessages(false);
+    }
   };
 
   useEffect(() => {
@@ -48,8 +56,10 @@ export default function ChatScreen({ route, navigation }: any) {
     // Connect to Socket
     socketRef.current = io(SOCKET_URL);
     
-    socketRef.current.on('connect', () => {      if (currentUserId) {
-        socketRef.current?.emit('join', currentUserId);
+    socketRef.current.on('connect', () => {      if (socketRef.current) {
+        // Emit join immediately on connect; currentUserId may load after
+        const userId = currentUserId;
+        if (userId) socketRef.current.emit('join', userId);
       }
     });
 
@@ -180,26 +190,36 @@ export default function ChatScreen({ route, navigation }: any) {
 
       {/* Messages */}
       <ScrollView ref={scrollViewRef} contentContainerStyle={tw`p-4 pb-8`} style={tw`flex-1 bg-zinc-50`} onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
-        {messages.map((msg) => {
-          const isUser = msg.senderId === currentUserId;
-          const timeString = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-          
-          return (
-            <View key={msg._id || msg.id} style={tw`mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
-              <View style={tw`max-w-[80%] rounded-2xl px-4 py-3 ${isUser ? 'bg-[#cc4518] rounded-tr-sm' : 'bg-white border border-zinc-200 rounded-tl-sm'}`}>
-                {msg.imageUrl ? (
-                  <Image source={{ uri: msg.imageUrl }} style={tw`w-48 h-48 rounded-xl`} />
-                ) : null}
-                {msg.text ? (
-                  <Text style={tw`text-sm font-medium ${isUser ? 'text-white' : 'text-zinc-800'} ${msg.imageUrl ? 'mt-2' : ''}`}>
-                    {msg.text}
-                  </Text>
-                ) : null}
+        {loadingMessages ? (
+          <View style={tw`flex-1 justify-center items-center py-12`}>
+            <ActivityIndicator size="large" color="#cc4518" />
+          </View>
+        ) : messages.length === 0 ? (
+          <View style={tw`flex-1 justify-center items-center py-12`}>
+            <Text style={tw`text-zinc-400 text-sm font-medium`}>No messages yet. Say hello! 👋</Text>
+          </View>
+        ) : (
+          messages.map((msg) => {
+            const isUser = msg.senderId === currentUserId;
+            const timeString = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            
+            return (
+              <View key={msg._id || msg.id} style={tw`mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
+                <View style={tw`max-w-[80%] rounded-2xl px-4 py-3 ${isUser ? 'bg-[#cc4518] rounded-tr-sm' : 'bg-white border border-zinc-200 rounded-tl-sm'}`}>
+                  {msg.imageUrl ? (
+                    <Image source={{ uri: msg.imageUrl }} style={tw`w-48 h-48 rounded-xl`} />
+                  ) : null}
+                  {msg.text ? (
+                    <Text style={tw`text-sm font-medium ${isUser ? 'text-white' : 'text-zinc-800'} ${msg.imageUrl ? 'mt-2' : ''}`}>
+                      {msg.text}
+                    </Text>
+                  ) : null}
+                </View>
+                <Text style={tw`text-[9px] font-bold text-zinc-400 mt-1 mx-1`}>{timeString}</Text>
               </View>
-              <Text style={tw`text-[9px] font-bold text-zinc-400 mt-1 mx-1`}>{timeString}</Text>
-            </View>
-          );
-        })}
+            );
+          })
+        )}
       </ScrollView>
 
       {/* Input Bar */}
