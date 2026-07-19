@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image, Alert } from 'react-na
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, ChevronLeft, CheckCircle2, MessageSquare, AlertCircle, Package } from 'lucide-react-native';
+import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, Package } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
@@ -31,14 +31,10 @@ export default function ProfileScreen({ navigation }: any) {
             try {
               const res = await apiClient.get(`/workers/user/${parsed.id || parsed._id}`);
               setWorkerProfile(res.data);
-            } catch (err) {
-              console.log('Error fetching worker profile', err);
-            }
+            } catch (err) {            }
           }
         }
-      } catch (e) {
-        console.error('Failed to load user info', e);
-      } finally {
+      } catch (e) {      } finally {
         setLoading(false);
       }
     };
@@ -57,9 +53,7 @@ export default function ProfileScreen({ navigation }: any) {
       const res = await apiClient.post(`/workers/${workerProfile._id}/insurance`);
       setWorkerProfile(res.data);
       Alert.alert("Success", "You have successfully opted into the insurance program!");
-    } catch (error) {
-      console.log('Error opting in:', error);
-      Alert.alert("Error", "Failed to opt into insurance. Please try again.");
+    } catch (error) {      Alert.alert("Error", "Failed to opt into insurance. Please try again.");
     }
   };
 

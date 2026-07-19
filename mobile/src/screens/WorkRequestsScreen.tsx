@@ -31,9 +31,7 @@ export default function WorkRequestsScreen() {
       if (response.data) {
         setRequests(response.data.data || response.data);
       }
-    } catch (error) {
-      console.log('Error fetching requests', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };
@@ -56,9 +54,7 @@ export default function WorkRequestsScreen() {
       await apiClient.patch(`/direct-requests/${id}/status`, { status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' });
       Alert.alert('Success', `You have ${action}ed the request.`);
       fetchRequests();
-    } catch (error) {
-      console.log(`Error ${action}ing request`, error);
-      Alert.alert('Error', `Failed to ${action} the request. Please try again.`);
+    } catch (error) {      Alert.alert('Error', `Failed to ${action} the request. Please try again.`);
     } finally {
       setActionLoading(null);
     }
@@ -87,9 +83,7 @@ export default function WorkRequestsScreen() {
       });
       Alert.alert('Success', 'Dispute submitted successfully.');
       setDisputeModalVisible(false);
-    } catch (error) {
-      console.log('Error submitting dispute', error);
-      Alert.alert('Error', 'Failed to submit dispute. Please try again.');
+    } catch (error) {      Alert.alert('Error', 'Failed to submit dispute. Please try again.');
     } finally {
       setActionLoading(null);
     }

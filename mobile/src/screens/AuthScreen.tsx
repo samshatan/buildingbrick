@@ -64,9 +64,7 @@ export default function AuthScreen({ navigation }: any) {
         await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
         navigation.replace('Home');
       }
-    } catch (err: any) {
-      console.log('Google Auth error', err);
-      setError(err.response?.data?.message || err.message || 'Google authentication failed.');
+    } catch (err: any) {      setError(err.response?.data?.message || err.message || 'Google authentication failed.');
     } finally {
       setGoogleLoading(false);
     }
@@ -118,9 +116,7 @@ export default function AuthScreen({ navigation }: any) {
           }
         }
       }
-    } catch(e) {
-      console.log('Biometric error', e);
-    }
+    } catch(e) {    }
   };
 
   const handleSubmit = async () => {
@@ -173,9 +169,7 @@ export default function AuthScreen({ navigation }: any) {
           category: workerTypes.join(', ')
         });
       }
-    } catch (err: any) {
-      console.log('Auth error', err);
-      setError(err.response?.data?.message || err.message || 'Authentication failed. Please try again.');
+    } catch (err: any) {      setError(err.response?.data?.message || err.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }

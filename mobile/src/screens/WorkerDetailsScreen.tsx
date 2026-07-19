@@ -22,9 +22,7 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
         if (res.data) {
           setReviews(res.data);
         }
-      } catch (error) {
-        console.error("Error fetching reviews", error);
-      } finally {
+      } catch (error) {      } finally {
         setLoadingReviews(false);
       }
     };
@@ -52,9 +50,7 @@ export default function WorkerDetailsScreen({ route, navigation }: any) {
         `Your direct hire request has been sent to ${worker.name || worker.displayName}. They will review it shortly.`,
         [{ text: "OK", onPress: () => navigation.goBack() }]
       );
-    } catch (error: any) {
-      console.log('Error sending direct request:', error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to send request.");
+    } catch (error: any) {      Alert.alert("Error", error.response?.data?.message || "Failed to send request.");
     } finally {
       setIsSending(false);
     }

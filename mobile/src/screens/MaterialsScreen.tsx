@@ -22,9 +22,7 @@ export default function MaterialsScreen({ navigation }: any) {
         if (response.data?.data) {
           setMaterials(response.data.data);
         }
-      } catch (error) {
-        console.log('Error fetching materials:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };

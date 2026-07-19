@@ -30,9 +30,7 @@ export default function EditProfileScreen({ navigation }: any) {
           setPhone(parsed.phone || '');
           setAvatarUri(parsed.avatarUrl || null);
         }
-      } catch (e) {
-        console.error('Failed to load user info', e);
-      } finally {
+      } catch (e) {      } finally {
         setInitialLoading(false);
       }
     };
@@ -101,9 +99,7 @@ export default function EditProfileScreen({ navigation }: any) {
         navigation.goBack();
       }
 
-    } catch (error: any) {
-      console.error("Error updating profile:", error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to update profile.");
+    } catch (error: any) {      Alert.alert("Error", error.response?.data?.message || "Failed to update profile.");
     } finally {
       setLoading(false);
     }

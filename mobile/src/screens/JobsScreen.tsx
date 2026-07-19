@@ -24,9 +24,7 @@ export default function JobsScreen() {
         const jobData = response.data.data || response.data.jobs || response.data;
         setJobs(Array.isArray(jobData) ? jobData : []);
       }
-    } catch (error) {
-      console.log('Error fetching jobs', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };

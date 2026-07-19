@@ -60,9 +60,7 @@ export default function VerificationScreen({ route, navigation }: any) {
         Alert.alert("Success!", "Your account has been verified and created.");
         navigation.replace('Home');
       }
-    } catch (err: any) {
-      console.log('Signup error', err);
-      setError(err.response?.data?.message || err.message || 'Verification failed. Please try again.');
+    } catch (err: any) {      setError(err.response?.data?.message || err.message || 'Verification failed. Please try again.');
     } finally {
       setLoading(false);
     }

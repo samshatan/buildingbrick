@@ -26,9 +26,7 @@ export default function ExpertInspectionScreen({ navigation }: any) {
         location: location
       });
       setSuccess(true);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to submit expert request.');
+    } catch (error) {      Alert.alert('Error', 'Failed to submit expert request.');
     } finally {
       setLoading(false);
     }

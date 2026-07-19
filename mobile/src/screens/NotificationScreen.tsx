@@ -22,9 +22,7 @@ export default function NotificationScreen() {
       if (response.data) {
         setNotifications(response.data);
       }
-    } catch (error) {
-      console.log('Error fetching notifications', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -45,9 +43,7 @@ export default function NotificationScreen() {
       setNotifications((prev: any) =>
         prev.map((n: any) => n._id === id ? { ...n, isRead: true } : n)
       );
-    } catch (error) {
-      console.log('Error marking notification as read', error);
-    }
+    } catch (error) {    }
   };
 
   const markAllRead = async () => {
@@ -56,9 +52,7 @@ export default function NotificationScreen() {
       setNotifications((prev: any) =>
         prev.map((n: any) => ({ ...n, isRead: true }))
       );
-    } catch (error) {
-      console.log('Error marking all as read', error);
-    }
+    } catch (error) {    }
   };
 
   const renderNotification = ({ item }: any) => (

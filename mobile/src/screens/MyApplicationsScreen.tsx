@@ -29,9 +29,7 @@ export default function MyApplicationsScreen() {
           setApplications(Array.isArray(response.data) ? response.data : []);
         }
       }
-    } catch (error) {
-      console.log('Error fetching applications', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };

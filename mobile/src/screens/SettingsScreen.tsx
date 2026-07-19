@@ -24,9 +24,7 @@ export default function SettingsScreen({ navigation }: any) {
             setBiometricsEnabled(parsed.preferences.biometricLogin ?? false);
           }
         }
-      } catch (e) {
-        console.error('Failed to load preferences', e);
-      }
+      } catch (e) {      }
     };
     loadPrefs();
   }, []);
@@ -44,9 +42,7 @@ export default function SettingsScreen({ navigation }: any) {
       
       // Update backend
       await apiClient.patch('/users/preferences', { [key]: value });
-    } catch (e) {
-      console.error('Failed to save preference', e);
-    }
+    } catch (e) {    }
   };
 
   const handleToggleNotifications = async (value: boolean) => {

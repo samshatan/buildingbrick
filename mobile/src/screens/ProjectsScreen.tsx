@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Mod
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import { Clock, MapPin, CheckCircle2, ChevronLeft, Calendar, FileText, Camera, Briefcase, Star } from 'lucide-react-native';
+import { Clock, MapPin, CheckCircle2, Calendar, FileText, Camera, Briefcase, Star, ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
@@ -36,9 +36,7 @@ export default function ProjectsScreen() {
       // Optimistically update project state
       setProjects((prev: any[]) => prev.map(p => p.id === selectedProject.id ? { ...p, isReviewed: true } : p));
       setSelectedProject((prev: any) => ({ ...prev, isReviewed: true }));
-    } catch (error) {
-      console.log('Error submitting review', error);
-      Alert.alert("Error", "Failed to submit review.");
+    } catch (error) {      Alert.alert("Error", "Failed to submit review.");
     } finally {
       setIsSubmittingReview(false);
     }
@@ -115,9 +113,7 @@ export default function ProjectsScreen() {
         });
 
         setProjects(mappedProjects);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };

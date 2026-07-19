@@ -104,9 +104,7 @@ export default function WorkerOnboardingScreen({ navigation }: any) {
       Alert.alert('Application Submitted', 'Your profile is now under review. We will notify you once verified.', [
         { text: 'OK', onPress: () => navigation.navigate('Home') }
       ]);
-    } catch (error: any) {
-      console.log('Onboarding error', error);
-      Alert.alert('Error', error.response?.data?.message || 'Failed to submit application.');
+    } catch (error: any) {      Alert.alert('Error', error.response?.data?.message || 'Failed to submit application.');
     } finally {
       setLoading(false);
     }

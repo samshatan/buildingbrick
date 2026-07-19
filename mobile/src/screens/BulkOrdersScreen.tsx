@@ -28,9 +28,7 @@ export default function BulkOrdersScreen({ navigation }: any) {
         deliveryAddress: address
       });
       setSuccess(true);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to submit bulk order request.');
+    } catch (error) {      Alert.alert('Error', 'Failed to submit bulk order request.');
     } finally {
       setLoading(false);
     }

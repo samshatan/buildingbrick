@@ -30,9 +30,7 @@ export default function WorkersScreen({ navigation, route }: any) {
         const response = await apiClient.get('/workers');
         const workerData = response.data?.data || response.data?.workers || response.data || [];
         setWorkers(Array.isArray(workerData) ? workerData : []);
-      } catch (err) {
-        console.log('Failed to fetch workers', err);
-      } finally {
+      } catch (err) {      } finally {
         setLoading(false);
       }
     };

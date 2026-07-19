@@ -26,9 +26,7 @@ export default function HomeScreen({ navigation }: any) {
           if (user.name) setUserName(user.name.split(' ')[0]);
           if (user.role === 'worker' || user.isWorker) setIsWorker(true);
         }
-      } catch (e) {
-        console.log('Error parsing user info', e);
-      }
+      } catch (e) {      }
     };
 
     // Load Workers
@@ -37,9 +35,7 @@ export default function HomeScreen({ navigation }: any) {
         const response = await apiClient.get('/workers');
         const workerData = response.data?.data || response.data?.workers || response.data || [];
         setWorkers(Array.isArray(workerData) ? workerData.slice(0, 3) : []);
-      } catch (err) {
-        console.log('Error fetching workers', err);
-      } finally {
+      } catch (err) {      } finally {
         setLoadingWorkers(false);
       }
     };

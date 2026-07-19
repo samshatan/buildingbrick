@@ -48,9 +48,7 @@ export default function DirectHireScreen({ route, navigation }: any) {
         const addr = `${geocode[0].name || ''} ${geocode[0].street || ''}, ${geocode[0].city || ''}, ${geocode[0].region || ''}`;
         setAddress(addr.trim());
       }
-    } catch (error) {
-      console.log('Error getting location', error);
-    }
+    } catch (error) {    }
   };
 
   const handleHireRequest = async () => {

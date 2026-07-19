@@ -21,9 +21,7 @@ export default function CartScreen({ navigation }: any) {
         setCartItems(response.data.data.items || []);
         setTotal(response.data.data.totalPrice || 0);
       }
-    } catch (error: any) {
-      console.log('Error fetching cart:', error);
-      if (error.response?.status === 401) {
+    } catch (error: any) {      if (error.response?.status === 401) {
         setCartItems([]);
         setTotal(0);
       }
@@ -46,9 +44,7 @@ export default function CartScreen({ navigation }: any) {
     try {
       await apiClient.delete(`/cart/remove/${id}`);
       fetchCart();
-    } catch (error) {
-      console.log('Error removing item:', error);
-    }
+    } catch (error) {    }
   };
 
   const renderItem = ({ item }: any) => (

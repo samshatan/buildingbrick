@@ -21,9 +21,7 @@ export default function OrdersScreen({ navigation }: any) {
       if (response.data?.success) {
         setOrders(response.data.data);
       }
-    } catch (error) {
-      console.log('Error fetching orders:', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };

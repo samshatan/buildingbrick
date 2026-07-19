@@ -26,9 +26,7 @@ export default function MaterialDetailsScreen({ route, navigation }: any) {
         }
       });
       Alert.alert("Added to Cart 🛒", `${material.name} from ${retailer.name} was added to your cart.`);
-    } catch (error: any) {
-      console.error('Add to cart error:', error);
-      Alert.alert('Error', 'Could not add to cart. Please log in first.');
+    } catch (error: any) {      Alert.alert('Error', 'Could not add to cart. Please log in first.');
     } finally {
       setAddingToCart(null);
     }

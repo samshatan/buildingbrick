@@ -39,9 +39,7 @@ export default function ChatScreen({ route, navigation }: any) {
       if (res.data?.success) {
         setMessages(res.data.data);
       }
-    } catch (error) {
-      console.log('Error fetching messages', error);
-    }
+    } catch (error) {    }
   };
 
   useEffect(() => {
@@ -50,9 +48,7 @@ export default function ChatScreen({ route, navigation }: any) {
     // Connect to Socket
     socketRef.current = io(SOCKET_URL);
     
-    socketRef.current.on('connect', () => {
-      console.log('Connected to socket server');
-      if (currentUserId) {
+    socketRef.current.on('connect', () => {      if (currentUserId) {
         socketRef.current?.emit('join', currentUserId);
       }
     });
@@ -104,9 +100,7 @@ export default function ChatScreen({ route, navigation }: any) {
         text: tempMsg.text
       });
       // Removing fetchMessages() as socket will handle the real message
-    } catch (error) {
-      console.log('Error sending message:', error);
-      Alert.alert("Error", "Failed to send message");
+    } catch (error) {      Alert.alert("Error", "Failed to send message");
     }
   };
 
@@ -164,9 +158,7 @@ export default function ChatScreen({ route, navigation }: any) {
         imageUrl: base64Image
       });
       fetchMessages();
-    } catch (error) {
-      console.log('Error sending image:', error);
-      Alert.alert("Error", "Failed to send image");
+    } catch (error) {      Alert.alert("Error", "Failed to send image");
     }
   };
 

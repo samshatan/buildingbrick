@@ -16,9 +16,7 @@ export default function CafeDashboardScreen() {
       if (response.data) {
         setUnverifiedWorkers(response.data);
       }
-    } catch (error) {
-      console.log('Error fetching unverified workers', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -39,9 +37,7 @@ export default function CafeDashboardScreen() {
     try {
       const response = await apiClient.get(`/cafes/workers/search?query=${searchQuery}`);
       setSearchResults(response.data || []);
-    } catch (error) {
-      console.log('Error searching workers', error);
-      Alert.alert('Error', 'Failed to search for workers');
+    } catch (error) {      Alert.alert('Error', 'Failed to search for workers');
     } finally {
       setIsSearching(false);
     }

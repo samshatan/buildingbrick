@@ -27,9 +27,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
         totalCafes: (cafesRes.data.data || cafesRes.data).length || 0,
         activeJobs: (jobsRes.data.data || jobsRes.data).length || 0,
       });
-    } catch (error) {
-      console.log('Error fetching admin stats', error);
-      // Alert.alert('Error', 'Failed to fetch dashboard statistics');
+    } catch (error) {      // Alert.alert('Error', 'Failed to fetch dashboard statistics');
     } finally {
       setLoading(false);
       setRefreshing(false);
