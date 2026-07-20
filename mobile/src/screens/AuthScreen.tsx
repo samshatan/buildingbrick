@@ -9,6 +9,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
 import { useTheme } from '../context/ThemeProvider';
+import { workerCategories } from '../data/marketplaceData';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -24,11 +25,7 @@ export default function AuthScreen({ navigation }: any) {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [workerTypes, setWorkerTypes] = useState<string[]>([]);
   
-  const WORKER_CATEGORIES = [
-    "Contractor", "Bricklayer", "Painter", "Helper", "Carpenter",
-    "House Helps", "Cooks", "Maids", 
-    "Electrician", "Plumber", "Welder"
-  ];
+  const WORKER_CATEGORIES = workerCategories.flatMap(c => c.types);
   
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);

@@ -61,13 +61,6 @@ export default function MainTabNavigator() {
           tabBarIcon: ({ focused, color }) => <TabIcon name="Home" focused={focused} color={color} />
         }}
       />
-      <Tab.Screen 
-        name="Studio"
-        component={StudioScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => <TabIcon name="Studio" focused={focused} color={color} />
-        }}
-      />
       <Tab.Screen
         name="Materials"
         component={MaterialsScreen}
@@ -103,8 +96,7 @@ export default function MainTabNavigator() {
 const getStyles = (COLORS: any, bottomInset: number) => StyleSheet.create({
   tabBar: {
     backgroundColor: COLORS.surface,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopWidth: 0,
     height: 60 + bottomInset,
     paddingBottom: bottomInset > 0 ? bottomInset : 0,
     elevation: 0,

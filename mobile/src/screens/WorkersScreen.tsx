@@ -164,9 +164,6 @@ export default function WorkersScreen({ navigation, route }: any) {
             <TouchableOpacity onPress={() => setViewMode('list')} style={tw`p-2 rounded-lg ${viewMode === 'list' ? 'bg-zinc-100' : 'bg-white'}`}>
               <ListIcon size={20} color={viewMode === 'list' ? '#18181b' : '#a1a1aa'} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setViewMode('map')} style={tw`p-2 rounded-lg ${viewMode === 'map' ? 'bg-zinc-100' : 'bg-white'}`}>
-              <MapIcon size={20} color={viewMode === 'map' ? '#18181b' : '#a1a1aa'} />
-            </TouchableOpacity>
           </View>
         </View>
         
@@ -244,16 +241,16 @@ export default function WorkersScreen({ navigation, route }: any) {
             <MapView 
               style={tw`flex-1`}
               initialRegion={{
-                latitude: 40.7128,
-                longitude: -74.0060,
+                latitude: 28.6139,
+                longitude: 77.2090,
                 latitudeDelta: 0.1,
                 longitudeDelta: 0.1,
               }}
             >
               {filteredWorkers.map((worker: any, index: number) => {
-                // Add some dummy coordinates around NYC for visual testing if missing
-                const lat = worker.latitude || 40.7128 + (Math.random() - 0.5) * 0.05;
-                const lng = worker.longitude || -74.0060 + (Math.random() - 0.5) * 0.05;
+                const lat = worker.latitude;
+                const lng = worker.longitude;
+                if (!lat || !lng) return null;
                 
                 return (
                   <Marker

@@ -41,10 +41,7 @@ export default function PaymentScreen({ route, navigation }: any) {
         Alert.alert('Payment Failed', response.data.message || 'Something went wrong');
       }
     } catch (error: any) {
-      // Allow fallback success for presentation if API is purely mocked
-      Alert.alert('Payment Successful', 'Your mock order has been placed successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('Home') }
-      ]);
+      Alert.alert('Payment Failed', error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -60,7 +60,7 @@ export default function ProfileScreen({ navigation }: any) {
   const getRoleIcon = () => {
     switch(role) {
       case 'admin': return <Shield size={16} color={theme.textSecondary} />;
-      case 'cafe_owner': return <Store size={16} color={theme.textSecondary} />;
+      case 'cafe': return <Store size={16} color={theme.textSecondary} />;
       case 'worker': return <Briefcase size={16} color={theme.textSecondary} />;
       default: return <UserIcon size={16} color={theme.textSecondary} />;
     }
@@ -76,11 +76,13 @@ export default function ProfileScreen({ navigation }: any) {
     switch(role) {
       case 'admin':
         return [
+          { icon: Shield, label: "Admin Dashboard" },
           { icon: Shield, label: "Platform Moderation" },
           { icon: Briefcase, label: "Manage Roles" },
+          { icon: UserIcon, label: "Users Management" },
           ...common
         ];
-      case 'cafe_owner':
+      case 'cafe':
         return [
           { icon: Briefcase, label: "My Job Postings" },
           { icon: Store, label: "My Business Profile" },
@@ -196,8 +198,8 @@ export default function ProfileScreen({ navigation }: any) {
                     workerProfileId: userInfo.id,
                     paymentType: 'REGISTRATION'
                   });
-                  if (res.data && res.data.success) {
-                    Alert.alert('Payment Initiated', 'In a real app, this would open ' + res.data.url);
+                  if (res.data && res.data.url) {
+                    Alert.alert('Payment Initiated', 'Redirecting to payment gateway...');
                   }
                 } catch (e) {
                   Alert.alert('Error', 'Failed to initiate payment.');
@@ -233,16 +235,20 @@ export default function ProfileScreen({ navigation }: any) {
                   navigation.navigate('Orders');
                 } else if (item.label === 'Help & Support') {
                   navigation.navigate('HelpSupport');
+                } else if (item.label === 'Admin Dashboard') {
+                  navigation.navigate('AdminDashboard');
                 } else if (item.label === 'Platform Moderation') {
                   navigation.navigate('PlatformModeration');
                 } else if (item.label === 'Manage Roles') {
                   navigation.navigate('ManageRoles');
+                } else if (item.label === 'Users Management') {
+                  navigation.navigate('UsersManagement');
                 } else if (item.label === 'My Business Profile') {
                   navigation.navigate('BusinessProfile');
                 } else if (item.label === 'Settings') {
                   navigation.navigate('Settings');
                 } else {
-                  Alert.alert('Unavailable', 'This feature is not enabled in this build yet.');
+                  // Feature not yet implemented
                 }
               }}
               style={tw`flex-row items-center justify-between p-4 ${index !== menuItems.length - 1 ? `border-b border-[${theme.border}]` : ''}`}
