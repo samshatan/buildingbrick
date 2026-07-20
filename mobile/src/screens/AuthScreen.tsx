@@ -50,16 +50,19 @@ export default function AuthScreen({ navigation }: any) {
     setGoogleLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
-      await GoogleSignin.signIn();
-      const { accessToken } = await GoogleSignin.getTokens();
-      
-      const res = await apiClient.post('/auth/google', { token: accessToken });
+      const response = await GoogleSignin.signIn();
+      const idToken = response.data?.idToken;
+
+      if (!idToken) throw new Error('No ID token received from Google.');
+
+      const res = await apiClient.post('/auth/google-mobile', { idToken });
       if (res.data?.token) {
         await AsyncStorage.setItem('userToken', res.data.token);
         await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
         navigation.replace('Home');
       }
-    } catch (err: any) {      setError(err.response?.data?.message || err.message || 'Google authentication failed.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Google authentication failed.');
     } finally {
       setGoogleLoading(false);
     }
