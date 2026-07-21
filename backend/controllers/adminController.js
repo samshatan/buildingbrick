@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import WorkerProfile from '../models/WorkerProfile.js';
 import Report from '../models/Report.js';
 import Job from '../models/Job.js';
+import Order from '../models/Order.js';
 import { sendEmail } from '../utils/sendEmail.js';
 
 // @desc    Get all workers with verification status
@@ -260,9 +261,60 @@ export const getPlatformStats = async (req, res) => {
       });
     }
 
+    // Total revenue
+    const revenueResult = await Order.aggregate([
+      { $match: { paymentStatus: 'PAID' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+
+    // Weekly Transaction Volume (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const weeklyTransactions = await Order.aggregate([
+      { $match: { createdAt: { $gte: sevenDaysAgo }, paymentStatus: 'PAID' } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' },
+            dayOfWeek: { $dayOfWeek: '$createdAt' }
+          },
+          totalAmount: { $sum: '$totalAmount' }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
+    ]);
+
+    // Build array for last 7 days
+    const transactionData = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      const dayOfWeekIndex = d.getDay();
+
+      const match = weeklyTransactions.find(t => 
+        t._id.year === year && t._id.month === month && t._id.day === day
+      );
+
+      transactionData.push({
+        name: dayNames[dayOfWeekIndex],
+        amount: match ? match.totalAmount : 0
+      });
+    }
+
     res.status(200).json({
-      totals: { totalUsers, totalWorkers, totalCafes, totalJobs },
-      growthData
+      totals: { totalUsers, totalWorkers, totalCafes, totalJobs, totalRevenue },
+      growthData,
+      transactionData
     });
   } catch (error) {
     console.error('Error fetching stats:', error);

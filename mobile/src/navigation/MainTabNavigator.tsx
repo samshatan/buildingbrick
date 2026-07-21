@@ -97,13 +97,11 @@ const getStyles = (COLORS: any, bottomInset: number) => StyleSheet.create({
   tabBar: {
     backgroundColor: COLORS.surface,
     borderTopWidth: 0,
+    borderTopColor: 'transparent',
     height: 60 + bottomInset,
     paddingBottom: bottomInset > 0 ? bottomInset : 0,
     elevation: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    shadowOpacity: 0,
   },
   iconContainer: {
     alignItems: 'center',
