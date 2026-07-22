@@ -15,6 +15,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen({ navigation }: any) {
   const { theme } = useTheme();
+  const googleSigninEnabled = Boolean(
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
+  );
   const [isLogin, setIsLogin] = useState(true);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -212,20 +215,22 @@ export default function AuthScreen({ navigation }: any) {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            onPress={handleGoogleLogin}
-            disabled={googleLoading}
-            style={tw`w-full py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
-          >
-            {googleLoading ? (
-              <ActivityIndicator color={theme.text} size="small" />
-            ) : (
-              <>
-                <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-5 h-5`} />
-                <Text style={tw`text-[${theme.text}] font-bold text-sm tracking-wide`}>Continue with Google</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {googleSigninEnabled ? (
+            <TouchableOpacity
+              onPress={handleGoogleLogin}
+              disabled={googleLoading}
+              style={tw`w-full py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color={theme.text} size="small" />
+              ) : (
+                <>
+                  <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-5 h-5`} />
+                  <Text style={tw`text-[${theme.text}] font-bold text-sm tracking-wide`}>Continue with Google</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : null}
 
           <View style={tw`flex-row items-center justify-between mb-2`}>
             <View style={tw`flex-1 h-[1px] bg-[${theme.border}]`} />

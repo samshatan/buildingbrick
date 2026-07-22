@@ -6,6 +6,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { StatusBar } from 'expo-status-bar';
+import apiClient from './src/api/client';
 
 export default function App() {
   const [initialRouteName, setInitialRouteName] = useState<'Login' | 'Home' | null>(null);
@@ -13,14 +14,42 @@ export default function App() {
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        GoogleSignin.configure({
-          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-          iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-          offlineAccess: true,
-        });
+        const googleConfig: {
+          webClientId?: string;
+          iosClientId?: string;
+          offlineAccess: boolean;
+        } = { offlineAccess: true };
+
+        if (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID) {
+          googleConfig.webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+        }
+
+        if (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) {
+          googleConfig.iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+        }
+
+        if (googleConfig.webClientId || googleConfig.iosClientId) {
+          GoogleSignin.configure(googleConfig);
+        }
 
         const token = await AsyncStorage.getItem('userToken');
-        setInitialRouteName(token ? 'Home' : 'Login');
+
+        if (!token) {
+          setInitialRouteName('Login');
+          return;
+        }
+
+        try {
+          const response = await apiClient.get('/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          await AsyncStorage.setItem('userInfo', JSON.stringify(response.data?.data?.user || response.data?.user || response.data || {}));
+          setInitialRouteName('Home');
+        } catch {
+          await AsyncStorage.multiRemove(['userToken', 'userInfo', 'biometricToken']);
+          setInitialRouteName('Login');
+        }
       } catch (error) {
         setInitialRouteName('Login');
       }

@@ -10,6 +10,9 @@ export default function SignUpScreen({ navigation }: any) {
   const { theme } = useTheme();
   const COLORS = theme;
   const styles = getStyles(COLORS);
+  const googleSigninEnabled = Boolean(
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
+  );
   const [step, setStep] = useState(1); // 1: Send OTP, 2: Verify & Details
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState(''); // Email or Phone
@@ -122,13 +125,15 @@ export default function SignUpScreen({ navigation }: any) {
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Verification Code</Text>}
               </TouchableOpacity>
               
-              <TouchableOpacity
-                style={[styles.googleButton, loading && styles.disabledBtn]}
-                onPress={handleGoogleSignUp}
-                disabled={loading}
-              >
-                <Text style={styles.googleButtonText}>Sign Up with Google</Text>
-              </TouchableOpacity>
+              {googleSigninEnabled ? (
+                <TouchableOpacity
+                  style={[styles.googleButton, loading && styles.disabledBtn]}
+                  onPress={handleGoogleSignUp}
+                  disabled={loading}
+                >
+                  <Text style={styles.googleButtonText}>Sign Up with Google</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           ) : (
             <View>

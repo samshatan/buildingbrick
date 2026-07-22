@@ -1,8 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-// Read from .env (fallback to localhost for local dev if .env is missing)
-export const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+const FALLBACK_PRODUCTION_URL = 'https://brickourhouse-backend.onrender.com';
+const FALLBACK_DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+
+// Prefer the configured API URL, then a sensible dev fallback, then the deployed backend.
+export const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || (__DEV__ ? FALLBACK_DEV_URL : FALLBACK_PRODUCTION_URL);
 
 const API_URL = `${SOCKET_URL}/api/v1`;
 
