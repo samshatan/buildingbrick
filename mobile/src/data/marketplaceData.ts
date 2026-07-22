@@ -50,4 +50,10 @@ export const workerCategories: WorkerCategory[] = [
       "Welder (Fabrication)",
     ],
   },
+  {
+    id: "security",
+    name: "Security",
+    icon: "🛡️",
+    types: ["Watchman", "Security Guard"],
+  },
 ];
