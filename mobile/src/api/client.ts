@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-const FALLBACK_PRODUCTION_URL = 'https://brickourhouse-backend.onrender.com';
+const FALLBACK_PRODUCTION_URL = 'https://buildingbrick-hg9k.onrender.com';
 const FALLBACK_DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
 
 // Prefer the configured API URL, then a sensible dev fallback, then the deployed backend.

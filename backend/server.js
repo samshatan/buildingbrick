@@ -59,7 +59,7 @@ const allowedOrigins = [
   'http://localhost:8081', // Expo local
   'https://www.brickourhouse.com', 
   'https://brickourhouse.com', 
-  'https://buildingbrick.onrender.com', // Render domain
+  'https://buildingbrick-hg9k.onrender.com', // Render domain
 ];
 app.use(cors({
   origin: function (origin, callback) {

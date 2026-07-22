@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://brickourhouse-backend.onrender.com/api/:match*"
+      "destination": "https://buildingbrick-hg9k.onrender.com/api/:match*"
     }
   ]
 }
