@@ -15,7 +15,13 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1029676256086-qra23lj0ntubgabku1j38dsu7gat9s1a.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1029676256086-m2s0l383lhns0bhpkibnc53kmda5gbv3.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "1029676256086-ndi3t75f641v567i2jpv9pkifj11mg4o.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_URL": "https://buildingbrick-hg9k.onrender.com"
+      }
     }
   },
   "submit": {
