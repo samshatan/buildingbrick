@@ -134,6 +134,32 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ message: `API Route not found: ${req.originalUrl}` });
 });
 
+// Data Deletion Route for Google Play Console Compliance
+app.get('/delete-account', (req, res) => {
+  res.status(200).send(`
+    <html>
+      <head>
+        <title>Account Deletion Request</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
+          .container { max-width: 600px; margin: 0 auto; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          h1 { color: #333; }
+          p { font-size: 16px; color: #666; line-height: 1.5; }
+          a { color: #cc4518; text-decoration: none; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Request Account Deletion</h1>
+          <p>If you would like to delete your BrickOurHouse account and all associated data, please send an email to our support team.</p>
+          <p>Email: <a href="mailto:support@brickourhouse.com">support@brickourhouse.com</a></p>
+          <p>Please include the phone number or email address associated with your account in your email so we can process your request promptly.</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 // Root route for Render health checks
 app.get('/', (req, res) => {
   res.status(200).send('BrickOurHouse API is running.');
