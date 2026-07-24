@@ -62,7 +62,12 @@
           "sounds": []
         }
       ],
-      "@react-native-google-signin/google-signin/app.plugin.js",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1029676256086-m2s0l383lhns0bhpkibnc53kmda5gbv3"
+        }
+      ],
       [
         "expo-splash-screen",
         {
