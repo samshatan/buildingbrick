@@ -3,6 +3,10 @@
     {
       "source": "/api/:match*",
       "destination": "https://buildingbrick-hg9k.onrender.com/api/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
