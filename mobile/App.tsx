@@ -17,8 +17,7 @@ export default function App() {
         const googleConfig: {
           webClientId?: string;
           iosClientId?: string;
-          offlineAccess: boolean;
-        } = { offlineAccess: true };
+        } = {};
 
         if (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID) {
           googleConfig.webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
