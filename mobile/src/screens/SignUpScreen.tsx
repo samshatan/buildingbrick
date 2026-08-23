@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
+import { setAuthValue } from '../api/authStorage';
 import { SPACING, RADIUS, SHADOWS } from '../theme/theme';
 import { useTheme } from '../context/ThemeProvider';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 export default function SignUpScreen({ navigation }: any) {
   const { theme } = useTheme();
   const COLORS = theme;
   const styles = getStyles(COLORS);
-  const googleSigninEnabled = Boolean(
-    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
-  );
   const [step, setStep] = useState(1); // 1: Send OTP, 2: Verify & Details
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState(''); // Email or Phone
@@ -55,45 +52,12 @@ export default function SignUpScreen({ navigation }: any) {
       });
       
       if (response.data.token) {
-        await AsyncStorage.setItem('userToken', response.data.token);
+        await setAuthValue('userToken', response.data.token);
         await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
         navigation.replace('Home');
       }
     } catch (error: any) {
       Alert.alert('Registration Failed', error.response?.data?.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      const idToken = response.data?.idToken;
-
-      if (idToken) {
-        setLoading(true);
-        const serverResponse = await apiClient.post('/auth/google-mobile', { idToken });
-        
-        if (serverResponse.data.token) {
-          await AsyncStorage.setItem('userToken', serverResponse.data.token);
-          await AsyncStorage.setItem('userInfo', JSON.stringify(serverResponse.data.user));
-          navigation.replace('Home');
-        } else {
-          Alert.alert('Registration Failed', 'Unable to register with Google');
-        }
-      }
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // user cancelled
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        Alert.alert('Wait', 'Sign in is in progress');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Error', 'Google Play Services not available or outdated');
-      } else {
-        Alert.alert('Google Sign-In Error', error.response?.data?.message || error.message || 'Something went wrong');
-      }
     } finally {
       setLoading(false);
     }
@@ -125,15 +89,6 @@ export default function SignUpScreen({ navigation }: any) {
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Verification Code</Text>}
               </TouchableOpacity>
               
-              {googleSigninEnabled ? (
-                <TouchableOpacity
-                  style={[styles.googleButton, loading && styles.disabledBtn]}
-                  onPress={handleGoogleSignUp}
-                  disabled={loading}
-                >
-                  <Text style={styles.googleButtonText}>Sign Up with Google</Text>
-                </TouchableOpacity>
-              ) : null}
             </View>
           ) : (
             <View>

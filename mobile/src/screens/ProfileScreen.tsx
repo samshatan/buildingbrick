@@ -6,6 +6,7 @@ import tw from 'twrnc';
 import { Settings, HelpCircle, Bell, ChevronRight, LogOut, Shield, Briefcase, User as UserIcon, Store, Package } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
+import { removeAuthValues } from '../api/authStorage';
 import { useTheme } from '../context/ThemeProvider';
 
 type Role = 'user' | 'worker' | 'cafe_owner' | 'admin';
@@ -42,7 +43,7 @@ export default function ProfileScreen({ navigation }: any) {
   }, []);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('userToken');
+    await removeAuthValues();
     await AsyncStorage.removeItem('userInfo');
     navigation.replace('Login');
   };

@@ -8,6 +8,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
+import { getAuthValue, removeAuthValue, setAuthValue } from '../api/authStorage';
 import { useTheme } from '../context/ThemeProvider';
 import { workerCategories } from '../data/marketplaceData';
 
@@ -15,9 +16,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const googleSigninEnabled = Boolean(
-    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
-  );
+  const googleSigninEnabled = Boolean(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
   const [isLogin, setIsLogin] = useState(true);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +36,7 @@ export default function AuthScreen({ navigation }: any) {
 
   useEffect(() => {
     const checkBiometrics = async () => {
-      const token = await AsyncStorage.getItem('biometricToken');
+      const token = await getAuthValue('biometricToken');
       if (token) {
         setHasBiometricToken(true);
       }
@@ -57,7 +56,7 @@ export default function AuthScreen({ navigation }: any) {
 
       const res = await apiClient.post('/auth/google-mobile', { idToken });
       if (res.data?.token) {
-        await AsyncStorage.setItem('userToken', res.data.token);
+        await setAuthValue('userToken', res.data.token);
         await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
         navigation.replace('Home');
       }
@@ -94,10 +93,10 @@ export default function AuthScreen({ navigation }: any) {
         promptMessage: "Authenticate to log in to BrickOurHouse",
       });
       if (result.success) {
-        const token = await AsyncStorage.getItem('biometricToken');
+        const token = await getAuthValue('biometricToken');
         if (token) {
           setLoading(true);
-          await AsyncStorage.setItem('userToken', token);
+          await setAuthValue('userToken', token);
           try {
             const userRes = await apiClient.get('/auth/me', {
               headers: { Authorization: `Bearer ${token}` }
@@ -106,8 +105,8 @@ export default function AuthScreen({ navigation }: any) {
             navigation.replace('Home');
           } catch(e) {
             setError('Session expired. Please log in with password.');
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('biometricToken');
+            await removeAuthValue('userToken');
+            await removeAuthValue('biometricToken');
             setHasBiometricToken(false);
           } finally {
             setLoading(false);
@@ -147,7 +146,7 @@ export default function AuthScreen({ navigation }: any) {
       if (isLogin) {
         const res = await apiClient.post('/auth/login', { identifier, password });
         if (res.data?.token) {
-          await AsyncStorage.setItem('userToken', res.data.token);
+          await setAuthValue('userToken', res.data.token);
           await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
           navigation.replace('Home');
         }
@@ -215,7 +214,7 @@ export default function AuthScreen({ navigation }: any) {
             </TouchableOpacity>
           )}
 
-          {googleSigninEnabled ? (
+          {googleSigninEnabled && isLogin ? (
             <TouchableOpacity
               onPress={handleGoogleLogin}
               disabled={googleLoading}

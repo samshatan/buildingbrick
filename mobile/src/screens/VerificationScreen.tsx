@@ -4,6 +4,7 @@ import tw from 'twrnc';
 import { ShieldCheck, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
+import { setAuthValue } from '../api/authStorage';
 
 export default function VerificationScreen({ route, navigation }: any) {
   const { name, identifier, password, accountType, photoUri, category, workerRole } = route.params;
@@ -55,7 +56,7 @@ export default function VerificationScreen({ route, navigation }: any) {
       });
 
       if (res.data?.token) {
-        await AsyncStorage.setItem('userToken', res.data.token);
+        await setAuthValue('userToken', res.data.token);
         await AsyncStorage.setItem('userInfo', JSON.stringify(res.data.data?.user || res.data.user || {}));
         Alert.alert("Success!", "Your account has been verified and created.");
         navigation.replace('Home');

@@ -7,6 +7,7 @@ import { Clock, MapPin, CheckCircle2, Calendar, FileText, Camera, Briefcase, Sta
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
+import { getAuthValue } from '../api/authStorage';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function ProjectsScreen() {
@@ -46,7 +47,7 @@ export default function ProjectsScreen() {
     const fetchJobs = async () => {
       try {
         const userInfoStr = await AsyncStorage.getItem('userInfo');
-        const token = await AsyncStorage.getItem('userToken');
+        const token = await getAuthValue('userToken');
         if (!userInfoStr || !token) {
           setLoading(false);
           return;

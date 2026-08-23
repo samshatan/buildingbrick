@@ -6,6 +6,7 @@ import { ChevronLeft, Bell, Lock, Shield, Info, Moon } from 'lucide-react-native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import apiClient from '../api/client';
+import { getAuthValue, removeAuthValue, setAuthValue } from '../api/authStorage';
 import { useTheme } from '../context/ThemeProvider';
 
 export default function SettingsScreen({ navigation }: any) {
@@ -72,9 +73,9 @@ export default function SettingsScreen({ navigation }: any) {
         await savePreference('biometricLogin', true);
         
         // Save the current token as the biometric token
-        const currentToken = await AsyncStorage.getItem('userToken');
+        const currentToken = await getAuthValue('userToken');
         if (currentToken) {
-          await AsyncStorage.setItem('biometricToken', currentToken);
+          await setAuthValue('biometricToken', currentToken);
         }
       } else {
         setBiometricsEnabled(false);
@@ -82,7 +83,7 @@ export default function SettingsScreen({ navigation }: any) {
     } else {
       setBiometricsEnabled(false);
       await savePreference('biometricLogin', false);
-      await AsyncStorage.removeItem('biometricToken');
+      await removeAuthValue('biometricToken');
     }
   };
 

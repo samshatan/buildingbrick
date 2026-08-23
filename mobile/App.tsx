@@ -7,6 +7,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { StatusBar } from 'expo-status-bar';
 import apiClient from './src/api/client';
+import { getAuthValue, removeAuthValues } from './src/api/authStorage';
 
 export default function App() {
   const [initialRouteName, setInitialRouteName] = useState<'Login' | 'Home' | null>(null);
@@ -31,7 +32,7 @@ export default function App() {
           GoogleSignin.configure(googleConfig);
         }
 
-        const token = await AsyncStorage.getItem('userToken');
+        const token = await getAuthValue('userToken');
 
         if (!token) {
           setInitialRouteName('Login');
@@ -46,7 +47,8 @@ export default function App() {
           await AsyncStorage.setItem('userInfo', JSON.stringify(response.data?.data?.user || response.data?.user || response.data || {}));
           setInitialRouteName('Home');
         } catch {
-          await AsyncStorage.multiRemove(['userToken', 'userInfo', 'biometricToken']);
+          await removeAuthValues();
+          await AsyncStorage.removeItem('userInfo');
           setInitialRouteName('Login');
         }
       } catch (error) {

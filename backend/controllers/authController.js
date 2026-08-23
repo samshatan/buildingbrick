@@ -324,7 +324,10 @@ export const googleAuth = async (req, res) => {
     }
 
     const payload = await response.json();
-    const { email, name, picture } = payload;
+    const { email, name, picture, sub, email_verified } = payload;
+    if (!email || email_verified !== true || !sub) {
+      return res.status(401).json({ message: 'Google account email is not verified.' });
+    }
 
     let user = await User.findOne({ email });
 
@@ -375,14 +378,21 @@ export const googleAuthMobile = async (req, res) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
+    const { email, name, picture, sub, email_verified } = payload;
+    if (!email || email_verified !== true || !sub) {
+      return res.status(401).json({ message: 'Google account email is not verified.' });
+    }
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ $or: [{ googleSubject: sub }, { email }] });
 
     if (user) {
       // Hirer only login
       if (user.accountType === 'worker') {
         return res.status(403).json({ message: 'Google Login is not available for worker accounts.' });
+      }
+      if (!user.googleSubject) {
+        user.googleSubject = sub;
+        await user.save();
       }
     } else {
       // Create new user as a Hirer
@@ -393,6 +403,7 @@ export const googleAuthMobile = async (req, res) => {
       user = await User.create({
         name,
         email,
+        googleSubject: sub,
         password: hashedPassword,
         accountType: 'hirer',
         avatarUrl: picture || "",
