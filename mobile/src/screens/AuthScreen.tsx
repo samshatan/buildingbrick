@@ -230,14 +230,14 @@ export default function AuthScreen({ navigation }: any) {
             <TouchableOpacity
               onPress={handleGoogleLogin}
               disabled={googleLoading}
-              style={tw`w-full py-4 px-6 bg-[#f8dff3] rounded-full flex-row items-center justify-center gap-4 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
+              style={tw`w-full py-3.5 bg-[${theme.card}] border border-[${theme.border}] rounded-xl flex-row items-center justify-center gap-3 mb-2 ${googleLoading ? 'opacity-70' : ''}`}
             >
               {googleLoading ? (
-                <ActivityIndicator color="#202124" size="small" />
+                <ActivityIndicator color={theme.text} size="small" />
               ) : (
                 <>
-                  <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-10 h-10`} />
-                  <Text style={tw`text-[#202124] font-medium text-lg`}>Sign in with Google</Text>
+                  <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg' }} style={tw`w-5 h-5`} />
+                  <Text style={tw`text-[${theme.text}] font-bold text-sm tracking-wide`}>Continue with Google</Text>
                 </>
               )}
             </TouchableOpacity>
