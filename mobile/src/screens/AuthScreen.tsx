@@ -23,6 +23,7 @@ export default function AuthScreen({ navigation }: any) {
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'hirer' | 'worker'>('hirer');
   const [workerRole, setWorkerRole] = useState<'LABOUR' | 'CONTRACTOR' | 'SELLER' | 'NONE'>('NONE');
+  const [fees, setFees] = useState({ labour: 19, contractor: 99, seller: 0 });
   
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [workerTypes, setWorkerTypes] = useState<string[]>([]);
@@ -41,7 +42,18 @@ export default function AuthScreen({ navigation }: any) {
         setHasBiometricToken(true);
       }
     };
+    const fetchFees = async () => {
+      try {
+        const response = await apiClient.get('/config/fees');
+        if (response.data?.success && response.data?.data) {
+          setFees(response.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch config fees:', err);
+      }
+    };
     checkBiometrics();
+    fetchFees();
   }, []);
 
   const handleGoogleLogin = async () => {
@@ -161,7 +173,7 @@ export default function AuthScreen({ navigation }: any) {
           password,
           name: fullName,
           accountType: role,
-          workerRole: workerRole,
+          workerRole: role === 'worker' ? workerRole : undefined,
           photoUri: profileImage,
           category: workerTypes.join(', ')
         });
@@ -291,21 +303,21 @@ export default function AuthScreen({ navigation }: any) {
                   style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'LABOUR' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
                   <Text style={tw`text-xs font-bold text-center ${workerRole === 'LABOUR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Labour / Worker</Text>
-                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'LABOUR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs 19 Reg. Fee</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'LABOUR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs {fees.labour} Reg. Fee</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => { setRole('worker'); setWorkerRole('CONTRACTOR'); }}
                   style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'CONTRACTOR' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
                   <Text style={tw`text-xs font-bold text-center ${workerRole === 'CONTRACTOR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Main Contractor</Text>
-                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'CONTRACTOR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs 499 Reg. Fee</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'CONTRACTOR' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Rs {fees.contractor} Reg. Fee</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => { setRole('worker'); setWorkerRole('SELLER'); }}
                   style={tw`w-[48%] py-3 px-4 rounded-xl border items-center ${workerRole === 'SELLER' ? 'bg-[#cc4518] border-[#cc4518]' : `bg-[${theme.card}] border-[${theme.border}]`}`}
                 >
                   <Text style={tw`text-xs font-bold text-center ${workerRole === 'SELLER' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Material Seller</Text>
-                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'SELLER' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>Free (for now)</Text>
+                  <Text style={tw`text-[9px] mt-1 ${workerRole === 'SELLER' ? 'text-white' : `text-[${theme.textSecondary}]`}`}>{fees.seller === 0 ? 'Free (for now)' : `Rs ${fees.seller} Reg. Fee`}</Text>
                 </TouchableOpacity>
               </View>
             </View>

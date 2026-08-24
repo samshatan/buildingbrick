@@ -30,7 +30,7 @@ export default function VerificationScreen({ route, navigation }: any) {
       formData.append('otp', otp);
       formData.append('password', password);
       formData.append('accountType', accountType);
-      if (workerRole) {
+      if (accountType === 'worker' && workerRole && workerRole !== 'NONE') {
         formData.append('workerRole', workerRole);
       }
       
@@ -39,13 +39,20 @@ export default function VerificationScreen({ route, navigation }: any) {
       }
       
       if (accountType === 'worker' && photoUri) {
+        // Robustly extract file extension - Android URIs may not end in a clean extension
         const uriParts = photoUri.split('.');
-        const fileType = uriParts[uriParts.length - 1];
+        const rawExt = uriParts[uriParts.length - 1].toLowerCase();
+        // Strip any query params or URL-encoded junk (e.g. "jpg?foo=bar" or "3A12345")
+        const cleanExt = rawExt.split('?')[0].split('%')[0];
+        // Default to 'jpeg' if extension is not a known image type
+        const validExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        const fileType = validExts.includes(cleanExt) ? cleanExt : 'jpeg';
+        const mimeType = fileType === 'jpg' ? 'image/jpeg' : `image/${fileType}`;
         
         formData.append('photo', {
           uri: photoUri,
           name: `photo.${fileType}`,
-          type: `image/${fileType}`,
+          type: mimeType,
         } as any);
       }
 
