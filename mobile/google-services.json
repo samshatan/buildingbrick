@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1029676256086",
+    "project_id": "brick-our-house",
+    "storage_bucket": "brick-our-house.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029676256086:android:c41986a1249386ec59e4f7",
+        "android_client_info": {
+          "package_name": "com.brickourhouse.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029676256086-qra23lj0ntubgabku1j38dsu7gat9s1a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgEaQNwsReMb0slt8ZEbqb2jHiXHprn0Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1029676256086-qra23lj0ntubgabku1j38dsu7gat9s1a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1029676256086-m2s0l383lhns0bhpkibnc53kmda5gbv3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.brickourhouse.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
