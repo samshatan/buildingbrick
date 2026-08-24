@@ -86,9 +86,9 @@ export default function HomeScreen({ navigation }: any) {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(200).duration(600).springify()} style={tw`px-6 relative -mt-4`}>
+      {/* <Animated.View entering={FadeInUp.delay(200).duration(600).springify()} style={tw`px-6 relative -mt-4`}>
         {/* Call to action card */}
-        <View style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 flex-col gap-5`}>
+        {/*<View style={tw`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 flex-col gap-5`}>
           <View>
             <View style={tw`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 self-start mb-3`}>
               <Sparkles size={12} color="#cc4518" />
@@ -107,7 +107,7 @@ export default function HomeScreen({ navigation }: any) {
             <ArrowRight size={18} color="white" />
           </TouchableOpacity>
         </View>
-      </Animated.View>
+      </Animated.View>*/}
 
       <Animated.View entering={FadeInUp.delay(400).duration(600).springify()} style={tw`px-6 mt-4`}>
         <Text style={tw`text-xl font-bold text-zinc-700 mb-4`}>Our Services</Text>
