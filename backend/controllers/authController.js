@@ -234,7 +234,7 @@ export const signup = async (req, res) => {
         subStatus = 'FREE_UNTIL_HIRED';
       } else if (wRole === 'CONTRACTOR') {
         regPaid = false;
-        regAmount = 499;
+        regAmount = 99;
       } else if (wRole === 'SELLER') {
         regPaid = true; // Free for now
         regAmount = 0;
