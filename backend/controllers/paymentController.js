@@ -4,11 +4,19 @@ import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
 import Razorpay from 'razorpay';
 
-// Razorpay Configuration
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder'
-});
+const getRazorpayClient = () => {
+  const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = process.env;
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    const error = new Error('Razorpay credentials are not configured');
+    error.code = 'RAZORPAY_NOT_CONFIGURED';
+    throw error;
+  }
+
+  return new Razorpay({
+    key_id: RAZORPAY_KEY_ID,
+    key_secret: RAZORPAY_KEY_SECRET
+  });
+};
 
 // PhonePe Configuration
 const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT';
@@ -213,10 +221,13 @@ export const initiateRazorpayPayment = async (req, res) => {
       receipt: receipt || `rcpt_${Date.now()}`
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await getRazorpayClient().orders.create(options);
     res.status(200).json({ success: true, order });
   } catch (error) {
     console.error('Razorpay Initiation Error:', error);
+    if (error.code === 'RAZORPAY_NOT_CONFIGURED') {
+      return res.status(503).json({ success: false, message: 'Razorpay is not configured on the server.' });
+    }
     res.status(500).json({ success: false, message: 'Server error initiating Razorpay payment.' });
   }
 };
@@ -229,7 +240,11 @@ export const verifyRazorpayPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentType, referenceId, items } = req.body;
     
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSign = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder')
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(503).json({ success: false, message: 'Razorpay is not configured on the server.' });
+    }
+
+    const expectedSign = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(sign.toString())
       .digest("hex");
 

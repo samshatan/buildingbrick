@@ -250,6 +250,13 @@ export default function VerificationRequired() {
 
   const handlePayment = async () => {
     setIsLoading(true);
+    const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    if (!razorpayKeyId) {
+      toast.error("Razorpay is not configured. Please contact support.");
+      setIsLoading(false);
+      return;
+    }
+
     const isLoaded = await loadRazorpay();
     if (!isLoaded) {
       toast.error("Razorpay SDK failed to load. Are you online?");
@@ -270,7 +277,7 @@ export default function VerificationRequired() {
       
       if (res.ok && data.success && data.order) {
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder', // Ensure you add this to your .env
+          key: razorpayKeyId,
           amount: data.order.amount,
           currency: data.order.currency,
           name: "BrickOurHouse",

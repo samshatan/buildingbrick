@@ -56,7 +56,7 @@ building/
 ```bash
 cd backend
 npm install
-# Create a .env file based on environment requirements (PORT, MONGO_URI, JWT_SECRET, RAZORPAY_KEY_ID)
+# Create backend/.env with PORT, MONGO_URI, JWT_SECRET, RAZORPAY_KEY_ID, and RAZORPAY_KEY_SECRET
 npm run dev
 ```
 
@@ -64,6 +64,7 @@ npm run dev
 ```bash
 cd frontend
 npm install
+# Create frontend/.env with VITE_API_URL and VITE_RAZORPAY_KEY_ID
 npm run dev
 ```
 *The frontend will run on `http://localhost:5173` and automatically proxy API requests to the backend.*
