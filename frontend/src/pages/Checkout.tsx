@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { CreditCard, ShieldCheck, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
+import { CreditCard, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
 import Title from "@/components/Title";
 
 function Checkout() {
@@ -12,10 +12,6 @@ function Checkout() {
   const state = location.state as { amount: number; items: any[] } | null;
 
   const [loading, setLoading] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-
   if (!user || !state || !state.items || state.items.length === 0) {
     return <Navigate to="/cart" replace />;
   }
@@ -24,41 +20,73 @@ function Checkout() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!cardNumber || !expiry || !cvv) {
-      toast.error('Please fill in all card details');
+
+    const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    if (!razorpayKeyId) {
+      toast.error('Razorpay is not configured. Please contact support.');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/payment/process', {
+      const scriptLoaded = await new Promise<boolean>((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+      if (!scriptLoaded) {
+        toast.error('Razorpay checkout could not be loaded.');
+        return;
+      }
+
+      const orderResponse = await fetch('/api/v1/payment/razorpay/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          amount,
-          items,
-          paymentMethod: 'card',
-          cardDetails: {
-            last4: cardNumber.slice(-4),
-          }
-        })
+        body: JSON.stringify({ amount, receipt: `cart_checkout_${Date.now()}` })
+      });
+      const orderData = await orderResponse.json();
+      if (!orderResponse.ok || !orderData.success || !orderData.order) {
+        toast.error(orderData.message || 'Payment initiation failed.');
+        return;
+      }
+
+      const payment = await new Promise<any>((resolve, reject) => {
+        const checkout = new (window as any).Razorpay({
+          key: razorpayKeyId,
+          amount: orderData.order.amount,
+          currency: orderData.order.currency,
+          name: 'BrickOurHouse',
+          description: 'Material order',
+          order_id: orderData.order.id,
+          prefill: { name: user.fullName || '', email: user.email || '' },
+          theme: { color: '#8B4513' },
+          handler: resolve,
+        });
+        checkout.on('payment.failed', (error: any) => reject(error.error || error));
+        checkout.open();
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success('Payment successful! Order placed.');
-        navigate('/material-orders', { replace: true });
-      } else {
-        toast.error(data.message || 'Payment failed');
+      const verifyResponse = await fetch('/api/v1/payment/razorpay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ...payment, paymentType: 'CART_CHECKOUT', amount, items })
+      });
+      const verifyData = await verifyResponse.json();
+      if (!verifyResponse.ok || !verifyData.success) {
+        toast.error(verifyData.message || 'Payment verification failed.');
+        return;
       }
+
+      toast.success('Payment successful! Order placed.');
+      navigate('/material-orders', { replace: true });
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error('An error occurred during payment.');
+      toast.error((error as any)?.description || 'An error occurred during payment.');
     } finally {
       setLoading(false);
     }
@@ -86,55 +114,11 @@ function Checkout() {
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Payment Details</h3>
+              <h3 className="text-xl font-bold text-gray-900">Secure Razorpay Checkout</h3>
             </div>
 
             <form onSubmit={handleCheckout} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Card Number</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    maxLength={16}
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ''))}
-                    className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl pl-4 pr-10 py-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-mono"
-                    required
-                  />
-                  <CreditCard className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Expiry Date</label>
-                  <input
-                    type="text"
-                    maxLength={5}
-                    placeholder="MM/YY"
-                    value={expiry}
-                    onChange={(e) => setExpiry(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-mono"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">CVV</label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      maxLength={3}
-                      placeholder="123"
-                      value={cvv}
-                      onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
-                      className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-mono"
-                      required
-                    />
-                    <Lock className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm leading-6 text-gray-500">Complete your payment securely in Razorpay. Your card details are never stored by BrickOurHouse.</p>
 
               <button
                 type="submit"

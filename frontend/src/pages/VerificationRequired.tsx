@@ -39,7 +39,7 @@ export default function VerificationRequired() {
   const [fetchingCafes, setFetchingCafes] = useState(false);
 
   useEffect(() => {
-    // Check for success param from PhonePe redirect
+    // Read the payment redirect state when returning from checkout.
     const urlParams = new URLSearchParams(window.location.search);
     const isSuccess = urlParams.get('success');
 

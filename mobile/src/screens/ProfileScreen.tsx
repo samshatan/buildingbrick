@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/client';
 import { removeAuthValues } from '../api/authStorage';
 import { useTheme } from '../context/ThemeProvider';
+import { payWithRazorpay } from '../api/razorpay';
 
 type Role = 'user' | 'worker' | 'cafe_owner' | 'admin';
 
@@ -195,15 +196,22 @@ export default function ProfileScreen({ navigation }: any) {
             <TouchableOpacity 
               onPress={async () => {
                 try {
-                  const res = await apiClient.post('/payment/phonepe/initiate', { 
-                    workerProfileId: userInfo.id,
-                    paymentType: 'REGISTRATION'
-                  });
-                  if (res.data && res.data.url) {
-                    Alert.alert('Payment Initiated', 'Redirecting to payment gateway...');
+                  const targetId = workerProfile?.id || userInfo?.id;
+                  if (!targetId) {
+                    Alert.alert('Error', 'Worker profile not found.');
+                    return;
                   }
-                } catch (e) {
-                  Alert.alert('Error', 'Failed to initiate payment.');
+
+                  await payWithRazorpay({
+                    amount: workerProfile?.registrationFeeAmount || 19,
+                    paymentType: 'WORKER_ONBOARDING',
+                    referenceId: targetId,
+                    name: userInfo?.fullName,
+                    email: userInfo?.email,
+                  });
+                } catch (e: any) {
+                  const errorMsg = e.response?.data?.message || e.message || 'Failed to complete payment.';
+                  Alert.alert('Error', errorMsg);
                 }
               }}
               style={tw`bg-red-50 p-4 rounded-2xl border border-red-100 mb-4 flex-row items-center justify-between`}

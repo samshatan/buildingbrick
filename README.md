@@ -6,7 +6,7 @@ BrickOurHouse is a comprehensive, dynamic marketplace connecting verified constr
 
 - **Multi-Platform Access:** Fully responsive web application and a companion cross-platform mobile app.
 - **Worker Onboarding & Verification:** Secure onboarding flow with document uploads (Aadhar, PAN) and verification via Cyber Cafe admins or core admins.
-- **Payment Gateway Integration:** Integrated with Razorpay & PhonePe for onboarding fee collection and cart checkouts.
+- **Payment Gateway Integration:** Integrated with Razorpay for onboarding fee collection and cart checkouts.
 - **Job Marketplace:** Users can post work requests with specific budgets and timelines, or direct-hire verified workers.
 - **Materials Marketplace:** Browse and purchase construction materials directly through the platform.
 - **Real-Time Communication:** Built-in Socket.io support for real-time notifications and chat features.
@@ -18,7 +18,7 @@ BrickOurHouse is a comprehensive, dynamic marketplace connecting verified constr
 - **Mobile App:** React Native (Expo), NativeWind/Tailwind, Expo Image Picker
 - **Backend:** Node.js, Express, MongoDB (Mongoose), Socket.io
 - **Security:** Helmet, Express Rate Limit, Mongo Sanitize, HPP
-- **Payments:** Razorpay, PhonePe (Testing via UAT)
+- **Payments:** Razorpay
 
 ## 📁 Project Structure
 
@@ -75,7 +75,7 @@ cd mobile
 npm install
 npm start
 ```
-*Use the Expo Go app on your physical device or run on an iOS Simulator / Android Emulator to test.*
+Set `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_RAZORPAY_KEY_ID` in the mobile environment. Because Razorpay uses a native module, run a development build with `npx expo run:android` or `npx expo run:ios`; Expo Go is not supported for checkout.
 
 ## 🔒 Security & Deployment
 - The backend is configured for deployment on platforms like Render or Heroku (`render.yaml` included).
