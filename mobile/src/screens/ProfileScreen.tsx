@@ -196,7 +196,7 @@ export default function ProfileScreen({ navigation }: any) {
             <TouchableOpacity 
               onPress={async () => {
                 try {
-                  const targetId = workerProfile?.id || userInfo?.id;
+                  const targetId = workerProfile?._id || workerProfile?.id || userInfo?.id;
                   if (!targetId) {
                     Alert.alert('Error', 'Worker profile not found.');
                     return;
@@ -206,12 +206,18 @@ export default function ProfileScreen({ navigation }: any) {
                     amount: workerProfile?.registrationFeeAmount || 19,
                     paymentType: 'WORKER_ONBOARDING',
                     referenceId: targetId,
-                    name: userInfo?.fullName,
+                    name: userInfo?.fullName || userInfo?.name,
                     email: userInfo?.email,
+                    contact: userInfo?.phone || userInfo?.alternateMobile,
                   });
+                  
+                  Alert.alert('Success', 'Payment verified successfully!');
                 } catch (e: any) {
-                  const errorMsg = e.response?.data?.message || e.message || 'Failed to complete payment.';
-                  Alert.alert('Error', errorMsg);
+                  console.error("Razorpay Error:", e);
+                  // Handle react-native-razorpay specific error objects (which don't have .message)
+                  const razorpayError = e.description || e.error?.description;
+                  const errorMsg = e.response?.data?.message || e.message || razorpayError || 'Failed to complete payment.';
+                  Alert.alert('Payment Failed', errorMsg);
                 }
               }}
               style={tw`bg-red-50 p-4 rounded-2xl border border-red-100 mb-4 flex-row items-center justify-between`}

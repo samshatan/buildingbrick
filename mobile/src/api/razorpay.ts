@@ -36,16 +36,25 @@ export async function payWithRazorpay({
     throw new Error(orderResponse.data?.message || 'Payment initiation failed.');
   }
 
-  const payment = await RazorpayCheckout.open({
+  const prefill: any = {};
+  if (name) prefill.name = name;
+  if (email) prefill.email = email;
+  if (contact) prefill.contact = contact;
+
+  const options = {
     key: RAZORPAY_KEY_ID,
     amount: order.amount,
     currency: order.currency || 'INR',
     name: 'BrickOurHouse',
     description: paymentType === 'CART_CHECKOUT' ? 'Material order' : 'Worker onboarding fee',
     order_id: order.id,
-    prefill: { name, email, contact },
+    prefill,
     theme: { color: '#8B4513' },
-  });
+  };
+
+  console.log("Opening Razorpay with options:", options);
+
+  const payment = await RazorpayCheckout.open(options);
 
   const verificationResponse = await apiClient.post('/payment/razorpay/verify', {
     ...payment,
